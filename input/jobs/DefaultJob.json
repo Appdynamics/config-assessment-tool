@@ -1,0 +1,10 @@
+[
+  {
+    "host": "acme.saas.appdynamics.com",
+    "port": 443,
+    "ssl": true,
+    "account": "acme",
+    "username": "foo",
+    "pwd": "hunter1"
+  }
+]

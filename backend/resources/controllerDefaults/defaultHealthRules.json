@@ -1,0 +1,639 @@
+{
+  "Business Transaction Health": {
+    "name": "Business Transaction Health",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "BUSINESS_TRANSACTION_PERFORMANCE",
+      "affectedBusinessTransactions": {
+        "businessTransactionScope": "ALL_BUSINESS_TRANSACTIONS"
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "CUSTOM",
+        "conditionExpression": "(A AND B) OR (C AND D AND E)",
+        "conditions": [
+          {
+            "name": "Average Response Time (ms) Baseline Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Average Response Time (ms)",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "BASELINE_TYPE",
+                "baselineCondition": "GREATER_THAN_BASELINE",
+                "baselineName": "Default Baseline",
+                "compareValue": 3,
+                "baselineUnit": "STANDARD_DEVIATIONS"
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Calls per Minute Condition",
+            "shortName": "B",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Calls per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 50
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Calls per Minute Condition",
+            "shortName": "E",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Calls per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 50
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Errors per Minute Condition",
+            "shortName": "D",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "SUM",
+              "metricPath": "Errors per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 10
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Errors per Minute Baseline Condition",
+            "shortName": "C",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Errors per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "BASELINE_TYPE",
+                "baselineCondition": "GREATER_THAN_BASELINE",
+                "baselineName": "Default Baseline",
+                "compareValue": 3,
+                "baselineUnit": "STANDARD_DEVIATIONS"
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": {
+          "matchType": "AVERAGE",
+          "value": null
+        }
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "CUSTOM",
+        "conditionExpression": "(A AND B) OR (C AND D AND E)",
+        "conditions": [
+          {
+            "name": "Average Response Time (ms) Baseline Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Average Response Time (ms)",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "BASELINE_TYPE",
+                "baselineCondition": "GREATER_THAN_BASELINE",
+                "baselineName": "Default Baseline",
+                "compareValue": 2,
+                "baselineUnit": "STANDARD_DEVIATIONS"
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Calls per Minute Condition",
+            "shortName": "B",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Calls per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 100
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Calls per Minute Condition",
+            "shortName": "E",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Calls per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 50
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Errors per Minute Condition",
+            "shortName": "D",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "SUM",
+              "metricPath": "Errors per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 5
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          },
+          {
+            "name": "Errors per Minute Baseline Condition",
+            "shortName": "C",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Errors per Minute",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "BASELINE_TYPE",
+                "baselineCondition": "GREATER_THAN_BASELINE",
+                "baselineName": "Default Baseline",
+                "compareValue": 2,
+                "baselineUnit": "STANDARD_DEVIATIONS"
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": {
+          "matchType": "AVERAGE",
+          "value": null
+        }
+      }
+    }
+  },
+  "CPU utilization is too high": {
+    "name": "CPU utilization is too high",
+    "enabled": true,
+    "useDataFromLastNMinutes": 20,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "TIER_NODE_HARDWARE",
+      "affectedEntities": {
+        "tierOrNode": "NODE_AFFECTED_ENTITIES",
+        "typeofNode": "ALL_NODES",
+        "affectedNodes": {
+          "affectedNodeScope": "ALL_NODES"
+        }
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "Hardware Resources|CPU|%Busy Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Hardware Resources|CPU|%Busy",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 90
+              }
+            },
+            "triggerEnabled": true,
+            "minimumTriggers": 16
+          }
+        ],
+        "evalMatchingCriteria": null
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "Hardware Resources|CPU|%Busy Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Hardware Resources|CPU|%Busy",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 75
+              }
+            },
+            "triggerEnabled": true,
+            "minimumTriggers": 16
+          }
+        ],
+        "evalMatchingCriteria": null
+      }
+    }
+  },
+  "Memory utilization is too high": {
+    "name": "Memory utilization is too high",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "TIER_NODE_HARDWARE",
+      "affectedEntities": {
+        "tierOrNode": "NODE_AFFECTED_ENTITIES",
+        "typeofNode": "ALL_NODES",
+        "affectedNodes": {
+          "affectedNodeScope": "ALL_NODES"
+        }
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "Hardware Resources|Memory|Used % Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Hardware Resources|Memory|Used %",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 90
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "Hardware Resources|Memory|Used % Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "Hardware Resources|Memory|Used %",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 75
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      }
+    }
+  },
+  "JVM Heap utilization is too high": {
+    "name": "JVM Heap utilization is too high",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "TIER_NODE_HARDWARE",
+      "affectedEntities": {
+        "tierOrNode": "NODE_AFFECTED_ENTITIES",
+        "typeofNode": "JAVA_NODES",
+        "affectedNodes": {
+          "affectedNodeScope": "ALL_NODES"
+        }
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "JVM|Memory:Heap|Used % Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "JVM|Memory:Heap|Used %",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 90
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "JVM|Memory:Heap|Used % Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "JVM|Memory:Heap|Used %",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 75
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      }
+    }
+  },
+  "JVM Garbage Collection Time is too high": {
+    "name": "JVM Garbage Collection Time is too high",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "TIER_NODE_HARDWARE",
+      "affectedEntities": {
+        "tierOrNode": "NODE_AFFECTED_ENTITIES",
+        "typeofNode": "JAVA_NODES",
+        "affectedNodes": {
+          "affectedNodeScope": "ALL_NODES"
+        }
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "JVM|Garbage Collection|GC Time Spent Per Min (ms) Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "JVM|Garbage Collection|GC Time Spent Per Min (ms)",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 45000
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "JVM|Garbage Collection|GC Time Spent Per Min (ms) Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "JVM|Garbage Collection|GC Time Spent Per Min (ms)",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 30000
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      }
+    }
+  },
+  "CLR Garbage Collection Time is too high": {
+    "name": "CLR Garbage Collection Time is too high",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "TIER_NODE_HARDWARE",
+      "affectedEntities": {
+        "tierOrNode": "NODE_AFFECTED_ENTITIES",
+        "typeofNode": "DOT_NET_NODES",
+        "affectedNodes": {
+          "affectedNodeScope": "ALL_NODES"
+        }
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "CLR|Garbage Collection|GC Time Spent (%) Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "CLR|Garbage Collection|GC Time Spent (%)",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 75
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "CLR|Garbage Collection|GC Time Spent (%) Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "SINGLE_METRIC",
+              "metricAggregateFunction": "VALUE",
+              "metricPath": "CLR|Garbage Collection|GC Time Spent (%)",
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 50
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      }
+    }
+  },
+  "Network-Host : Packet drops too high": {
+    "name": "Network-Host : Packet drops too high",
+    "enabled": false,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+      "affectedEntityType": "ADVANCED_NETWORK",
+      "affectedEntities": {
+        "tierOrNode": "NODE_AFFECTED_ENTITIES",
+        "typeofNode": "ALL_NODES",
+        "affectedNodes": {
+          "affectedNodeScope": "ALL_NODES"
+        }
+      }
+    },
+    "evalCriterias": {
+      "criticalCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "Packet Drop Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "METRIC_EXPRESSION",
+              "metricExpression": "({Packets Dropped Per Sec} / {Packets Received Per Sec}) * 100",
+              "metricExpressionVariables": [
+                {
+                  "variableName": "Packets Dropped Per Sec",
+                  "metricAggregateFunction": "VALUE",
+                  "metricPath": "Advanced Network|Host|PCAP|Interface|Packets Dropped Per Sec"
+                },
+                {
+                  "variableName": "Packets Received Per Sec",
+                  "metricAggregateFunction": "VALUE",
+                  "metricPath": "Advanced Network|Host|PCAP|Interface|Packets Received Per Sec"
+                }
+              ],
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 5
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      },
+      "warningCriteria": {
+        "conditionAggregationType": "ALL",
+        "conditionExpression": null,
+        "conditions": [
+          {
+            "name": "Packet Drop Condition",
+            "shortName": "A",
+            "evaluateToTrueOnNoData": false,
+            "evalDetail": {
+              "evalDetailType": "METRIC_EXPRESSION",
+              "metricExpression": "({Packets Dropped Per Sec} / {Packets Received Per Sec}) * 100",
+              "metricExpressionVariables": [
+                {
+                  "variableName": "Packets Dropped Per Sec",
+                  "metricAggregateFunction": "VALUE",
+                  "metricPath": "Advanced Network|Host|PCAP|Interface|Packets Dropped Per Sec"
+                },
+                {
+                  "variableName": "Packets Received Per Sec",
+                  "metricAggregateFunction": "VALUE",
+                  "metricPath": "Advanced Network|Host|PCAP|Interface|Packets Received Per Sec"
+                }
+              ],
+              "metricEvalDetail": {
+                "metricEvalDetailType": "SPECIFIC_TYPE",
+                "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                "compareValue": 3
+              }
+            },
+            "triggerEnabled": false,
+            "minimumTriggers": 0
+          }
+        ],
+        "evalMatchingCriteria": null
+      }
+    }
+  }
+}
