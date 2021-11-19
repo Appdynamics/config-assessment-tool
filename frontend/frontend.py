@@ -27,7 +27,7 @@ def main():
                     image
                     for image in client.images()
                     if image["RepoTags"] is not None
-                    and any(tag for tag in image["RepoTags"] if tag == "appdynamics/config-assessment-tool-backend:latest")
+                    and any(tag for tag in image["RepoTags"] if tag == "ghcr.io/appdynamics/config-assessment-tool-backend:latest")
                 ]
             ),
             None,

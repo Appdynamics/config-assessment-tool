@@ -30,7 +30,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         command.append("-d")
 
     container = client.create_container(
-        image="appdynamics/config-assessment-tool-backend:latest",
+        image="ghcr.io/appdynamics/config-assessment-tool-backend:latest",
         name="config-assessment-tool-backend",
         volumes=[inputSource, outputSource],
         host_config=client.create_host_config(

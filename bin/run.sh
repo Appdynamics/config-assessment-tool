@@ -38,7 +38,7 @@ dsi() {
     docker stop "$PID" 1> /dev/null 2> /dev/null
   fi
 }
-dsi "appdynamics/config-assessment-tool-frontend:latest"
+dsi "ghcr.io/appdynamics/config-assessment-tool-frontend:latest"
 
 # start up our FileHandler server locally, will exit when this process exits
 trap "kill 0" SIGINT
@@ -61,7 +61,7 @@ docker run \
   -p 8501:8501 \
   -p 1337:1337 \
   --rm \
-  appdynamics/config-assessment-tool-frontend:latest &
+  ghcr.io/appdynamics/config-assessment-tool-frontend:latest &
 
 echo "waiting for config-assessment-tool-frontend to start"
 while [ "$(docker inspect -f {{.State.Running}} config-assessment-tool-frontend 2> /dev/null)" != "true" ]; do sleep 2; done

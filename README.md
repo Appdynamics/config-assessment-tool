@@ -41,7 +41,7 @@ docker run \
 -e HOST_ROOT="$(pwd)" \
 -p 8501:8501 \
 --rm \
-appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThresholds
+ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThresholds
 ```
 
 ### Local
