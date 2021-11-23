@@ -34,7 +34,7 @@ def run(path: str):
 
     # start FileHandler
     logging.info("Starting FileHandler")
-    runNonBlockingCommand("python frontend/FileHandler.py")
+    runNonBlockingCommand("python3 frontend/FileHandler.py")
 
     # start config-assessment-tool-frontend
     logging.info("Starting config-assessment-tool-frontend container")
