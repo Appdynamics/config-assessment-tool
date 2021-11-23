@@ -21,7 +21,7 @@ from jobs.jobs.OverallAssessment import OverallAssessment
 from jobs.jobs.Overhead import Overhead
 from jobs.jobs.ServiceEndpoints import ServiceEndpoints
 from reports.reports.AgentMatrixReport import AgentMatrixReport
-from reports.reports.AnalysisReport import AnalysisReport
+from reports.reports.ApmReport import ApmReport
 from reports.reports.RawDataReport import RawDataReport
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import jsonEncoder
@@ -72,7 +72,7 @@ class Engine:
             OverallAssessment(),
         ]
         self.reports = [
-            AnalysisReport(),
+            ApmReport(),
             RawDataReport(),
             AgentMatrixReport(),
         ]

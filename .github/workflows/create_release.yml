@@ -19,14 +19,13 @@ jobs:
       - name: Build package release files
         shell: bash
         run: |
-          chmod +x ./bin/package.sh
-          ./bin/package.sh
+          python ./bin/config-assessment-tool.py --package
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: bin/config-assessment-tool.zip
+          files: config-assessment-tool.zip
           token: ${{ secrets.WORKFLOW_TOKEN }}
 
       - name: Log in to the Container registry

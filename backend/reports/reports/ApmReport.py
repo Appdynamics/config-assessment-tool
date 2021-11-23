@@ -13,7 +13,7 @@ from util.xcel_utils import (
 from reports.ReportBase import ReportBase
 
 
-class AnalysisReport(ReportBase):
+class ApmReport(ReportBase):
     def createWorkbook(self, jobs, controllerData, jobFileName):
         logging.info(f"Creating Analysis Report Workbook")
 
@@ -42,26 +42,18 @@ class AnalysisReport(ReportBase):
 
         rowIdx = 2
         for host, hostInfo in controllerData.items():
-            for componentType in [
-                "apm",
-                "dashboards",
-                "containers",
-                "brum",
-                "mrum",
-                "analytics",
-            ]:
-                for component in hostInfo[componentType].values():
-                    writeColoredRow(
-                        analysisSheet,
-                        rowIdx,
-                        [
-                            (hostInfo["controller"].host, None),
-                            (componentType, None),
-                            (component["name"], None),
-                            *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in jobs]],
-                        ],
-                    )
-                    rowIdx += 1
+            for component in hostInfo["apm"].values():
+                writeColoredRow(
+                    analysisSheet,
+                    rowIdx,
+                    [
+                        (hostInfo["controller"].host, None),
+                        ("apm", None),
+                        (component["name"], None),
+                        *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in jobs]],
+                    ],
+                )
+                rowIdx += 1
 
         addFilterAndFreeze(analysisSheet)
         resizeColumnWidth(analysisSheet)
@@ -70,4 +62,4 @@ class AnalysisReport(ReportBase):
         writeSummarySheet(summarySheet)
 
         logging.debug(f"Saving Analysis Report Workbook")
-        workbook.save(f"output/{jobFileName}/{jobFileName}-Report.xlsx")
+        workbook.save(f"output/{jobFileName}/{jobFileName}-ApmReport.xlsx")

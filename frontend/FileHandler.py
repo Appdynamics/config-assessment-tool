@@ -3,12 +3,8 @@ import os
 import subprocess
 import sys
 
-if sys.version_info >= (3, 0):
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-    from urllib import parse
-else:
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-    from urlparse import urlparse, parse_qsl
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib import parse
 
 
 def getPlatform():
@@ -55,10 +51,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-        if sys.version_info >= (3, 0):
-            query_components = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
-        else:
-            query_components = dict(parse_qsl(urlparse(self.path).query))
+        query_components = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
 
         if query_components["type"] == "file":
             openFile(query_components["path"])
@@ -87,6 +80,10 @@ if __name__ == "__main__":
     hostName = "localhost"
     serverPort = 1337
 
-    logging.info(f"Starting FileHandler on {hostName}:{serverPort}")
-    webServer = HTTPServer((hostName, serverPort), MyServer)
-    webServer.serve_forever()
+    try:
+        logging.info(f"Starting FileHandler on {hostName}:{serverPort}")
+        webServer = HTTPServer((hostName, serverPort), MyServer)
+
+        webServer.serve_forever()
+    except KeyboardInterrupt:
+        logging.info("Stopping FileHandler")
