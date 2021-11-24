@@ -7,6 +7,8 @@ import time
 import zipfile
 from platform import uname
 
+import requests
+
 
 def run(path: str):
     splash = """
@@ -34,7 +36,14 @@ def run(path: str):
 
     # start FileHandler
     logging.info("Starting FileHandler")
-    runNonBlockingCommand("python3 frontend/FileHandler.py")
+    runNonBlockingCommand("python frontend/FileHandler.py")
+
+    # wait for file handler to start
+    while True:
+        logging.info("Waiting for FileHandler to start")
+        if requests.get("http://localhost:1337/ping").text == "pong":
+            break
+        time.sleep(1)
 
     # start config-assessment-tool-frontend
     logging.info("Starting config-assessment-tool-frontend container")
@@ -96,10 +105,14 @@ def build():
 
 
 def pull():
-    logging.info("Pulling ghcr.io/appdynamics/config-assessment-tool-backend:latest")
-    runBlockingCommand("docker pull ghcr.io/appdynamics/config-assessment-tool-backend:latest")
-    logging.info("Pulling ghcr.io/appdynamics/config-assessment-tool-frontend:latest")
-    runBlockingCommand("docker pull ghcr.io/appdynamics/config-assessment-tool-frontend:latest")
+    if sys.platform == "win32":
+        logging.info("Currently only pre-built images are available for *nix systems.")
+        logging.info("Please build the images from source with the --build command.")
+    else:
+        logging.info("Pulling ghcr.io/appdynamics/config-assessment-tool-backend:latest")
+        runBlockingCommand("docker pull ghcr.io/appdynamics/config-assessment-tool-backend:latest")
+        logging.info("Pulling ghcr.io/appdynamics/config-assessment-tool-frontend:latest")
+        runBlockingCommand("docker pull ghcr.io/appdynamics/config-assessment-tool-frontend:latest")
 
 
 def package():

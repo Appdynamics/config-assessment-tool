@@ -3,8 +3,12 @@ import os
 import subprocess
 import sys
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib import parse
+if sys.version_info >= (3, 0):
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from urllib import parse
+else:
+    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+    from urlparse import urlparse, parse_qsl
 
 
 def getPlatform():
@@ -51,11 +55,16 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-        query_components = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
+        if sys.version_info >= (3, 0):
+            query_components = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
+        else:
+            query_components = dict(parse_qsl(urlparse(self.path).query))
 
-        if query_components["type"] == "file":
+        if self.path == "/ping":
+            self.wfile.write(b"pong")
+        elif "type" in query_components and query_components["type"] == "file":
             openFile(query_components["path"])
-        if query_components["type"] == "folder":
+        elif "type" in query_components and query_components["type"] == "folder":
             openFolder(query_components["path"])
 
     def log_message(self, format, *args):
