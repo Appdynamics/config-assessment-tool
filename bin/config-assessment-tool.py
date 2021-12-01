@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 import zipfile
+from http.client import RemoteDisconnected
 from platform import uname
 from urllib.error import URLError
 
@@ -81,7 +82,7 @@ def run(path: str):
             if urlopen("http://localhost:8501").status == 200:
                 logging.info("config-assessment-tool-frontend started")
                 break
-        except URLError:
+        except (URLError, RemoteDisconnected):
             pass
         time.sleep(1)
 
