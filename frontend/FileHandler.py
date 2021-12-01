@@ -21,7 +21,7 @@ def getPlatform():
 
 
 def openFile(filename):
-    logging.info(f"Opening file: {filename}")
+    logging.info("Opening file: " + filename)
     platform = getPlatform()
 
     if platform == "darwin":
@@ -35,7 +35,7 @@ def openFile(filename):
 
 
 def openFolder(path):
-    logging.info(f"Opening folder: {path}")
+    logging.info("Opening folder: " + path)
     platform = getPlatform()
 
     if platform == "darwin":
@@ -43,7 +43,7 @@ def openFolder(path):
     elif platform in ["win64", "win32"]:
         subprocess.call(["start", path])
     elif platform == "wsl":
-        command = f"explorer.exe `wslpath -w {path}`"
+        command = "explorer.exe `wslpath -w " + path + "`"
         subprocess.run(["bash", "-c", command])
     else:  # linux variants
         subprocess.call(["xdg-open", "--", path])
