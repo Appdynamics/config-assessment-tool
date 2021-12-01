@@ -6,6 +6,7 @@ import sys
 import time
 import zipfile
 from platform import uname
+from urllib.error import URLError
 
 from urllib.request import urlopen
 
@@ -50,8 +51,11 @@ def run(path: str):
     # wait for file handler to start
     while True:
         logging.info("Waiting for FileHandler to start")
-        if urlopen("http://localhost:1337/ping").read() == b"pong":
-            break
+        try:
+            if urlopen("http://localhost:1337/ping").read() == b"pong":
+                break
+        except URLError:
+            pass
         time.sleep(1)
 
     # start config-assessment-tool-frontend
@@ -178,15 +182,7 @@ if __name__ == "__main__":
     )
 
     # parse command line arguments
-    if sys.argv[1] == "--run":
-        run(path)
-    elif sys.argv[1] == "--build":
-        build()
-    elif sys.argv[1] == "--pull":
-        pull()
-    elif sys.argv[1] == "--package":
-        package()
-    elif len(sys.argv) == 1 or sys.argv[1] == "--help":
+    if len(sys.argv) == 1 or sys.argv[1] == "--help":
         msg = """
     Usage: config-assessment-tool.py [OPTIONS]
     Options:
@@ -198,6 +194,14 @@ if __name__ == "__main__":
               """.strip()
         logging.info(msg)
         sys.exit(1)
+    if sys.argv[1] == "--run":
+        run(path)
+    elif sys.argv[1] == "--build":
+        build()
+    elif sys.argv[1] == "--pull":
+        pull()
+    elif sys.argv[1] == "--package":
+        package()
     else:
         logging.error(f"Unknown option: {sys.argv[1]}")
         logging.info("Use --help for usage information")

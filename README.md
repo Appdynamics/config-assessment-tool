@@ -16,13 +16,13 @@ There are three options to run the tool:
 
 ### Important step for running on windows
 
-Docker on Windows requires manually sharing the `/input`, `/output`, and `/logs` directories with the container. 
-If you do not follow this step, you will get the following error when trying to run the container: `DockerException Filesharing has been cancelled`.
-Take a look at the documentation [`here`](https://docs.docker.com/desktop/windows/) for more information.
+Docker on Windows requires manually sharing the `/input`, `/output`, and `/logs` directories with the container. If you do not follow this step, you will get the following error when trying to run the
+container: `DockerException Filesharing has been cancelled`. Take a look at the documentation [`here`](https://docs.docker.com/desktop/windows/) for more information.
 
 ### UI method
 
 Obtain frontend and backend Docker images via:
+
 1. Either build from source with `python bin/config-assessment-tool.py --build` or pull from ghrc with `python bin/config-assessment-tool.py --pull`
 3. Run with `python bin/config-assessment-tool.py --run`
 4. Navigate to `http://localhost:8501`
@@ -38,6 +38,7 @@ Refresh the page to see the Jobs and Thresholds appear.
 You can start the backend container with the following command:
 
 Unix
+
 ```
 docker run \
 --name "config-assessment-tool-backend" \
@@ -51,6 +52,7 @@ ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThre
 ```
 
 Windows
+
 ```
 docker run `
 --name "config-assessment-tool-backend" `
@@ -78,8 +80,8 @@ Options:
 
 Options `--job-file` and `--thresholds-file` will default to `DefaultJob` and `DefaultThresholds` respectively.
 
-All Job and Threshold files must be contained in `config_assessment_tool/resources/jobs` and `config_assessment_tool/resources/thresholds` respectively.
-They are to be referenced by name file name (excluding .json), not full path.
+All Job and Threshold files must be contained in `config_assessment_tool/resources/jobs` and `config_assessment_tool/resources/thresholds` respectively. They are to be referenced by name file name (
+excluding .json), not full path.
 
 The frontend can be invoked by navigating to `config_assessment_tool/frontend` and invoking `streamlit run frontend.py`
 
@@ -94,16 +96,19 @@ This program will generate `{jobName}.xlsx` in the `out` directory containing th
 ![Scheme](backend/resources/img/architecture.jpg)
 
 ## Requirements
-- Python 3.5 or above 
+
+- Python 3.5 or above
 - Docker
 
 ## Limitations
+
 - Data Collectors
-  - The API to directly find snapshots containing data collectors of type `Session Key` or `HTTP Header` does not work.
-  - The API does however work for `Business Data` (POJO match rule), `HTTP Parameter`, and `Cookie` types.
-  - As far as I can tell this is a product limitation, the transaction snapshot filtering UI does not even have an option for `Session Key` or `HTTP Header`. 
-  - The only way to check for `Session Key` or `HTTP Header` data collector existence within snapshots would be to inspect ALL snapshots (prohibitively time intensive).
-  - As a workaround, we will assume any `Session Key` or `HTTP Header` data collectors are present in snapshots.
+    - The API to directly find snapshots containing data collectors of type `Session Key` or `HTTP Header` does not work.
+    - The API does however work for `Business Data` (POJO match rule), `HTTP Parameter`, and `Cookie` types.
+    - As far as I can tell this is a product limitation, the transaction snapshot filtering UI does not even have an option for `Session Key` or `HTTP Header`.
+    - The only way to check for `Session Key` or `HTTP Header` data collector existence within snapshots would be to inspect ALL snapshots (prohibitively time intensive).
+    - As a workaround, we will assume any `Session Key` or `HTTP Header` data collectors are present in snapshots.
 
 ## Support
+
 Please email bradley.hjelmar@appdynamics.com for any issues.

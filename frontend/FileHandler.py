@@ -90,7 +90,7 @@ if __name__ == "__main__":
     serverPort = 1337
 
     try:
-        logging.info(f"Starting FileHandler on {hostName}:{serverPort}")
+        logging.info("Starting FileHandler on " + hostName + ":" + str(serverPort))
         webServer = HTTPServer((hostName, serverPort), MyServer)
 
         webServer.serve_forever()

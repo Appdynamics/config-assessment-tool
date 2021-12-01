@@ -1,7 +1,7 @@
 name: create and upload release assets
 on:
   release:
-    types: [published]
+    types: [ published ]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
