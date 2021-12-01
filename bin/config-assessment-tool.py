@@ -103,6 +103,7 @@ def run(path: str):
             runBlockingCommand(f"docker container stop {containerId}")
 
 
+# build docker images from source
 def build():
     if os.path.isfile("backend/Dockerfile") and os.path.isfile("frontend/Dockerfile"):
         logging.info("Building ghcr.io/appdynamics/config-assessment-tool-backend:latest from Dockerfile")
@@ -113,6 +114,7 @@ def build():
         logging.info("Dockerfiles not found in either backend/ or frontend/.")
 
 
+# pull latest images from ghrc.io if on a unix system
 def pull():
     if sys.platform == "win32":
         logging.info("Currently only pre-built images are available for *nix systems.")
@@ -124,6 +126,7 @@ def pull():
         runBlockingCommand("docker pull ghcr.io/appdynamics/config-assessment-tool-frontend:latest")
 
 
+# package minimal required files
 def package():
     logging.info("Creating zip file")
     with zipfile.ZipFile("config-assessment-tool.zip", "w") as zip_file:
@@ -135,6 +138,7 @@ def package():
     logging.info("Created config-assessment-tool.zip")
 
 
+# execute blocking command, gather output and return it
 def runBlockingCommand(command: str):
     output = ""
     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
@@ -145,6 +149,7 @@ def runBlockingCommand(command: str):
     return output.strip()
 
 
+# execute non-blocking command, ignore output
 def runNonBlockingCommand(command: str):
     subprocess.Popen(command, stdout=None, stderr=None, shell=True)
 
@@ -152,6 +157,7 @@ def runNonBlockingCommand(command: str):
 if __name__ == "__main__":
     assert sys.version_info >= (3, 5), "Python 3.5 or higher required"
 
+    # cd to config-assessment-tool root directory
     path = os.path.realpath(f"{__file__}/../..")
     os.chdir(path)
 
@@ -161,6 +167,7 @@ if __name__ == "__main__":
     if not os.path.exists("output"):
         os.makedirs("output")
 
+    # init logging
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
@@ -170,6 +177,7 @@ if __name__ == "__main__":
         ],
     )
 
+    # parse command line arguments
     if sys.argv[1] == "--run":
         run(path)
     elif sys.argv[1] == "--build":
@@ -190,7 +198,6 @@ if __name__ == "__main__":
               """.strip()
         logging.info(msg)
         sys.exit(1)
-
     else:
         logging.error(f"Unknown option: {sys.argv[1]}")
         logging.info("Use --help for usage information")
