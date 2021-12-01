@@ -9,7 +9,6 @@ def initLogging(debug: bool):
     if not os.path.exists("logs"):
         os.makedirs("logs")
 
-    # noinspection PyArgumentList
     logging.basicConfig(
         level=logging.DEBUG if debug else logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",

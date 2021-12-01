@@ -21,7 +21,7 @@ def getPlatform():
 
 
 def openFile(filename):
-    logging.info(f"Opening file: {filename}")
+    logging.info("Opening file: " + filename)
     platform = getPlatform()
 
     if platform == "darwin":
@@ -35,7 +35,7 @@ def openFile(filename):
 
 
 def openFolder(path):
-    logging.info(f"Opening folder: {path}")
+    logging.info("Opening folder: " + path)
     platform = getPlatform()
 
     if platform == "darwin":
@@ -43,7 +43,7 @@ def openFolder(path):
     elif platform in ["win64", "win32"]:
         subprocess.call(["start", path])
     elif platform == "wsl":
-        command = f"explorer.exe `wslpath -w {path}`"
+        command = "explorer.exe `wslpath -w " + path + "`"
         subprocess.run(["bash", "-c", command])
     else:  # linux variants
         subprocess.call(["xdg-open", "--", path])
@@ -60,9 +60,11 @@ class MyServer(BaseHTTPRequestHandler):
         else:
             query_components = dict(parse_qsl(urlparse(self.path).query))
 
-        if query_components["type"] == "file":
+        if self.path == "/ping":
+            self.wfile.write(b"pong")
+        elif "type" in query_components and query_components["type"] == "file":
             openFile(query_components["path"])
-        if query_components["type"] == "folder":
+        elif "type" in query_components and query_components["type"] == "folder":
             openFolder(query_components["path"])
 
     def log_message(self, format, *args):
@@ -87,6 +89,10 @@ if __name__ == "__main__":
     hostName = "localhost"
     serverPort = 1337
 
-    logging.info(f"Starting FileHandler on {hostName}:{serverPort}")
-    webServer = HTTPServer((hostName, serverPort), MyServer)
-    webServer.serve_forever()
+    try:
+        logging.info("Starting FileHandler on " + hostName + ":" + str(serverPort))
+        webServer = HTTPServer((hostName, serverPort), MyServer)
+
+        webServer.serve_forever()
+    except KeyboardInterrupt:
+        logging.info("Stopping FileHandler")

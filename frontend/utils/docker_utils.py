@@ -20,7 +20,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
     outputSource = f"{root}/output"
     logsSource = f"{root}/logs"
 
-    if os.name == "nt":
+    if os.name == "nt" or root[1] == ":":
         inputSource = ("/" + inputSource[:1] + "/" + inputSource[3:]).replace("\\", "/")
         outputSource = ("/" + outputSource[:1] + "/" + outputSource[3:]).replace("\\", "/")
         logsSource = ("/" + logsSource[:1] + "/" + logsSource[3:]).replace("\\", "/")
@@ -85,7 +85,7 @@ def buildConfigAssessmentToolImage(client: APIClient):
                 logTextBox.text_area("", logText, height=450)
 
         # small delay to see build ended
-        time.sleep(3)
+        time.sleep(5)
         # refresh the page
         rerun()
 

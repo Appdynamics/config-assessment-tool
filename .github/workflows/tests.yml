@@ -13,61 +13,56 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install Python 3
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install pipenv
-      run: |
-        python -m pip install --upgrade pipenv wheel pytest
-    - id: cache-pipenv
-      uses: actions/cache@v1
-      with:
-        path: ~/.local/share/virtualenvs
-        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-    - name: Install dependencies
-      if: steps.cache-pipenv.outputs.cache-hit != 'true'
-      run: |
-        pipenv install --deploy --dev
-    - name: Set PYTHONPATH
-      run: |
-        echo "PYTHONPATH=./backend" >> $GITHUB_ENV
-    - name: Pytest with Coverage
-      env:
-        TEST_CONTROLLER_ACCOUNT: ${{ secrets.TEST_CONTROLLER_ACCOUNT }}
-        TEST_CONTROLLER_HOST: ${{ secrets.TEST_CONTROLLER_HOST }}
-        TEST_CONTROLLER_PASSWORD: ${{ secrets.TEST_CONTROLLER_PASSWORD }}
-        TEST_CONTROLLER_PORT: ${{ secrets.TEST_CONTROLLER_PORT }}
-        TEST_CONTROLLER_SSL: ${{ secrets.TEST_CONTROLLER_SSL }}
-        TEST_CONTROLLER_USERNAME: ${{ secrets.TEST_CONTROLLER_USERNAME }}
-        TEST_CONTROLLER_APPLICATION_ID: ${{ secrets.TEST_CONTROLLER_APPLICATION_ID }}
-      run: |
-        pipenv run pytest --cov=backend \
-          --cov=backend/api \
-          --cov=backend/api/appd \
-          tests -W ignore::DeprecationWarning
-        set -x
-        total=`pipenv run coverage report | grep TOTAL | tr -s ' ' | cut -d ' ' -f 4 | head -c -2`
-        if (( $(echo "$total <= 50" | bc -l) )) ; then
-          COLOR=red
-        elif (( $(echo "$total > 80" | bc -l) )); then
-          COLOR=green
-        else
-          COLOR=orange
-        fi
-        curl "https://img.shields.io/badge/coverage-$total%25-$COLOR" > ../coverage.svg
-        ls -la
-    - uses: actions/checkout@v2
-      with:
-        ref: 'github-workflow'
-    - name: Move coverage.svg to working directory
-      run: |
-        mv ../coverage.svg .
-    - name: Commit Coverage Badge
-      uses: EndBug/add-and-commit@v7
-      with:
-        add: 'coverage.svg'
-        author_name: commitbot
-        author_email: commitbot@example.com
-        branch: github-workflow
+      - uses: actions/checkout@v2
+      - name: Install Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install pipenv
+        run: |
+          python -m pip install --upgrade pipenv wheel pytest
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          pipenv install --deploy --dev
+      - name: Set PYTHONPATH
+        run: |
+          echo "PYTHONPATH=./backend" >> $GITHUB_ENV
+      - name: Pytest with Coverage
+        env:
+          TEST_CONTROLLER_ACCOUNT: ${{ secrets.TEST_CONTROLLER_ACCOUNT }}
+          TEST_CONTROLLER_HOST: ${{ secrets.TEST_CONTROLLER_HOST }}
+          TEST_CONTROLLER_PASSWORD: ${{ secrets.TEST_CONTROLLER_PASSWORD }}
+          TEST_CONTROLLER_PORT: ${{ secrets.TEST_CONTROLLER_PORT }}
+          TEST_CONTROLLER_SSL: ${{ secrets.TEST_CONTROLLER_SSL }}
+          TEST_CONTROLLER_USERNAME: ${{ secrets.TEST_CONTROLLER_USERNAME }}
+          TEST_CONTROLLER_APPLICATION_ID: ${{ secrets.TEST_CONTROLLER_APPLICATION_ID }}
+        run: |
+          pipenv run pytest --cov=backend \
+            --cov=backend/api \
+            --cov=backend/api/appd \
+            tests -W ignore::DeprecationWarning
+          set -x
+          total=`pipenv run coverage report | grep TOTAL | tr -s ' ' | cut -d ' ' -f 4 | head -c -2`
+          if (( $(echo "$total <= 50" | bc -l) )) ; then
+            COLOR=red
+          elif (( $(echo "$total > 80" | bc -l) )); then
+            COLOR=green
+          else
+            COLOR=orange
+          fi
+          curl "https://img.shields.io/badge/coverage-$total%25-$COLOR" > ../coverage.svg
+          ls -la
+      - uses: actions/checkout@v2
+        with:
+          ref: 'github-workflow'
+      - name: Move coverage.svg to working directory
+        run: |
+          mv ../coverage.svg .
+      - name: Commit Coverage Badge
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: 'coverage.svg'
+          author_name: commitbot
+          author_email: commitbot@example.com
+          branch: github-workflow
