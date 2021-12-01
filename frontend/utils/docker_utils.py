@@ -85,7 +85,7 @@ def buildConfigAssessmentToolImage(client: APIClient):
                 logTextBox.text_area("", logText, height=450)
 
         # small delay to see build ended
-        time.sleep(3)
+        time.sleep(5)
         # refresh the page
         rerun()
 

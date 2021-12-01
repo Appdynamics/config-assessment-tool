@@ -53,6 +53,7 @@ def run(path: str):
         logging.info("Waiting for FileHandler to start")
         try:
             if urlopen("http://localhost:1337/ping").read() == b"pong":
+                logging.info("FileHandler started")
                 break
         except URLError:
             pass
@@ -76,9 +77,12 @@ def run(path: str):
     # wait for config-assessment-tool-frontend to start
     while True:
         logging.info("Waiting for config-assessment-tool-frontend to start")
-        if "config-assessment-tool-frontend" in runBlockingCommand("docker ps -a --format '{{.Names}}'"):
-            logging.info("config-assessment-tool-frontend started")
-            break
+        try:
+            if urlopen("http://localhost:8501").status == 200:
+                logging.info("config-assessment-tool-frontend started")
+                break
+        except URLError:
+            pass
         time.sleep(1)
 
     # open web browser platform specific
