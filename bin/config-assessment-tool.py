@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
+import sys
 import logging
 import os
 import subprocess
-import sys
 import time
 import zipfile
 from http.client import RemoteDisconnected
@@ -10,6 +10,8 @@ from platform import uname
 from urllib.error import URLError
 
 from urllib.request import urlopen
+
+assert sys.version_info >= (3, 5), "Python 3.5 or higher required"
 
 
 def run(path: str):
@@ -164,8 +166,6 @@ def runNonBlockingCommand(command: str):
 
 
 if __name__ == "__main__":
-    assert sys.version_info >= (3, 5), "Python 3.5 or higher required"
-
     # cd to config-assessment-tool root directory
     path = os.path.realpath(f"{__file__}/../..")
     os.chdir(path)
