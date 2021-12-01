@@ -93,7 +93,10 @@ class BusinessTransactions(JobStepBase):
                     analysisDataEvaluatedMetrics["percentBTsWithLoad"] = 0
 
                 # isBtLockDownEnabled
-                analysisDataEvaluatedMetrics["btLockdownEnabled"] = application["appLevelBtConfig"]["isBtLockDownEnabled"]
+                if "isBtLockDownEnabled" in application["appLevelBtConfig"]:
+                    analysisDataEvaluatedMetrics["btLockdownEnabled"] = application["appLevelBtConfig"]["isBtLockDownEnabled"]
+                else:
+                    analysisDataEvaluatedMetrics["btLockdownEnabled"] = False
 
                 # numberCustomMatchRules
                 defaultBtNameList = [
@@ -139,7 +142,7 @@ class BusinessTransactions(JobStepBase):
 
                 analysisDataRawMetrics["numberOfBTs"] = numberOfBusinessTransactions
                 analysisDataRawMetrics["businessTransactionsWithLoad"] = businessTransactionsWithLoad
-                analysisDataRawMetrics["btLockdownEnabled"] = application["appLevelBtConfig"]["isBtLockDownEnabled"]
+                analysisDataRawMetrics["btLockdownEnabled"] = analysisDataEvaluatedMetrics["btLockdownEnabled"]
                 analysisDataRawMetrics["numberCustomMatchRules"] = numberOfCustomMatchRules
 
                 self.applyThresholds(analysisDataEvaluatedMetrics, analysisDataRoot, jobStepThresholds)
