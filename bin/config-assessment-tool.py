@@ -192,7 +192,7 @@ if __name__ == "__main__":
       --package, Create lightweight package for distribution
       --help, Show this message and exit.
               """.strip()
-        logging.info(msg)
+        print(msg)
         sys.exit(1)
     if sys.argv[1] == "--run":
         run(path)
@@ -203,8 +203,8 @@ if __name__ == "__main__":
     elif sys.argv[1] == "--package":
         package()
     else:
-        logging.error(f"Unknown option: {sys.argv[1]}")
-        logging.info("Use --help for usage information")
+        print(f"Unknown option: {sys.argv[1]}")
+        print("Use --help for usage information")
         sys.exit(1)
 
     sys.exit(0)
