@@ -27,8 +27,8 @@ def run(path: str):
 
     # Check if config-assessment-tool-frontend exists
     if (
-            runBlockingCommand("docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend:latest") == ""
-            or runBlockingCommand("docker images -q ghcr.io/appdynamics/config-assessment-tool-backend:latest") == ""
+        runBlockingCommand("docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend:latest") == ""
+        or runBlockingCommand("docker images -q ghcr.io/appdynamics/config-assessment-tool-backend:latest") == ""
     ):
         logging.error("Necessary Docker images not found.")
         logging.error("Please re-run with --pull or --build.")
