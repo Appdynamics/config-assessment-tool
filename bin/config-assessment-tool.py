@@ -7,7 +7,7 @@ import time
 import zipfile
 from platform import uname
 
-import requests
+from urllib.request import urlopen
 
 
 def run(path: str):
@@ -50,7 +50,7 @@ def run(path: str):
     # wait for file handler to start
     while True:
         logging.info("Waiting for FileHandler to start")
-        if requests.get("http://localhost:1337/ping").text == "pong":
+        if urlopen("http://localhost:1337/ping").read() == b"pong":
             break
         time.sleep(1)
 
