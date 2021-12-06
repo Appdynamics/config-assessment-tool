@@ -33,11 +33,11 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
 
     if openExcelReportColumn.button(f"Open Excel Report", key=f"{jobName}-excel"):
         if not isDocker():
-            openFile(f"../output/{jobName}/{jobName}-ApmReport.xlsx")
+            openFile(f"../output/{jobName}/{jobName}-BSGReport.xlsx")
         else:
             payload = {
                 "type": "file",
-                "path": f"output/{jobName}/{jobName}-ApmReport.xlsx",
+                "path": f"output/{jobName}/{jobName}-BSGReport.xlsx",
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:1337?{payload}")

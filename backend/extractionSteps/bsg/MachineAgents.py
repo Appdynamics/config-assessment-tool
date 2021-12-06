@@ -4,12 +4,12 @@ import time
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import substringBetween
 
 
-class MachineAgents(JobStepBase):
+class MachineAgents(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 

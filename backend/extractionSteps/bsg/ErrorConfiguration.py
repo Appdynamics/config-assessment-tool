@@ -2,12 +2,12 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import substringBetween
 
 
-class ErrorConfiguration(JobStepBase):
+class ErrorConfiguration(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 

@@ -1,10 +1,10 @@
 import logging
 from collections import OrderedDict
 
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 
 
-class OverallAssessment(JobStepBase):
+class OverallAssessment(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 

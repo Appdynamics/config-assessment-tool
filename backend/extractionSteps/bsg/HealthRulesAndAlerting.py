@@ -4,11 +4,11 @@ from collections import OrderedDict
 from deepdiff import DeepDiff
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 
-class HealthRulesAndAlerting(JobStepBase):
+class HealthRulesAndAlerting(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 

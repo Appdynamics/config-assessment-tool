@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 from datetime import datetime
 
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.stdlib_utils import get_recursively
 
 
-class ApmDashboards(JobStepBase):
+class ApmDashboards(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 

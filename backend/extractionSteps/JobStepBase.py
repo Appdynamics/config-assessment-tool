@@ -10,7 +10,7 @@ from util.xcel_utils import (
 )
 
 
-class JobStepBase(ABC):
+class BSGJobStepBase(ABC):
     def __init__(self, componentType: str):
         self.componentType = componentType
 

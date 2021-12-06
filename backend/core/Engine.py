@@ -9,20 +9,22 @@ from collections import OrderedDict
 from pathlib import Path
 
 from api.appd.AppDService import AppDService
-from jobs.jobs.ApmDashboards import ApmDashboards
-from jobs.jobs.AppAgents import AppAgents
-from jobs.jobs.Backends import Backends
-from jobs.jobs.BusinessTransactions import BusinessTransactions
-from jobs.jobs.DataCollectors import DataCollectors
-from jobs.jobs.ErrorConfiguration import ErrorConfiguration
-from jobs.jobs.HealthRulesAndAlerting import HealthRulesAndAlerting
-from jobs.jobs.MachineAgents import MachineAgents
-from jobs.jobs.OverallAssessment import OverallAssessment
-from jobs.jobs.Overhead import Overhead
-from jobs.jobs.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.bsg.ApmDashboards import ApmDashboards
+from extractionSteps.bsg.AppAgents import AppAgents
+from extractionSteps.bsg.Backends import Backends
+from extractionSteps.bsg.BusinessTransactions import BusinessTransactions
+from extractionSteps.bsg.DataCollectors import DataCollectors
+from extractionSteps.bsg.ErrorConfiguration import ErrorConfiguration
+from extractionSteps.bsg.HealthRulesAndAlerting import HealthRulesAndAlerting
+from extractionSteps.bsg.MachineAgents import MachineAgents
+from extractionSteps.bsg.OverallAssessment import OverallAssessment
+from extractionSteps.bsg.Overhead import Overhead
+from extractionSteps.bsg.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.general.CustomMetrics import CustomMetrics
 from reports.reports.AgentMatrixReport import AgentMatrixReport
-from reports.reports.ApmReport import ApmReport
-from reports.reports.RawDataReport import RawDataReport
+from reports.reports.BSGReport import BSGReport
+from reports.reports.CustomMetricsReport import CustomMetricsReport
+from reports.reports.RawBSGReport import RawDataReport
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import jsonEncoder
 
@@ -58,7 +60,7 @@ class Engine:
             for controller in self.job
         ]
         self.controllerData = OrderedDict()
-        self.jobs = [
+        self.bsgSteps = [
             AppAgents(),
             MachineAgents(),
             BusinessTransactions(),
@@ -71,10 +73,14 @@ class Engine:
             ApmDashboards(),
             OverallAssessment(),
         ]
+        self.otherSteps = [
+            CustomMetrics(),
+        ]
         self.reports = [
-            ApmReport(),
+            BSGReport(),
             RawDataReport(),
             AgentMatrixReport(),
+            CustomMetricsReport(),
         ]
 
     async def run(self):
@@ -254,16 +260,16 @@ class Engine:
 
     async def process(self):
         logging.info(f"----------Extract----------")
-        for jobStep in self.jobs:
+        for jobStep in [*self.bsgSteps, *self.otherSteps]:
             await jobStep.extract(self.controllerData)
 
         logging.info(f"----------Analyze----------")
-        for jobStep in self.jobs:
+        for jobStep in [*self.bsgSteps, *self.otherSteps]:
             jobStep.analyze(self.controllerData, self.thresholds)
 
         logging.info(f"----------Report----------")
         for report in self.reports:
-            report.createWorkbook(self.jobs, self.controllerData, self.jobFileName)
+            report.createWorkbook(self.bsgSteps, self.controllerData, self.jobFileName)
 
     def finalize(self):
         now = int(time.time())

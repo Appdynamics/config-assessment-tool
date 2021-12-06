@@ -105,6 +105,12 @@ class AppDService:
         response = await self.controller.getNodes(applicationID)
         return await self.getResultFromResponse(response, debugString)
 
+    async def getTiers(self, applicationID: int) -> Result:
+        debugString = f"Gathering tiers for Application:{applicationID}"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getTiers(applicationID)
+        return await self.getResultFromResponse(response, debugString)
+
     async def getBtMatchRules(self, applicationID: int) -> Result:
         debugString = f"Gathering Application Business Transaction Custom Match Rules for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
@@ -259,6 +265,26 @@ class AppDService:
         debugString = f"Gathering Application Business Transaction Configuration Settings for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getAppLevelBTConfig(applicationID)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getCustomMetrics(self, applicationID: int, tierName: str) -> Result:
+        debugString = f"Gathering Custom Metrics for Application:{applicationID}"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {
+            "request": None,
+            "applicationId": applicationID,
+            "livenessStatus": "ALL",
+            "pathData": ["Application Infrastructure Performance", tierName, "Custom Metrics"],
+            "timeRangeSpecifier": {
+                "type": "BEFORE_NOW",
+                "durationInMinutes": 60,
+                "endTime": None,
+                "startTime": None,
+                "timeRange": None,
+                "timeRangeAdjusted": False,
+            },
+        }
+        response = await self.controller.getMetricTree(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def getMetricData(

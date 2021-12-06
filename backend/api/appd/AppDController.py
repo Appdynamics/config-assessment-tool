@@ -52,6 +52,11 @@ class AppdController(Consumer):
         """Retrieves an Individual Node"""
 
     @params({"output": "json"})
+    @get("/controller/rest/applications/{applicationID}/tiers")
+    def getTiers(self, applicationID: Path):
+        """Retrieves Tiers"""
+
+    @params({"output": "json"})
     @get("/controller/restui/transactionConfigProto/getRules/{applicationID}")
     def getBtMatchRules(self, applicationID: Path):
         """Retrieves Business Transaction Match Rules"""
@@ -135,6 +140,11 @@ class AppdController(Consumer):
         entityID: Query("entityId"),
     ):
         """Retrieves Event Counts from the past day"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/metricBrowser/async/metric-tree/root")
+    def getMetricTree(self, body: Body):
+        """Retrieves Metrics"""
 
     @params({"output": "json"})
     @get("/controller/rest/applications/{applicationID}/metric-data")

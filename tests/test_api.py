@@ -488,3 +488,12 @@ async def testGetUserPermissions(controller):
     assert adminRole is not None
 
     await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetCustomMetrics(controller):
+    assert (await controller.loginToController()).error is None
+
+    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "api-services")
+
+    assert customMetrics.error is None
