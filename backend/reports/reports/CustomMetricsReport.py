@@ -51,7 +51,7 @@ class CustomMetricsReport(ReportBase):
                         hostInfo["controller"].host,
                         "apm",
                         component["name"],
-                        *[(True if e in component['customMetrics'] else False) for e in allExtensions],
+                        *[(True if e in component["customMetrics"] else False) for e in allExtensions],
                     ],
                 )
                 rowIdx += 1
