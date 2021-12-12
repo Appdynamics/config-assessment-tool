@@ -1,5 +1,4 @@
 import logging
-from collections import Counter
 from datetime import datetime
 
 from openpyxl import Workbook
@@ -16,13 +15,10 @@ class LicenseReport(ReportBase):
         workbook = Workbook()
         del workbook["Sheet"]
 
-        allLicenseTypes = set()
-        for host in controllerData.values():
-            allLicenseTypes.update([prop.split("LicenseProperties")[0] for prop in host["licenseUsage"].keys()])
-
         logging.debug(f"Creating workbook sheet for App Agents")
         appAgentsSheet = workbook.create_sheet(f"App Agents")
         writeUncoloredRow(appAgentsSheet, 1, ["controller", "licenseType", "isLicensed", "peakUsage", "numOfProvisionedLicense", "expirationDate"])
+
         # Write Data
         rowIdx = 2
         for host, hostInfo in controllerData.items():
