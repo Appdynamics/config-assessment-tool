@@ -39,7 +39,12 @@ class LicenseReport(ReportBase):
                         (bool(licenseData["isLicensed"]) if licenseData is not None else False, color),
                         (licenseData["peakUsage"] if licenseData is not None else None, color),
                         (licenseData["numOfProvisionedLicense"] if licenseData is not None else None, color),
-                        (datetime.fromtimestamp(int(licenseData["expirationDate"]) / 1000) if licenseData is not None and licenseData["expirationDate"] is not None else None, color),
+                        (
+                            datetime.fromtimestamp(int(licenseData["expirationDate"]) / 1000)
+                            if licenseData is not None and licenseData["expirationDate"] is not None
+                            else None,
+                            color,
+                        ),
                     ],
                 )
                 rowIdx += 1

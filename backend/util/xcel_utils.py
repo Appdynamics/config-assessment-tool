@@ -9,6 +9,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 class Color(Enum):
     """Colors used to denote maturity level in xlsx sheet."""
+
     platinum = PatternFill(start_color="FFA890F7", end_color="FFA890F7", fill_type="solid")
     gold = PatternFill(start_color="FFFFD700", end_color="FFFFD700", fill_type="solid")
     silver = PatternFill(start_color="FFC0C0C0", end_color="FFC0C0C0", fill_type="solid")
