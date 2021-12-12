@@ -497,3 +497,20 @@ async def testGetCustomMetrics(controller):
     customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "api-services")
 
     assert customMetrics.error is None
+
+
+@pytest.mark.asyncio
+async def testGetAccountUsageSummary(controller):
+    assert (await controller.loginToController()).error is None
+
+    accountUsageSummary = await controller.getAccountUsageSummary()
+
+    assert accountUsageSummary.error is None
+    assert len(accountUsageSummary.data) > 0
+    for licenseType, licenseData in accountUsageSummary.data.items():
+        assert "LicenseProperties" in licenseType
+        if licenseData is not None:
+            assert "isLicensed" in licenseData
+            assert "peakUsage" in licenseData
+            assert "numOfProvisionedLicense" in licenseData
+            assert "expirationDate" in licenseData

@@ -24,6 +24,7 @@ from extractionSteps.general.CustomMetrics import CustomMetrics
 from reports.reports.AgentMatrixReport import AgentMatrixReport
 from reports.reports.BSGReport import BSGReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
+from reports.reports.LicenseReport import LicenseReport
 from reports.reports.RawBSGReport import RawDataReport
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import jsonEncoder
@@ -81,6 +82,7 @@ class Engine:
             RawDataReport(),
             AgentMatrixReport(),
             CustomMetricsReport(),
+            LicenseReport(),
         ]
 
     async def run(self):
@@ -153,6 +155,14 @@ class Engine:
             await self.abortAndCleanup(f"One or more analytics enabled status returned an error. Aborting.")
         analyticsEnabledStatus = [analyticsEnabledStatus.data for analyticsEnabledStatus in analyticsEnabledStatus]
 
+        # Gather license usage
+        logging.info("Gathering License Usage")
+        getLicenseUsage = [controller.getAccountUsageSummary() for controller in self.controllers]
+        licenseUsage = await gatherWithConcurrency(*getLicenseUsage)
+        if any(licenseUsage.error is not None for licenseUsage in licenseUsage):
+            await self.abortAndCleanup(f"One or more license usages returned an error. Aborting.")
+        licenseUsage = [licenseUsage.data for licenseUsage in licenseUsage]
+
         # Gather all dashboards
         logging.info("Gathering Dashboards")
         getDashboards = [controller.getDashboards() for controller in self.controllers]
@@ -170,8 +180,8 @@ class Engine:
             hostData["configurations"] = controllerConfigurations[idx]
             hostData["analyticsEnabledStatus"] = analyticsEnabledStatus[idx]
             hostData["exportedDashboards"] = dashboards[idx]
+            hostData["licenseUsage"] = licenseUsage[idx]
 
-            hostData["bsgData"] = OrderedDict()
             hostData["apm"] = OrderedDict()
             hostData["dashboards"] = OrderedDict()
             hostData["containers"] = OrderedDict()

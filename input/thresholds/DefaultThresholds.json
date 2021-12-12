@@ -192,19 +192,19 @@
   },
   "OverallAssessment": {
     "platinum": {
-          "PercentageTotalPlatinum": 70,
-          "PercentageTotalGoldOrBetter": 100,
-          "PercentageTotalSilverOrBetter": 100
+      "PercentageTotalPlatinum": 70,
+      "PercentageTotalGoldOrBetter": 100,
+      "PercentageTotalSilverOrBetter": 100
     },
     "gold": {
-          "PercentageTotalPlatinum": 0,
-          "PercentageTotalGoldOrBetter": 70,
-          "PercentageTotalSilverOrBetter": 100
+      "PercentageTotalPlatinum": 0,
+      "PercentageTotalGoldOrBetter": 70,
+      "PercentageTotalSilverOrBetter": 100
     },
     "silver": {
-          "PercentageTotalPlatinum": 0,
-          "PercentageTotalGoldOrBetter": 0,
-          "PercentageTotalSilverOrBetter": 70
+      "PercentageTotalPlatinum": 0,
+      "PercentageTotalGoldOrBetter": 0,
+      "PercentageTotalSilverOrBetter": 70
     }
   }
 }

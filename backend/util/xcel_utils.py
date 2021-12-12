@@ -9,11 +9,14 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 class Color(Enum):
     """Colors used to denote maturity level in xlsx sheet."""
-
     platinum = PatternFill(start_color="FFA890F7", end_color="FFA890F7", fill_type="solid")
     gold = PatternFill(start_color="FFFFD700", end_color="FFFFD700", fill_type="solid")
     silver = PatternFill(start_color="FFC0C0C0", end_color="FFC0C0C0", fill_type="solid")
     bronze = PatternFill(start_color="FFcd7f32", end_color="FFcd7f32", fill_type="solid")
+    """Colors used to denote issues in other reports."""
+    green = PatternFill(start_color="FF00FF00", end_color="FF00FF00", fill_type="solid")
+    red = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
+    yellow = PatternFill(start_color="FFFFFF00", end_color="FFFFFF00", fill_type="solid")
 
 
 def writeRow(sheet: Worksheet, rowIdx: int, data: [Any]):

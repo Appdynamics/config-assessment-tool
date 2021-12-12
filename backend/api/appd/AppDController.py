@@ -223,3 +223,8 @@ class AppdController(Consumer):
     @get("/controller/restui/userAdministrationUiService/users/{userID}")
     def getUser(self, userID: Path):
         """Retrieves permission set of a given user"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/licenseRule/getAllLicenseModuleProperties")
+    def getAccountUsageSummary(self, body: Body):
+        """Retrieves license usage summary"""

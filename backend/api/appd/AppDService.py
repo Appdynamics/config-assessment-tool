@@ -516,6 +516,13 @@ class AppDService:
         response = await self.controller.getUser(userID)
         return await self.getResultFromResponse(response, debugString)
 
+    async def getAccountUsageSummary(self) -> Result:
+        debugString = f"Gathering Account Usage Summary"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {"type": "BEFORE_NOW", "durationInMinutes": 1440, "endTime": None, "startTime": None, "timeRange": None, "timeRangeAdjusted": False}
+        response = await self.controller.getAccountUsageSummary(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
     async def close(self):
         logging.debug(f"{self.host} - Closing connection")
         await self.session.close()
