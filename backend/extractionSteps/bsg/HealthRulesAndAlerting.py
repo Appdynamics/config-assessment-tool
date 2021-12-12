@@ -12,7 +12,7 @@ class HealthRulesAndAlerting(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract health rule and alerting configuration details.
         1. Makes one API call per application to get Health Rules.
@@ -21,7 +21,7 @@ class HealthRulesAndAlerting(BSGJobStepBase):
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -55,7 +55,7 @@ class HealthRulesAndAlerting(BSGJobStepBase):
                     healthRuleList.data["name"]: healthRuleList.data for healthRuleList in trimmedHrs if healthRuleList.error is None
                 }
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of error configuration details.
         1. Determines number of Health Rule violations in the last 24 hours.
@@ -70,7 +70,7 @@ class HealthRulesAndAlerting(BSGJobStepBase):
         jobStepThresholds = thresholds[jobStepName]
 
         defaultHealthRules = json.loads(open("backend/resources/controllerDefaults/defaultHealthRules.json").read())
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():

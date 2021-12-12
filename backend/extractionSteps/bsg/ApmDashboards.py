@@ -10,14 +10,14 @@ class ApmDashboards(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract Dashboard details.
         1. No API calls to make, simply associate dashboards with which applications they have widgets for.
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
 
             for dashboard in hostInfo["exportedDashboards"]:
@@ -39,7 +39,7 @@ class ApmDashboards(BSGJobStepBase):
                     if any(application["name"] in item for item in dashboard["adqlQueries"]):
                         application["biqDashboards"].append(dashboard)
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines last modified date of dashboards per application.
@@ -54,7 +54,7 @@ class ApmDashboards(BSGJobStepBase):
 
         now = datetime.now()
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():

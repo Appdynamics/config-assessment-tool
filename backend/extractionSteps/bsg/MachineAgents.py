@@ -13,7 +13,7 @@ class MachineAgents(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract node level details.
         1. Makes one API call per application to get node Machine Agent Availability in the last 24 hours.
@@ -22,7 +22,7 @@ class MachineAgents(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         nodeIdToMachineAgentAvailabilityMap = {}
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -75,7 +75,7 @@ class MachineAgents(BSGJobStepBase):
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
                         )
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines machine agent age from semantic versioning. (Version 4.X and under will always fail).
@@ -96,7 +96,7 @@ class MachineAgents(BSGJobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             hostInfo["machineAgentVersions"] = set()

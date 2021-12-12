@@ -10,7 +10,7 @@ class DataCollectors(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract node level details.
         1. Makes one API call per application to get Data Collectors.
@@ -18,7 +18,7 @@ class DataCollectors(BSGJobStepBase):
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -34,7 +34,7 @@ class DataCollectors(BSGJobStepBase):
                 application = hostInfo[self.componentType][applicationName]
                 application["dataCollectors"] = dataCollectors[idx].data
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines number of Data Collector Fields.
@@ -45,7 +45,7 @@ class DataCollectors(BSGJobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():

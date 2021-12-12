@@ -10,14 +10,14 @@ class CustomMetrics(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract application customization details.
         1. Makes one API call per application to get custom extensions.
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -47,5 +47,5 @@ class CustomMetrics(BSGJobStepBase):
                         customMetrics.add(customMetric["name"])
                 application["customMetrics"] = customMetrics
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         pass
