@@ -165,6 +165,30 @@ def runNonBlockingCommand(command: str):
     subprocess.Popen(command, stdout=None, stderr=None, shell=True)
 
 
+# verify current software version against GitHub release tags
+def verifySoftwareVersion():
+    if sys.platform == "win32":
+        latestTag = runBlockingCommand(
+            'powershell -Command "(Invoke-WebRequest https://api.github.com/repos/appdynamics/config-assessment-tool/tags | ConvertFrom-Json)[0].name"'
+        )
+    else:
+        latestTag = runBlockingCommand(
+            "curl -s https://api.github.com/repos/appdynamics/config-assessment-tool/tags | grep 'name' | head -n 1 | cut -d ':' -f 2 | cut -d '\"' -f 2"
+        )
+
+    # get local tag from VERSION file
+    localTag = "unknown"
+    if os.path.isfile("VERSION"):
+        with open("VERSION", "r") as versionFile:
+            localTag = versionFile.read().strip()
+
+    if latestTag != localTag:
+        logging.warning(f"You are using an outdated version of the software. Current {localTag} Target {latestTag}")
+        logging.warning("You can get the latest version from https://github.com/Appdynamics/config-assessment-tool/releases")
+    else:
+        logging.info(f"Already up to date!")
+
+
 if __name__ == "__main__":
     # cd to config-assessment-tool root directory
     path = os.path.realpath(f"{__file__}/../..")
@@ -185,6 +209,8 @@ if __name__ == "__main__":
             logging.StreamHandler(),
         ],
     )
+
+    verifySoftwareVersion()
 
     # parse command line arguments
     if len(sys.argv) == 1 or sys.argv[1] == "--help":

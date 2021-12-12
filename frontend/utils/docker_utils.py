@@ -93,3 +93,10 @@ def buildConfigAssessmentToolImage(client: APIClient):
 def isDocker():
     path = "/proc/self/cgroup"
     return os.path.exists("/.dockerenv") or os.path.isfile(path) and any("docker" in line for line in open(path))
+
+
+def getImage(client: APIClient, imageName: str):
+    return next(
+        iter([image for image in client.images() if image["RepoTags"] is not None and any(tag for tag in image["RepoTags"] if tag == imageName)]),
+        None,
+    )
