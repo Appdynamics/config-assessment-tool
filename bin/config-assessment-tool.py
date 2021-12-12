@@ -142,6 +142,7 @@ def package():
     logging.info("Creating zip file")
     with zipfile.ZipFile("config-assessment-tool.zip", "w") as zip_file:
         zip_file.write("README.md")
+        zip_file.write("VERSION")
         zip_file.write("bin/config-assessment-tool.py")
         zip_file.write("input/jobs/DefaultJob.json")
         zip_file.write("input/thresholds/DefaultThresholds.json")
