@@ -15,51 +15,54 @@ from reports.ReportBase import ReportBase
 
 class BSGReport(ReportBase):
     def createWorkbook(self, jobs, controllerData, jobFileName):
-        logging.info(f"Creating BSG Report Workbook")
+        for reportType in ["apm", "dashboards", "containers", "brum", "mrum", "analytics"]:
+            logging.info(f"Creating {reportType} BSG Report Workbook")
 
-        # Create Report with Raw Data
-        workbook = Workbook()
+            # Create Report with Raw Data
+            workbook = Workbook()
 
-        summarySheet = workbook["Sheet"]
-        summarySheet.title = "Summary"
+            summarySheet = workbook["Sheet"]
+            summarySheet.title = "Summary"
 
-        analysisSheet = workbook.create_sheet(f"Analysis")
+            analysisSheet = workbook.create_sheet(f"Analysis")
 
-        for jobStep in jobs:
-            jobStep.reportData(workbook, controllerData, type(jobStep).__name__)
+            filteredJobs = [job for job in jobs if job.componentType == reportType]
 
-        # Write Headers
-        writeUncoloredRow(
-            analysisSheet,
-            1,
-            [
-                "controller",
-                "componentType",
-                "application",
-                *[type(jobStep).__name__ for jobStep in jobs],
-            ],
-        )
+            for jobStep in filteredJobs:
+                jobStep.reportData(workbook, controllerData, type(jobStep).__name__)
 
-        rowIdx = 2
-        for host, hostInfo in controllerData.items():
-            for component in hostInfo["apm"].values():
-                writeColoredRow(
-                    analysisSheet,
-                    rowIdx,
-                    [
-                        (hostInfo["controller"].host, None),
-                        ("apm", None),
-                        (component["name"], None),
-                        *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in jobs]],
-                    ],
-                )
-                rowIdx += 1
+            # Write Headers
+            writeUncoloredRow(
+                analysisSheet,
+                1,
+                [
+                    "controller",
+                    "componentType",
+                    "name",
+                    *[type(jobStep).__name__ for jobStep in filteredJobs],
+                ],
+            )
 
-        addFilterAndFreeze(analysisSheet)
-        resizeColumnWidth(analysisSheet)
+            rowIdx = 2
+            for host, hostInfo in controllerData.items():
+                for component in hostInfo[reportType].values():
+                    writeColoredRow(
+                        analysisSheet,
+                        rowIdx,
+                        [
+                            (hostInfo["controller"].host, None),
+                            ("apm", None),
+                            (component["name"], None),
+                            *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in filteredJobs]],
+                        ],
+                    )
+                    rowIdx += 1
 
-        # Now that we have the data , Populate the summary sheet with headers
-        writeSummarySheet(summarySheet)
+            addFilterAndFreeze(analysisSheet)
+            resizeColumnWidth(analysisSheet)
 
-        logging.debug(f"Saving BSG Report Workbook")
-        workbook.save(f"output/{jobFileName}/{jobFileName}-BSGReport.xlsx")
+            # Now that we have the data , Populate the summary sheet with headers
+            writeSummarySheet(summarySheet)
+
+            logging.debug(f"Saving BSG Report Workbook")
+            workbook.save(f"output/{jobFileName}/{jobFileName}-BSGReport-{reportType}.xlsx")

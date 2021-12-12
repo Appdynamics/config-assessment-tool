@@ -171,6 +171,7 @@ class Engine:
             hostData["analyticsEnabledStatus"] = analyticsEnabledStatus[idx]
             hostData["exportedDashboards"] = dashboards[idx]
 
+            hostData["bsgData"] = OrderedDict()
             hostData["apm"] = OrderedDict()
             hostData["dashboards"] = OrderedDict()
             hostData["containers"] = OrderedDict()
