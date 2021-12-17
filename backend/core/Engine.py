@@ -102,7 +102,6 @@ class Engine:
         if any(login.error is not None for login in loginResults):
             await self.abortAndCleanup(f"Unable to connect to one or more controllers. Aborting.")
 
-
         userPermissionFutures = [controller.getUserPermissions(controller.username) for controller in self.controllers]
         userPermissionsResults = await gatherWithConcurrency(*userPermissionFutures)
         if any(userPermissions.error is not None for userPermissions in userPermissionsResults):
