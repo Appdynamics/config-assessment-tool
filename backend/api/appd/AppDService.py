@@ -41,6 +41,7 @@ class AppDService:
         try:
             response = await self.controller.login()
         except Exception as e:
+            logging.error(f"{self.host} - Controller login failed with {response.status_code}")
             return Result(
                 None,
                 Result.Error(f"{self.host} - {e}."),
