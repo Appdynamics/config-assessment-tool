@@ -514,3 +514,46 @@ async def testGetAccountUsageSummary(controller):
             assert "peakUsage" in licenseData
             assert "numOfProvisionedLicense" in licenseData
             assert "expirationDate" in licenseData
+
+
+@pytest.mark.asyncio
+async def testGetAppServerAgents(controller):
+    assert (await controller.loginToController()).error is None
+
+    agents = await controller.getAppServerAgents()
+
+    assert agents.error is None
+    assert len(agents.data) > 0
+    assert "data" in agents.data
+    for agent in agents.data["data"]:
+        assert "hostName" in agent
+        assert "agentVersion" in agent
+        assert "nodeName" in agent
+        assert "componentName" in agent
+        assert "applicationName" in agent
+        assert "applicationId" in agent
+        assert "agentId" in agent
+        assert "disabled" in agent
+        assert "allDisabled" in agent
+        assert "registeredNode" in agent
+        assert "applicationComponentNodeId" in agent
+        assert "machineId" in agent
+        assert "type" in agent
+
+
+@pytest.mark.asyncio
+async def testGetMachineAgents(controller):
+    assert (await controller.loginToController()).error is None
+
+    agents = await controller.getMachineAgents()
+
+    assert agents.error is None
+    assert len(agents.data) > 0
+    assert "data" in agents.data
+    for agent in agents.data["data"]:
+        assert "hostName" in agent
+        assert "agentVersion" in agent
+        assert "applicationNames" in agent
+        assert "applicationIds" in agent
+        assert "machineId" in agent
+        assert "enabled" in agent

@@ -171,6 +171,38 @@ class Engine:
             await self.abortAndCleanup(f"One or more dashboard returned an error. Aborting.")
         dashboards = [dashboard.data for dashboard in dashboards]
 
+        # Gather App Server Agent List
+        logging.info("Gathering App Server Agent Agent List")
+        getAppServerAgents = [controller.getAppServerAgents() for controller in self.controllers]
+        appServerAgents = await gatherWithConcurrency(*getAppServerAgents)
+        if any(appServerAgent.error is not None for appServerAgent in appServerAgents):
+            await self.abortAndCleanup(f"One or more App Server Agents returned an error. Aborting.")
+        appServerAgents = [appServerAgent.data for appServerAgent in appServerAgents]
+
+        # Gather Machine Agent List
+        logging.info("Gathering Machine Agent Agent List")
+        getMachineAgents = [controller.getMachineAgents() for controller in self.controllers]
+        machineAgents = await gatherWithConcurrency(*getMachineAgents)
+        if any(machineAgent.error is not None for machineAgent in machineAgents):
+            await self.abortAndCleanup(f"One or more Machine Agents returned an error. Aborting.")
+        machineAgents = [machineAgent.data for machineAgent in machineAgents]
+
+        # Gather Database Agent List
+        logging.info("Gathering Database Agent Agent List")
+        getDBAgents = [controller.getDBAgents() for controller in self.controllers]
+        dbAgents = await gatherWithConcurrency(*getDBAgents)
+        if any(dbAgent.error is not None for dbAgent in dbAgents):
+            await self.abortAndCleanup(f"One or more DB Agents returned an error. Aborting.")
+        dbAgents = [dbAgent.data for dbAgent in dbAgents]
+
+        # Gather Analytics Agent List
+        logging.info("Gathering Analytics Agent List")
+        getAnalyticsAgents = [controller.getAnalyticsAgents() for controller in self.controllers]
+        analyticsAgents = await gatherWithConcurrency(*getAnalyticsAgents)
+        if any(analyticsAgent.error is not None for analyticsAgent in analyticsAgents):
+            await self.abortAndCleanup(f"One or more Analytics Agents returned an error. Aborting.")
+        analyticsAgents = [analyticsAgent.data for analyticsAgent in analyticsAgents]
+
         # Construct application information dictionary
         logging.info("Constructing Controller Data Dictionary")
         for idx, controller in enumerate(self.controllers):
@@ -181,6 +213,11 @@ class Engine:
             hostData["analyticsEnabledStatus"] = analyticsEnabledStatus[idx]
             hostData["exportedDashboards"] = dashboards[idx]
             hostData["licenseUsage"] = licenseUsage[idx]
+
+            hostData["appServerAgents"] = appServerAgents[idx]
+            hostData["machineAgents"] = machineAgents[idx]
+            hostData["dbAgents"] = dbAgents[idx]
+            hostData["analyticsAgents"] = analyticsAgents[idx]
 
             hostData["apm"] = OrderedDict()
             hostData["dashboards"] = OrderedDict()

@@ -16,8 +16,8 @@ class LicenseReport(ReportBase):
         del workbook["Sheet"]
 
         logging.debug(f"Creating workbook sheet for App Agents")
-        appAgentsSheet = workbook.create_sheet(f"App Agents")
-        writeUncoloredRow(appAgentsSheet, 1, ["controller", "licenseType", "isLicensed", "peakUsage", "numOfProvisionedLicense", "expirationDate"])
+        licenseSheet = workbook.create_sheet(f"License")
+        writeUncoloredRow(licenseSheet, 1, ["controller", "licenseType", "isLicensed", "peakUsage", "numOfProvisionedLicense", "expirationDate"])
 
         # Write Data
         rowIdx = 2
@@ -31,7 +31,7 @@ class LicenseReport(ReportBase):
                         color = Color.red
 
                 writeRow(
-                    appAgentsSheet,
+                    licenseSheet,
                     rowIdx,
                     [
                         (hostInfo["controller"].host, color),
@@ -39,13 +39,18 @@ class LicenseReport(ReportBase):
                         (bool(licenseData["isLicensed"]) if licenseData is not None else False, color),
                         (licenseData["peakUsage"] if licenseData is not None else None, color),
                         (licenseData["numOfProvisionedLicense"] if licenseData is not None else None, color),
-                        (datetime.fromtimestamp(int(licenseData["expirationDate"]) / 1000) if licenseData is not None and licenseData["expirationDate"] is not None else None, color),
+                        (
+                            datetime.fromtimestamp(int(licenseData["expirationDate"]) / 1000)
+                            if licenseData is not None and licenseData["expirationDate"] is not None
+                            else None,
+                            color,
+                        ),
                     ],
                 )
                 rowIdx += 1
 
-        addFilterAndFreeze(appAgentsSheet)
-        resizeColumnWidth(appAgentsSheet)
+        addFilterAndFreeze(licenseSheet)
+        resizeColumnWidth(licenseSheet)
 
         logging.debug(f"Saving License Workbook")
         workbook.save(f"output/{jobFileName}/{jobFileName}-License.xlsx")

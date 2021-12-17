@@ -228,3 +228,33 @@ class AppdController(Consumer):
     @post("/controller/restui/licenseRule/getAllLicenseModuleProperties")
     def getAccountUsageSummary(self, body: Body):
         """Retrieves license usage summary"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/agents/list/appserver")
+    def getAppServerAgents(self, body: Body):
+        """Retrieves app server agent summary list"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/agents/list/machine")
+    def getMachineAgents(self, body: Body):
+        """Retrieves machine agent summary list"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/agents/list/appserver/ids")
+    def getAppServerAgentsIds(self, body: Body):
+        """Retrieves app server agent summary list"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/agents/list/machine/ids")
+    def getMachineAgentsIds(self, body: Body):
+        """Retrieves machine agent summary list"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/agent/setting/getDBAgents")
+    def getDBAgents(self):
+        """Retrieves db agent summary list"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/analytics/agents/agentsStatus")
+    def getAnalyticsAgents(self):
+        """Retrieves analytics agent summary list"""

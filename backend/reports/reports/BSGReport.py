@@ -15,7 +15,7 @@ from reports.ReportBase import ReportBase
 
 class BSGReport(ReportBase):
     def createWorkbook(self, jobs, controllerData, jobFileName):
-        for reportType in ["apm", "dashboards", "containers", "brum", "mrum", "analytics"]:
+        for reportType in ["apm"]:
             logging.info(f"Creating {reportType} BSG Report Workbook")
 
             # Create Report with Raw Data

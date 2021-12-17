@@ -9,6 +9,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 class Color(Enum):
     """Colors used to denote maturity level in xlsx sheet."""
+
     platinum = PatternFill(start_color="FFA890F7", end_color="FFA890F7", fill_type="solid")
     gold = PatternFill(start_color="FFFFD700", end_color="FFFFD700", fill_type="solid")
     silver = PatternFill(start_color="FFC0C0C0", end_color="FFC0C0C0", fill_type="solid")
@@ -96,8 +97,8 @@ def resizeColumnWidth(sheet: Worksheet):
         sheet.column_dimensions[col].width = value + headerFilterArrowPadding
 
 
-def addFilterAndFreeze(sheet: Worksheet):
+def addFilterAndFreeze(sheet: Worksheet, freezePane: str = "C2"):
     """Add filter on headers and freeze the first 2 columns and 1 row."""
     sheet.auto_filter.ref = sheet.dimensions
     # Freeze controller and application columns
-    sheet.freeze_panes = "C2"
+    sheet.freeze_panes = freezePane
