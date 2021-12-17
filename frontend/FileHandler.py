@@ -87,7 +87,7 @@ if __name__ == "__main__":
     )
 
     hostName = "localhost"
-    serverPort = 1337
+    serverPort = 16225
 
     try:
         logging.info("Starting FileHandler on " + hostName + ":" + str(serverPort))

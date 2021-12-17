@@ -18,7 +18,7 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool):
         else:
             payload = {"type": "file", "path": f"input/jobs/{jobName}.json"}
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")
 
     thresholdsColumn, warningColumn = st.columns(2)
     thresholdsFiles = [f[: len(f) - 5] for f in os.listdir("../input/thresholds")]
@@ -35,4 +35,4 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool):
         else:
             payload = {"type": "file", "path": f"input/thresholds/{thresholds}.json"}
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")

@@ -53,7 +53,7 @@ def run(path: str):
     while True:
         logging.info("Waiting for FileHandler to start")
         try:
-            if urlopen("http://localhost:1337/ping").read() == b"pong":
+            if urlopen("http://localhost:16225/ping").read() == b"pong":
                 logging.info("FileHandler started")
                 break
         except URLError:
