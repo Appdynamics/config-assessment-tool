@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import time
 from json import JSONDecodeError
 from math import ceil
 from typing import List
@@ -104,6 +105,12 @@ class AppDService:
         debugString = f"Gathering nodes for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getNodes(applicationID)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getTiers(self, applicationID: int) -> Result:
+        debugString = f"Gathering tiers for Application:{applicationID}"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getTiers(applicationID)
         return await self.getResultFromResponse(response, debugString)
 
     async def getBtMatchRules(self, applicationID: int) -> Result:
@@ -260,6 +267,26 @@ class AppDService:
         debugString = f"Gathering Application Business Transaction Configuration Settings for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getAppLevelBTConfig(applicationID)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getCustomMetrics(self, applicationID: int, tierName: str) -> Result:
+        debugString = f"Gathering Custom Metrics for Application:{applicationID}"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {
+            "request": None,
+            "applicationId": applicationID,
+            "livenessStatus": "ALL",
+            "pathData": ["Application Infrastructure Performance", tierName, "Custom Metrics"],
+            "timeRangeSpecifier": {
+                "type": "BEFORE_NOW",
+                "durationInMinutes": 60,
+                "endTime": None,
+                "startTime": None,
+                "timeRange": None,
+                "timeRangeAdjusted": False,
+            },
+        }
+        response = await self.controller.getMetricTree(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def getMetricData(
@@ -489,6 +516,137 @@ class AppDService:
         userID = next(user["id"] for user in users.data if user["name"].lower() == username.lower())
 
         response = await self.controller.getUser(userID)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getAccountUsageSummary(self) -> Result:
+        debugString = f"Gathering Account Usage Summary"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {"type": "BEFORE_NOW", "durationInMinutes": 1440, "endTime": None, "startTime": None, "timeRange": None, "timeRangeAdjusted": False}
+        response = await self.controller.getAccountUsageSummary(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getAppServerAgents(self) -> Result:
+        debugString = f"Gathering App Server Agents Agents"
+        logging.debug(f"{self.host} - {debugString}")
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        last24Hours = currentTime - (24 * 60 * 60 * 1000)
+        body = {
+            "requestFilter": {"queryParams": {"applicationAssociationType": "ALL"}, "filters": []},
+            "resultColumns": [],
+            "offset": 0,
+            "limit": -1,
+            "searchFilters": [],
+            "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
+            "timeRangeStart": last24Hours,
+            "timeRangeEnd": currentTime,
+        }
+        response = await self.controller.getAppServerAgents(json.dumps(body))
+        result = await self.getResultFromResponse(response, debugString)
+        if result.error is not None:
+            return result
+
+        agentIds = [agent["applicationComponentNodeId"] for agent in result.data["data"]]
+
+        debugString = f"Gathering App Server Agents Agents List"
+        allAgents = []
+        batch_size = 50
+        for i in range(0, len(agentIds), batch_size):
+            agentFutures = []
+
+            logging.debug(f"Batch iteration {int(i / batch_size)} of {ceil(len(agentIds) / batch_size)}")
+            chunk = agentIds[i : i + batch_size]
+
+            body = {
+                "requestFilter": chunk,
+                "resultColumns": [
+                    "HOST_NAME",
+                    "AGENT_VERSION",
+                    "NODE_NAME",
+                    "COMPONENT_NAME",
+                    "APPLICATION_NAME",
+                    "DISABLED",
+                    "ALL_MONITORING_DISABLED",
+                ],
+                "offset": 0,
+                "limit": -1,
+                "searchFilters": [],
+                "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
+                "timeRangeStart": last24Hours,
+                "timeRangeEnd": currentTime,
+            }
+
+            response = await self.controller.getAppServerAgentsIds(json.dumps(body))
+            result = await self.getResultFromResponse(response, debugString)
+
+            if result.error is None:
+                allAgents.extend(result.data["data"])
+
+        return Result(allAgents, None)
+
+    async def getMachineAgents(self) -> Result:
+        debugString = f"Gathering App Server Agents Agents"
+        logging.debug(f"{self.host} - {debugString}")
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+        body = {
+            "requestFilter": {"queryParams": {"applicationAssociationType": "ALL"}, "filters": []},
+            "resultColumns": [],
+            "offset": 0,
+            "limit": -1,
+            "searchFilters": [],
+            "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
+            "timeRangeStart": last24Hours,
+            "timeRangeEnd": currentTime,
+        }
+        response = await self.controller.getMachineAgents(json.dumps(body))
+        result = await self.getResultFromResponse(response, debugString)
+        if result.error is not None:
+            return result
+
+        agentIds = [agent["machineId"] for agent in result.data["data"]]
+
+        debugString = f"Gathering Machine Agents Agents List"
+        allAgents = []
+        batch_size = 50
+        for i in range(0, len(agentIds), batch_size):
+            agentFutures = []
+
+            logging.debug(f"Batch iteration {int(i / batch_size)} of {ceil(len(agentIds) / batch_size)}")
+            chunk = agentIds[i : i + batch_size]
+
+            body = {
+                "requestFilter": chunk,
+                "resultColumns": ["AGENT_VERSION", "APPLICATION_NAMES", "ENABLED"],
+                "offset": 0,
+                "limit": -1,
+                "searchFilters": [],
+                "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
+                "timeRangeStart": last24Hours,
+                "timeRangeEnd": currentTime,
+            }
+
+            response = await self.controller.getMachineAgentsIds(json.dumps(body))
+            result = await self.getResultFromResponse(response, debugString)
+
+            if result.error is None:
+                allAgents.extend(result.data["data"])
+
+        return Result(allAgents, None)
+
+    async def getDBAgents(self) -> Result:
+        debugString = f"Gathering DB Agents"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getDBAgents()
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getAnalyticsAgents(self) -> Result:
+        debugString = f"Gathering Analytics Agents"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getAnalyticsAgents()
         return await self.getResultFromResponse(response, debugString)
 
     async def close(self):

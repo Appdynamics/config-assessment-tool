@@ -29,18 +29,18 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
         else:
             payload = {"type": "file", "path": f"input/jobs/{jobName}.json"}
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")
 
     if openExcelReportColumn.button(f"Open Excel Report", key=f"{jobName}-excel"):
         if not isDocker():
-            openFile(f"../output/{jobName}/{jobName}-ApmReport.xlsx")
+            openFile(f"../output/{jobName}/{jobName}-BSGReport-apm.xlsx")
         else:
             payload = {
                 "type": "file",
-                "path": f"output/{jobName}/{jobName}-ApmReport.xlsx",
+                "path": f"output/{jobName}/{jobName}-BSGReport-apm.xlsx",
             }
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")
 
     thresholdsColumn, lastRunColumn = st.columns(2)
 
@@ -61,7 +61,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
         else:
             payload = {"type": "file", "path": f"input/thresholds/{thresholds}.json"}
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")
 
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
         runConfigAssessmentTool(client, jobName, thresholds, debug)

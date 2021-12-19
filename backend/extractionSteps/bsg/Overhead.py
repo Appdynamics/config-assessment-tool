@@ -2,15 +2,15 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 
-class Overhead(JobStepBase):
+class Overhead(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract node level details.
         1. Makes one API call per application to get Dev level Monitoring Configuration for Application (PRODUCTION or DEVELOPMENT).
@@ -20,7 +20,7 @@ class Overhead(JobStepBase):
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -50,7 +50,7 @@ class Overhead(JobStepBase):
                 application["instrumentationLevel"] = instrumentationLevels[idx].data
                 application["applicationConfiguration"] = applicationConfigurationSettings[idx].data
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines if Developer Mode is either enabled application wide or for any BT.
@@ -63,7 +63,7 @@ class Overhead(JobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():

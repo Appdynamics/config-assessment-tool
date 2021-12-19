@@ -35,14 +35,14 @@ def header() -> bool:
         else:
             payload = {"type": "folder", "path": f"input/jobs"}
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")
     if openThresholdsFolderColumn.button(f"Open Thresholds Folder"):
         if not isDocker():
             openFolder(f"../input/thresholds")
         else:
             payload = {"type": "folder", "path": f"input/thresholds"}
             payload = parse.urlencode(payload)
-            requests.get(f"http://host.docker.internal:1337?{payload}")
+            requests.get(f"http://host.docker.internal:16225?{payload}")
     newJobColumn, newThresholdColumn, _ = st.columns(3)
 
     newJob = st.expander("Create New Job")

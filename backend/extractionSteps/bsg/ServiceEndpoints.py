@@ -2,15 +2,15 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 
-class ServiceEndpoints(JobStepBase):
+class ServiceEndpoints(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract service endpoint details.
         1. Makes one API call per application to get Service Endpoint Calls Per Minute.
@@ -18,7 +18,7 @@ class ServiceEndpoints(JobStepBase):
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -46,7 +46,7 @@ class ServiceEndpoints(JobStepBase):
                 application["serviceEndpointCustomMatchRules"] = serviceEndpointMatchRules[idx].data[0]
                 application["serviceEndpointDefaultMatchRules"] = serviceEndpointMatchRules[idx].data[1]
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines if the global Service Endpoint limit is hit.
@@ -58,7 +58,7 @@ class ServiceEndpoints(JobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             # Service endpoint limit is global

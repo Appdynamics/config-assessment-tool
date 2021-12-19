@@ -2,16 +2,16 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import substringBetween
 
 
-class Backends(JobStepBase):
+class Backends(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract backend details.
         1. Makes one API call per application to get Backend Metadata.
@@ -22,7 +22,7 @@ class Backends(JobStepBase):
         jobStepName = type(self).__name__
 
         backendNameToCallsPerMinuteMap = {}
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -79,7 +79,7 @@ class Backends(JobStepBase):
                         backend["callsPerMinuteLast60Hours"] = 0
                         logging.debug(f'{hostInfo["controller"].host} - Node: {backend["name"]} returned no metric data for Agent Availability.')
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines number of Backends reporting data.
@@ -92,7 +92,7 @@ class Backends(JobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():

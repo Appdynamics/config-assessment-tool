@@ -10,12 +10,12 @@ from util.xcel_utils import (
 )
 
 
-class JobStepBase(ABC):
+class BSGJobStepBase(ABC):
     def __init__(self, componentType: str):
         self.componentType = componentType
 
     @abstractmethod
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extraction step of AppDynamics data.
         API Calls will be made in this step only.
@@ -23,7 +23,7 @@ class JobStepBase(ABC):
         pass
 
     @abstractmethod
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis step of extracted data.
         No API calls will be made in this step.
@@ -35,7 +35,7 @@ class JobStepBase(ABC):
     def reportData(
         self,
         workbook,
-        applicationInformation,
+        controllerData,
         jobStepName,
         useEvaluatedMetrics=True,
         colorRows=True,
@@ -50,12 +50,12 @@ class JobStepBase(ABC):
         metricFolder = "evaluated" if useEvaluatedMetrics else "raw"
 
         rawDataSheet = workbook.create_sheet(f"{jobStepName}")
-        rawDataHeaders = list(list(applicationInformation.values())[0][self.componentType].values())[0][jobStepName][metricFolder].keys()
+        rawDataHeaders = list(list(controllerData.values())[0][self.componentType].values())[0][jobStepName][metricFolder].keys()
         writeUncoloredRow(rawDataSheet, 1, ["controller", "application", *rawDataHeaders])
 
         # Write Data
         rowIdx = 2
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             for application in hostInfo[self.componentType].values():
                 if colorRows:
                     writeColoredRow(

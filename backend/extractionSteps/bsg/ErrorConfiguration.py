@@ -2,16 +2,16 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import substringBetween
 
 
-class ErrorConfiguration(JobStepBase):
+class ErrorConfiguration(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract error configuration details.
         1. Makes one API call per application to get BT Errors Per Minute.
@@ -20,7 +20,7 @@ class ErrorConfiguration(JobStepBase):
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -43,7 +43,7 @@ class ErrorConfiguration(JobStepBase):
                 application = hostInfo[self.componentType][applicationName]
                 application["businessTransactionErrorsPerMinute"] = businessTransactionErrorsPerMinute[idx].data
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of error configuration details.
         1. Determines number of custom error detection rules.
@@ -55,7 +55,7 @@ class ErrorConfiguration(JobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():

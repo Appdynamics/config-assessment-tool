@@ -3,8 +3,10 @@ import os
 import docker
 from pathlib import Path
 
+import requests
 import streamlit as st
 
+from utils.docker_utils import getImage
 from views.jobPreviouslyExecuted import jobPreviouslyExecuted
 from views.jobNotYetExecuted import jobNotYetExecuted
 from views.header import header
@@ -20,22 +22,9 @@ def main():
     debug = header()
 
     # does docker image 'config_assessment_tool:latest' exist
-    if (
-        next(
-            iter(
-                [
-                    image
-                    for image in client.images()
-                    if image["RepoTags"] is not None
-                    and any(tag for tag in image["RepoTags"] if tag == "ghcr.io/appdynamics/config-assessment-tool-backend:latest")
-                ]
-            ),
-            None,
-        )
-        is None
-    ):
+    if getImage(client, "ghcr.io/appdynamics/config-assessment-tool-backend:latest") is None:
         st.write(f"Image config-assessment-tool-backend:latest not found")
-        st.write(f"Please verify images were created successfully with bin/run.sh")
+        st.write(f"Please either build from source with --build or pull from ghrc with --pull")
     else:
         # order jobs which have already been ran at the top
         orderedJobs = []

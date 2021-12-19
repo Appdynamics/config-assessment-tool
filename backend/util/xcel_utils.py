@@ -14,6 +14,10 @@ class Color(Enum):
     gold = PatternFill(start_color="FFFFD700", end_color="FFFFD700", fill_type="solid")
     silver = PatternFill(start_color="FFC0C0C0", end_color="FFC0C0C0", fill_type="solid")
     bronze = PatternFill(start_color="FFcd7f32", end_color="FFcd7f32", fill_type="solid")
+    """Colors used to denote issues in other reports."""
+    green = PatternFill(start_color="FF00FF00", end_color="FF00FF00", fill_type="solid")
+    red = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
+    yellow = PatternFill(start_color="FFFFFF00", end_color="FFFFFF00", fill_type="solid")
 
 
 def writeRow(sheet: Worksheet, rowIdx: int, data: [Any]):
@@ -93,8 +97,8 @@ def resizeColumnWidth(sheet: Worksheet):
         sheet.column_dimensions[col].width = value + headerFilterArrowPadding
 
 
-def addFilterAndFreeze(sheet: Worksheet):
+def addFilterAndFreeze(sheet: Worksheet, freezePane: str = "C2"):
     """Add filter on headers and freeze the first 2 columns and 1 row."""
     sheet.auto_filter.ref = sheet.dimensions
     # Freeze controller and application columns
-    sheet.freeze_panes = "C2"
+    sheet.freeze_panes = freezePane

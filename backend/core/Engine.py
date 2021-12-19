@@ -9,20 +9,23 @@ from collections import OrderedDict
 from pathlib import Path
 
 from api.appd.AppDService import AppDService
-from jobs.jobs.ApmDashboards import ApmDashboards
-from jobs.jobs.AppAgents import AppAgents
-from jobs.jobs.Backends import Backends
-from jobs.jobs.BusinessTransactions import BusinessTransactions
-from jobs.jobs.DataCollectors import DataCollectors
-from jobs.jobs.ErrorConfiguration import ErrorConfiguration
-from jobs.jobs.HealthRulesAndAlerting import HealthRulesAndAlerting
-from jobs.jobs.MachineAgents import MachineAgents
-from jobs.jobs.OverallAssessment import OverallAssessment
-from jobs.jobs.Overhead import Overhead
-from jobs.jobs.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.bsg.ApmDashboards import ApmDashboards
+from extractionSteps.bsg.AppAgents import AppAgents
+from extractionSteps.bsg.Backends import Backends
+from extractionSteps.bsg.BusinessTransactions import BusinessTransactions
+from extractionSteps.bsg.DataCollectors import DataCollectors
+from extractionSteps.bsg.ErrorConfiguration import ErrorConfiguration
+from extractionSteps.bsg.HealthRulesAndAlerting import HealthRulesAndAlerting
+from extractionSteps.bsg.MachineAgents import MachineAgents
+from extractionSteps.bsg.OverallAssessment import OverallAssessment
+from extractionSteps.bsg.Overhead import Overhead
+from extractionSteps.bsg.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.general.CustomMetrics import CustomMetrics
 from reports.reports.AgentMatrixReport import AgentMatrixReport
-from reports.reports.ApmReport import ApmReport
-from reports.reports.RawDataReport import RawDataReport
+from reports.reports.BSGReport import BSGReport
+from reports.reports.CustomMetricsReport import CustomMetricsReport
+from reports.reports.LicenseReport import LicenseReport
+from reports.reports.RawBSGReport import RawDataReport
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import jsonEncoder
 
@@ -58,7 +61,7 @@ class Engine:
             for controller in self.job
         ]
         self.controllerData = OrderedDict()
-        self.jobs = [
+        self.bsgSteps = [
             AppAgents(),
             MachineAgents(),
             BusinessTransactions(),
@@ -71,10 +74,15 @@ class Engine:
             ApmDashboards(),
             OverallAssessment(),
         ]
+        self.otherSteps = [
+            CustomMetrics(),
+        ]
         self.reports = [
-            ApmReport(),
+            BSGReport(),
             RawDataReport(),
             AgentMatrixReport(),
+            CustomMetricsReport(),
+            LicenseReport(),
         ]
 
     async def run(self):
@@ -145,6 +153,14 @@ class Engine:
             await self.abortAndCleanup(f"One or more analytics enabled status returned an error. Aborting.")
         analyticsEnabledStatus = [analyticsEnabledStatus.data for analyticsEnabledStatus in analyticsEnabledStatus]
 
+        # Gather license usage
+        logging.info("Gathering License Usage")
+        getLicenseUsage = [controller.getAccountUsageSummary() for controller in self.controllers]
+        licenseUsage = await gatherWithConcurrency(*getLicenseUsage)
+        if any(licenseUsage.error is not None for licenseUsage in licenseUsage):
+            await self.abortAndCleanup(f"One or more license usages returned an error. Aborting.")
+        licenseUsage = [licenseUsage.data for licenseUsage in licenseUsage]
+
         # Gather all dashboards
         logging.info("Gathering Dashboards")
         getDashboards = [controller.getDashboards() for controller in self.controllers]
@@ -152,6 +168,38 @@ class Engine:
         if any(dashboard.error is not None for dashboard in dashboards):
             await self.abortAndCleanup(f"One or more dashboard returned an error. Aborting.")
         dashboards = [dashboard.data for dashboard in dashboards]
+
+        # Gather App Server Agent List
+        logging.info("Gathering App Server Agent Agent List")
+        getAppServerAgents = [controller.getAppServerAgents() for controller in self.controllers]
+        appServerAgents = await gatherWithConcurrency(*getAppServerAgents)
+        if any(appServerAgent.error is not None for appServerAgent in appServerAgents):
+            await self.abortAndCleanup(f"One or more App Server Agents returned an error. Aborting.")
+        appServerAgents = [appServerAgent.data for appServerAgent in appServerAgents]
+
+        # Gather Machine Agent List
+        logging.info("Gathering Machine Agent Agent List")
+        getMachineAgents = [controller.getMachineAgents() for controller in self.controllers]
+        machineAgents = await gatherWithConcurrency(*getMachineAgents)
+        if any(machineAgent.error is not None for machineAgent in machineAgents):
+            await self.abortAndCleanup(f"One or more Machine Agents returned an error. Aborting.")
+        machineAgents = [machineAgent.data for machineAgent in machineAgents]
+
+        # Gather Database Agent List
+        logging.info("Gathering Database Agent Agent List")
+        getDBAgents = [controller.getDBAgents() for controller in self.controllers]
+        dbAgents = await gatherWithConcurrency(*getDBAgents)
+        if any(dbAgent.error is not None for dbAgent in dbAgents):
+            await self.abortAndCleanup(f"One or more DB Agents returned an error. Aborting.")
+        dbAgents = [dbAgent.data for dbAgent in dbAgents]
+
+        # Gather Analytics Agent List
+        logging.info("Gathering Analytics Agent List")
+        getAnalyticsAgents = [controller.getAnalyticsAgents() for controller in self.controllers]
+        analyticsAgents = await gatherWithConcurrency(*getAnalyticsAgents)
+        if any(analyticsAgent.error is not None for analyticsAgent in analyticsAgents):
+            await self.abortAndCleanup(f"One or more Analytics Agents returned an error. Aborting.")
+        analyticsAgents = [analyticsAgent.data for analyticsAgent in analyticsAgents]
 
         # Construct application information dictionary
         logging.info("Constructing Controller Data Dictionary")
@@ -162,6 +210,12 @@ class Engine:
             hostData["configurations"] = controllerConfigurations[idx]
             hostData["analyticsEnabledStatus"] = analyticsEnabledStatus[idx]
             hostData["exportedDashboards"] = dashboards[idx]
+            hostData["licenseUsage"] = licenseUsage[idx]
+
+            hostData["appServerAgents"] = appServerAgents[idx]
+            hostData["machineAgents"] = machineAgents[idx]
+            hostData["dbAgents"] = dbAgents[idx]
+            hostData["analyticsAgents"] = analyticsAgents[idx]
 
             hostData["apm"] = OrderedDict()
             hostData["dashboards"] = OrderedDict()
@@ -252,16 +306,16 @@ class Engine:
 
     async def process(self):
         logging.info(f"----------Extract----------")
-        for jobStep in self.jobs:
+        for jobStep in [*self.bsgSteps, *self.otherSteps]:
             await jobStep.extract(self.controllerData)
 
         logging.info(f"----------Analyze----------")
-        for jobStep in self.jobs:
+        for jobStep in [*self.bsgSteps, *self.otherSteps]:
             jobStep.analyze(self.controllerData, self.thresholds)
 
         logging.info(f"----------Report----------")
         for report in self.reports:
-            report.createWorkbook(self.jobs, self.controllerData, self.jobFileName)
+            report.createWorkbook(self.bsgSteps, self.controllerData, self.jobFileName)
 
     def finalize(self):
         now = int(time.time())

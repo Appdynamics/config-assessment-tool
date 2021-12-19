@@ -2,15 +2,15 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from jobs.JobStepBase import JobStepBase
+from extractionSteps.JobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 
-class BusinessTransactions(JobStepBase):
+class BusinessTransactions(BSGJobStepBase):
     def __init__(self):
         super().__init__("apm")
 
-    async def extract(self, applicationInformation):
+    async def extract(self, controllerData):
         """
         Extract business transaction details.
         1. Makes one API call per application to get BT Calls Per Minute.
@@ -19,7 +19,7 @@ class BusinessTransactions(JobStepBase):
         """
         jobStepName = type(self).__name__
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
@@ -50,7 +50,7 @@ class BusinessTransactions(JobStepBase):
                 application["appLevelBtConfig"] = appLevelBtConfig[idx].data
                 application["btMatchRules"] = btMatchRules[idx].data
 
-    def analyze(self, applicationInformation, thresholds):
+    def analyze(self, controllerData, thresholds):
         """
         Analysis of node level details.
         1. Determines if BT limit is hit.
@@ -64,7 +64,7 @@ class BusinessTransactions(JobStepBase):
         # Get thresholds related to job
         jobStepThresholds = thresholds[jobStepName]
 
-        for host, hostInfo in applicationInformation.items():
+        for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
