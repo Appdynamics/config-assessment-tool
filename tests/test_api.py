@@ -524,8 +524,7 @@ async def testGetAppServerAgents(controller):
 
     assert agents.error is None
     assert len(agents.data) > 0
-    assert "data" in agents.data
-    for agent in agents.data["data"]:
+    for agent in agents.data:
         assert "hostName" in agent
         assert "agentVersion" in agent
         assert "nodeName" in agent
@@ -549,8 +548,7 @@ async def testGetMachineAgents(controller):
 
     assert agents.error is None
     assert len(agents.data) > 0
-    assert "data" in agents.data
-    for agent in agents.data["data"]:
+    for agent in agents.data:
         assert "hostName" in agent
         assert "agentVersion" in agent
         assert "applicationNames" in agent
