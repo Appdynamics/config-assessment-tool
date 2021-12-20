@@ -19,8 +19,8 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool):
         _,
     ) = st.columns([1.5, 2, 1.5, 3, 2])
 
-    openJobFileColumn.text('')  # vertical padding
-    openJobFileColumn.text('')  # vertical padding
+    openJobFileColumn.text("")  # vertical padding
+    openJobFileColumn.text("")  # vertical padding
     if openJobFileColumn.button(f"Open JobFile", key=f"{jobName}-jobfile"):
         if not isDocker():
             openFile(f"../input/jobs/{jobName}.json")
@@ -29,16 +29,15 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool):
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-
-    thresholdsColumn, warningColumn, runColumn = st.columns([1, 1, .3])
+    thresholdsColumn, warningColumn, runColumn = st.columns([1, 1, 0.3])
     thresholdsFiles = [f[: len(f) - 5] for f in os.listdir("../input/thresholds")]
     thresholds = thresholdsColumn.selectbox("Specify Thresholds File", thresholdsFiles, key=f"{jobName}-new")
 
-    warningColumn.text('')
+    warningColumn.text("")
     warningColumn.warning(f"Job has not yet been run")
 
-    openThresholdsFileColumn.text('')  # vertical padding
-    openThresholdsFileColumn.text('')  # vertical padding
+    openThresholdsFileColumn.text("")  # vertical padding
+    openThresholdsFileColumn.text("")  # vertical padding
     if openThresholdsFileColumn.button(f"Open Thresholds File", key=f"{jobName}-thresholds"):
         if not isDocker():
             openFile(f"../input/thresholds/{thresholds}.json")
@@ -47,6 +46,6 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool):
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    runColumn.text('')  # vertical padding
+    runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
         runConfigAssessmentTool(client, jobName, thresholds, debug)
