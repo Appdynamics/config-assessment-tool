@@ -48,10 +48,10 @@ class AppDService:
                 Result.Error(f"{self.host} - {e}."),
             )
         if response.status_code != 200:
-            logging.error(f"{self.host} - Controller login failed with {response.status_code}")
+            logging.error(f"{self.host} - Controller login failed with {response.status_code}. Check username and password.")
             return Result(
                 response,
-                Result.Error(f"{self.host} - Controller login failed with {response.status_code}."),
+                Result.Error(f"{self.host} - Controller login failed with {response.status_code}. Check username and password."),
             )
         try:
             jsessionid = re.search("JSESSIONID=(\\w|\\d)*", str(response.headers)).group(0).split("JSESSIONID=")[1]
