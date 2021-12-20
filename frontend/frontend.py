@@ -3,7 +3,6 @@ import os
 import docker
 from pathlib import Path
 
-import requests
 import streamlit as st
 
 from utils.docker_utils import getImage

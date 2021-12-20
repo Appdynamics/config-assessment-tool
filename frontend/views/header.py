@@ -20,7 +20,6 @@ def header() -> bool:
                     .reportview-container .main .block-container{{
                         max-width: {1000}px;
                     }}
-
                 </style>
             """,
         unsafe_allow_html=True,
@@ -43,18 +42,17 @@ def header() -> bool:
             payload = {"type": "folder", "path": f"input/thresholds"}
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
-    newJobColumn, newThresholdColumn, _ = st.columns(3)
 
     newJob = st.expander("Create New Job")
     with newJob.form("NewJob"):
         st.write("Create new Job")
 
-        hostCol, portCol, _ = st.columns(3)
+        hostCol, portCol, accountCol = st.columns(3)
         host = hostCol.text_input(label="host", value="acme.saas.appdynamics.com")
         port = portCol.number_input(label="port", value=443)
-
-        accountCol, usernameCol, pwdCol = st.columns(3)
         account = accountCol.text_input(label="account", value="acme")
+
+        usernameCol, pwdCol, _ = st.columns(3)
         username = usernameCol.text_input(label="username", value="foo")
         pwd = pwdCol.text_input(label="password", value="hunter1", type="password")
 
