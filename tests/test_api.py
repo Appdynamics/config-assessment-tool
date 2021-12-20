@@ -123,13 +123,13 @@ async def testGetAllCustomExitPoints(controller):
         assert "agentType" in customExitPoint
 
     assert (
-               next(
-                   customExitPoint
-                   for customExitPoint in customExitPoints.data
-                   if customExitPoint["name"] == "FOO" and customExitPoint["agentType"] == "APP_AGENT"
-               ),
-               None,
-           ) is not None
+        next(
+            customExitPoint
+            for customExitPoint in customExitPoints.data
+            if customExitPoint["name"] == "FOO" and customExitPoint["agentType"] == "APP_AGENT"
+        ),
+        None,
+    ) is not None
 
     await controller.close()
 
@@ -394,35 +394,35 @@ async def testGetDataCollectorUsage(controller):
 
     assert ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["allDataCollectors"]
     assert (
-               "Business Data",
-               "in_snapshot_not_analytics",
-               False,
-           ) in dataCollectorUsage.data["allDataCollectors"]
+        "Business Data",
+        "in_snapshot_not_analytics",
+        False,
+    ) in dataCollectorUsage.data["allDataCollectors"]
     assert (
-               "Business Data",
-               "in_snapshot_and_analytics",
-               True,
-           ) in dataCollectorUsage.data["allDataCollectors"]
+        "Business Data",
+        "in_snapshot_and_analytics",
+        True,
+    ) in dataCollectorUsage.data["allDataCollectors"]
 
     assert not ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
     assert (
-               "Business Data",
-               "in_snapshot_not_analytics",
-               False,
-           ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
+        "Business Data",
+        "in_snapshot_not_analytics",
+        False,
+    ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
     assert (
-               "Business Data",
-               "in_snapshot_and_analytics",
-               True,
-           ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
+        "Business Data",
+        "in_snapshot_and_analytics",
+        True,
+    ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
 
     assert not ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
     assert not ("Business Data", "in_snapshot_not_analytics", False) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
     assert (
-               "Business Data",
-               "in_snapshot_and_analytics",
-               True,
-           ) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
+        "Business Data",
+        "in_snapshot_and_analytics",
+        True,
+    ) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
 
     await controller.close()
 
@@ -611,6 +611,7 @@ async def testGetAnalyticsAgents(controller):
         assert "logsHealthy" in agent
 
     await controller.close()
+
 
 @pytest.mark.asyncio
 async def testGetCustomMetrics(controller):
