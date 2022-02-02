@@ -2,3 +2,10 @@
 /output
 /.idea
 .git-bitbucket
+*.iml
+__pycache__/
+
+input/jobs/*
+!input/jobs/DefaultJob.json
+
+
