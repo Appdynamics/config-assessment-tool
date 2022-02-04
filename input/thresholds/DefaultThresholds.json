@@ -105,12 +105,12 @@
   "ServiceEndpoints": {
     "platinum": {
       "serviceEndpointLimitNotHit": true,
-      "percentServiceEndpointsWithLoadOrDisabled": 75,
+      "percentServiceEndpointsWithLoadOrDisabled": 50,
       "numberOfCustomServiceEndpointRules": 1
     },
     "gold": {
       "serviceEndpointLimitNotHit": true,
-      "percentServiceEndpointsWithLoadOrDisabled": 60,
+      "percentServiceEndpointsWithLoadOrDisabled": 25,
       "numberOfCustomServiceEndpointRules": 0
     },
     "silver": {
@@ -144,13 +144,13 @@
       "numberOfHealthRuleViolationsLast24Hours": 20,
       "numberOfActionsBoundToEnabledPolicies": 1,
       "numberOfCustomHealthRules": 2,
-      "numberOfDefaultHealthRulesModified": 2
+      "numberOfDefaultHealthRulesModified": 1
     },
     "silver": {
       "numberOfHealthRuleViolationsLast24Hours": 50,
       "numberOfActionsBoundToEnabledPolicies": 0,
       "numberOfCustomHealthRules": 0,
-      "numberOfDefaultHealthRulesModified": 1
+      "numberOfDefaultHealthRulesModified": 0
     }
   },
   "DataCollectors": {
@@ -192,19 +192,19 @@
   },
   "OverallAssessment": {
     "platinum": {
-      "PercentageTotalPlatinum": 70,
-      "PercentageTotalGoldOrBetter": 100,
+      "PercentageTotalPlatinum": 50,
+      "PercentageTotalGoldOrBetter": 50,
       "PercentageTotalSilverOrBetter": 100
     },
     "gold": {
       "PercentageTotalPlatinum": 0,
-      "PercentageTotalGoldOrBetter": 70,
-      "PercentageTotalSilverOrBetter": 100
+      "PercentageTotalGoldOrBetter": 50,
+      "PercentageTotalSilverOrBetter": 90
     },
     "silver": {
       "PercentageTotalPlatinum": 0,
       "PercentageTotalGoldOrBetter": 0,
-      "PercentageTotalSilverOrBetter": 70
+      "PercentageTotalSilverOrBetter": 80
     }
   }
 }
