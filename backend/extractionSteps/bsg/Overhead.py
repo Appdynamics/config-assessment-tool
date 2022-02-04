@@ -2,7 +2,7 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.BSGJobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 

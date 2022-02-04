@@ -1,7 +1,7 @@
 import logging
 from collections import OrderedDict
 
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.BSGJobStepBase import BSGJobStepBase
 
 
 class OverallAssessment(BSGJobStepBase):

@@ -4,7 +4,7 @@ from collections import OrderedDict
 from deepdiff import DeepDiff
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.BSGJobStepBase import BSGJobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 

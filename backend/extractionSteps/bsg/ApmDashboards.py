@@ -2,7 +2,7 @@ import logging
 from collections import OrderedDict
 from datetime import datetime
 
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.BSGJobStepBase import BSGJobStepBase
 from util.stdlib_utils import get_recursively
 
 

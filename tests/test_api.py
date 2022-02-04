@@ -498,6 +498,8 @@ async def testGetCustomMetrics(controller):
 
     assert customMetrics.error is None
 
+    await controller.close()
+
 
 @pytest.mark.asyncio
 async def testGetAccountUsageSummary(controller):
@@ -515,6 +517,8 @@ async def testGetAccountUsageSummary(controller):
             assert "numOfProvisionedLicense" in licenseData
             assert "expirationDate" in licenseData
 
+    await controller.close()
+
 
 @pytest.mark.asyncio
 async def testGetAppServerAgents(controller):
@@ -524,8 +528,7 @@ async def testGetAppServerAgents(controller):
 
     assert agents.error is None
     assert len(agents.data) > 0
-    assert "data" in agents.data
-    for agent in agents.data["data"]:
+    for agent in agents.data:
         assert "hostName" in agent
         assert "agentVersion" in agent
         assert "nodeName" in agent
@@ -540,6 +543,8 @@ async def testGetAppServerAgents(controller):
         assert "machineId" in agent
         assert "type" in agent
 
+    await controller.close()
+
 
 @pytest.mark.asyncio
 async def testGetMachineAgents(controller):
@@ -549,11 +554,82 @@ async def testGetMachineAgents(controller):
 
     assert agents.error is None
     assert len(agents.data) > 0
-    assert "data" in agents.data
-    for agent in agents.data["data"]:
+    for agent in agents.data:
         assert "hostName" in agent
         assert "agentVersion" in agent
         assert "applicationNames" in agent
         assert "applicationIds" in agent
         assert "machineId" in agent
         assert "enabled" in agent
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetDBAgents(controller):
+    assert (await controller.loginToController()).error is None
+
+    agents = await controller.getDBAgents()
+
+    assert agents.error is None
+    assert len(agents.data) > 0
+    for agent in agents.data:
+        assert "hostName" in agent
+        assert "version" in agent
+        assert "agentName" in agent
+        assert "status" in agent
+        assert "startTime" in agent
+        assert "id" in agent
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetAnalyticsAgents(controller):
+    assert (await controller.loginToController()).error is None
+
+    agents = await controller.getAnalyticsAgents()
+
+    assert agents.error is None
+    assert len(agents.data) > 0
+    for agent in agents.data:
+        assert "id" in agent
+        assert "enabled" in agent
+        assert "name" in agent
+        assert "hostName" in agent
+        assert "agentRuntime" in agent
+        assert "installDir" in agent
+        assert "installTimestamp" in agent
+        assert "lastStartTimestamp" in agent
+        assert "lastConnectionTimestamp" in agent
+        assert "majorVersion" in agent
+        assert "minorVersion" in agent
+        assert "pointRelease" in agent
+        assert "agentPointRelease" in agent
+        assert "agentTags" in agent
+        assert "bizTxnsHealthy" in agent
+        assert "logsHealthy" in agent
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetCustomMetrics(controller):
+    assert (await controller.loginToController()).error is None
+
+    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "machine-agent")
+
+    assert customMetrics.error is None
+    assert len(customMetrics.data) > 0
+    for customMetric in customMetrics.data:
+        assert "name" in customMetric
+        assert "children" in customMetric
+        assert "metricTreeRootType" in customMetric
+        assert "metricId" in customMetric
+        assert "type" in customMetric
+        assert "entityId" in customMetric
+        assert "metricPath" in customMetric
+        assert "iconPath" in customMetric
+        assert "hasChildren" in customMetric
+
+    await controller.close()
