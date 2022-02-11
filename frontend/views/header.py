@@ -69,6 +69,9 @@ def header() -> bool:
                             "account": account,
                             "username": username,
                             "pwd": pwd,
+                            "verifySsl": True,
+                            "proxyUsername": None,
+                            "proxyPassword": None,
                         }
                     ],
                     fp=f,
@@ -79,6 +82,18 @@ def header() -> bool:
                 st.info(f"Successfully created job '{host[:host.index('.')]}'")
             else:
                 st.error(f"Failed to create job '{host[:host.index('.')]}'")
+
+            # if file exists
+            if os.path.exists("../input/thresholds/DefaultThresholds.json"):
+                defaultThresholds = json.loads(open("../input/thresholds/DefaultThresholds.json").read())
+                with open(f"../input/thresholds/{host[:host.index('.')]}.json", "w", encoding="utf-8") as f:
+                    json.dump(defaultThresholds, fp=f, ensure_ascii=False, indent=4)
+                if os.path.exists(f"../input/thresholds/{host[:host.index('.')]}.json"):
+                    st.info(f"Successfully created thresholds for job '{host[:host.index('.')]}'")
+                else:
+                    st.error(f"Failed to create thresholds for job '{host[:host.index('.')]}'")
+            else:
+                st.error("Failed to create thresholds for job, DefaultThresholds.json not found")
 
             # small delay to see job ended
             time.sleep(2)

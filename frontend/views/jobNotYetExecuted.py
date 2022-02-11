@@ -31,6 +31,14 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool):
 
     thresholdsColumn, warningColumn, runColumn = st.columns([1, 1, 0.3])
     thresholdsFiles = [f[: len(f) - 5] for f in os.listdir("../input/thresholds")]
+
+    if jobName in thresholdsFiles:
+        thresholdsFiles.remove(jobName)
+        thresholdsFiles.insert(0, jobName)
+    elif "DefaultThresholds" in thresholdsFiles:
+        thresholdsFiles.remove("DefaultThresholds")
+        thresholdsFiles.insert(0, "DefaultThresholds")
+
     thresholds = thresholdsColumn.selectbox("Specify Thresholds File", thresholdsFiles, key=f"{jobName}-new")
 
     warningColumn.text("")

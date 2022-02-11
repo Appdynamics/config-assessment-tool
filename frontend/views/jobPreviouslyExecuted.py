@@ -50,7 +50,10 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
     lastRunColumn.info(f'Last Run: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}')
 
     thresholdsFiles = [f[: len(f) - 5] for f in os.listdir("../input/thresholds")]
-    default_idx = thresholdsFiles.index(info["thresholds"])
+    if info["thresholds"] in thresholdsFiles:
+        default_idx = thresholdsFiles.index(info["thresholds"])
+    else:
+        default_idx = 0
     thresholds = thresholdsColumn.selectbox(
         "Specify Thresholds File",
         thresholdsFiles,

@@ -8,6 +8,7 @@ from typing import List
 
 import aiohttp
 from uplink import AiohttpClient
+from uplink.auth import BasicAuth, ProxyAuth, MultiAuth
 
 from api.Result import Result
 from api.appd.AppDController import AppdController
@@ -17,13 +18,19 @@ from util.asyncio_utils import gatherWithConcurrency
 class AppDService:
     controller: AppdController
 
-    def __init__(self, host: str, port: int, ssl: bool, account: str, username: str, pwd: str):
+    def __init__(self, host: str, port: int, ssl: bool, account: str, username: str, pwd: str, verifySsl: bool = True, proxyUsername: str = None, proxyPassword: str = None):
         logging.debug(f"{host} - Initializing controller service")
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
-        auth = (f"{username}@{account}", pwd)
+        if proxyUsername and proxyPassword:
+            auth = MultiAuth(
+                ProxyAuth(proxyUsername, proxyPassword),
+                BasicAuth(f"{username}@{account}", pwd)
+            )
+        else:
+            auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
         self.username = username
-        connector = aiohttp.TCPConnector(limit=50)
+        connector = aiohttp.TCPConnector(limit=50, verify_ssl=verifySsl)
         self.session = aiohttp.ClientSession(connector=connector)
         self.controller = AppdController(
             base_url=connection_url,
