@@ -2,12 +2,12 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import substringBetween
 
 
-class Backends(BSGJobStepBase):
+class Backends(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -23,7 +23,7 @@ class Backends(BSGJobStepBase):
 
         backendNameToCallsPerMinuteMap = {}
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -93,7 +93,7 @@ class Backends(BSGJobStepBase):
         jobStepThresholds = thresholds[jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

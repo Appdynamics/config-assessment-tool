@@ -68,7 +68,15 @@ ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThre
 
 ### From Source
 
-The backend can be invoked via `python3 backend.py`.
+#### Steps to run
+
+Required 
+
+1. `git clone https://github.com/Appdynamics/config-assessment-tool.git`
+2. `cd config-assessment-tool`
+3. `pipenv install`
+4. `pipenv shell`
+5. `python3 backend.py -j acme -t DefaultThresholds`
 
 ```
 Usage: backend.py [OPTIONS]

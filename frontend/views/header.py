@@ -20,6 +20,7 @@ def header() -> bool:
                     .reportview-container .main .block-container{{
                         max-width: {1000}px;
                     }}
+
                 </style>
             """,
         unsafe_allow_html=True,
@@ -42,17 +43,18 @@ def header() -> bool:
             payload = {"type": "folder", "path": f"input/thresholds"}
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
+    newJobColumn, newThresholdColumn, _ = st.columns(3)
 
     newJob = st.expander("Create New Job")
     with newJob.form("NewJob"):
         st.write("Create new Job")
 
-        hostCol, portCol, accountCol = st.columns(3)
+        hostCol, portCol, _ = st.columns(3)
         host = hostCol.text_input(label="host", value="acme.saas.appdynamics.com")
         port = portCol.number_input(label="port", value=443)
-        account = accountCol.text_input(label="account", value="acme")
 
-        usernameCol, pwdCol, _ = st.columns(3)
+        accountCol, usernameCol, pwdCol = st.columns(3)
+        account = accountCol.text_input(label="account", value="acme")
         username = usernameCol.text_input(label="username", value="foo")
         pwd = pwdCol.text_input(label="password", value="hunter1", type="password")
 
@@ -67,6 +69,9 @@ def header() -> bool:
                             "account": account,
                             "username": username,
                             "pwd": pwd,
+                            "verifySsl": True,
+                            "proxyUsername": None,
+                            "proxyPassword": None,
                         }
                     ],
                     fp=f,
@@ -77,6 +82,18 @@ def header() -> bool:
                 st.info(f"Successfully created job '{host[:host.index('.')]}'")
             else:
                 st.error(f"Failed to create job '{host[:host.index('.')]}'")
+
+            # if file exists
+            if os.path.exists("../input/thresholds/DefaultThresholds.json"):
+                defaultThresholds = json.loads(open("../input/thresholds/DefaultThresholds.json").read())
+                with open(f"../input/thresholds/{host[:host.index('.')]}.json", "w", encoding="utf-8") as f:
+                    json.dump(defaultThresholds, fp=f, ensure_ascii=False, indent=4)
+                if os.path.exists(f"../input/thresholds/{host[:host.index('.')]}.json"):
+                    st.info(f"Successfully created thresholds for job '{host[:host.index('.')]}'")
+                else:
+                    st.error(f"Failed to create thresholds for job '{host[:host.index('.')]}'")
+            else:
+                st.error("Failed to create thresholds for job, DefaultThresholds.json not found")
 
             # small delay to see job ended
             time.sleep(2)

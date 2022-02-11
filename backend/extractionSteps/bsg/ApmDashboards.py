@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 from datetime import datetime
 
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.JobStepBase import JobStepBase
 from util.stdlib_utils import get_recursively
 
 
-class ApmDashboards(BSGJobStepBase):
+class ApmDashboards(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -18,7 +18,7 @@ class ApmDashboards(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
 
             for dashboard in hostInfo["exportedDashboards"]:
                 dashboard["applicationNames"] = get_recursively(dashboard, "applicationName")
@@ -55,7 +55,7 @@ class ApmDashboards(BSGJobStepBase):
         now = datetime.now()
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.
