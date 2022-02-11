@@ -5,6 +5,9 @@
     "ssl": true,
     "account": "acme",
     "username": "foo",
-    "pwd": "hunter1"
+    "pwd": "hunter1",
+    "verifySsl": true,
+    "proxyUsername": "",
+    "proxyPassword":  ""
   }
 ]
