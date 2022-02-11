@@ -18,14 +18,22 @@ from util.asyncio_utils import gatherWithConcurrency
 class AppDService:
     controller: AppdController
 
-    def __init__(self, host: str, port: int, ssl: bool, account: str, username: str, pwd: str, verifySsl: bool = True, proxyUsername: str = None, proxyPassword: str = None):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        ssl: bool,
+        account: str,
+        username: str,
+        pwd: str,
+        verifySsl: bool = True,
+        proxyUsername: str = None,
+        proxyPassword: str = None,
+    ):
         logging.debug(f"{host} - Initializing controller service")
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
         if proxyUsername and proxyPassword:
-            auth = MultiAuth(
-                ProxyAuth(proxyUsername, proxyPassword),
-                BasicAuth(f"{username}@{account}", pwd)
-            )
+            auth = MultiAuth(ProxyAuth(proxyUsername, proxyPassword), BasicAuth(f"{username}@{account}", pwd))
         else:
             auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
