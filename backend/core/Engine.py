@@ -20,6 +20,7 @@ from extractionSteps.bsg.MachineAgents import MachineAgents
 from extractionSteps.bsg.OverallAssessment import OverallAssessment
 from extractionSteps.bsg.Overhead import Overhead
 from extractionSteps.bsg.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
 from reports.reports.AgentMatrixReport import AgentMatrixReport
 from reports.reports.BSGReport import BSGReport
@@ -59,7 +60,7 @@ class Engine:
                 pwd=controller["pwd"],
                 verifySsl=controller.get("verifySsl", True),
                 proxyUsername=controller.get("proxyUsername"),
-                proxyPassword=controller.get("proxyPassword")
+                proxyPassword=controller.get("proxyPassword"),
             )
             for controller in self.job
         ]
@@ -78,6 +79,7 @@ class Engine:
             OverallAssessment(),
         ]
         self.otherSteps = [
+            ControllerLevelDetails(),
             CustomMetrics(),
         ]
         self.reports = [
@@ -97,7 +99,7 @@ class Engine:
             await self.process()
             self.finalize()
         except Exception as e:
-            # catch exceptions here so we can terminate coroutines before program exit
+            # catch exceptions here, so we can terminate coroutines before program exit
             logging.error("".join(traceback.TracebackException.from_exception(e).format()))
 
         await self.abortAndCleanup(
@@ -131,104 +133,10 @@ class Engine:
         if anyUserNotAdmin:
             await self.abortAndCleanup(f"Login user not admin on one or more controllers. Aborting.")
 
-        logging.info(f"----------Initializing Controller Data----------")
-        # Gather applications across all controllers
-        logging.info("Gathering Applications")
-        getApplicationsFutures = [controller.getApplications() for controller in self.controllers]
-        apmApplications = await gatherWithConcurrency(*getApplicationsFutures)
-        if any(application.error is not None for application in apmApplications):
-            await self.abortAndCleanup(f"One or more APM applications returned an error when fetching application list. Aborting.")
-        apmApplications = [application.data for application in apmApplications]
-
-        # Gather all controller configurations
-        logging.info("Gathering Controller Configurations")
-        getControllerConfigurations = [controller.getConfigurations() for controller in self.controllers]
-        controllerConfigurations = await gatherWithConcurrency(*getControllerConfigurations)
-        if any(controllerConfiguration.error is not None for controllerConfiguration in controllerConfigurations):
-            await self.abortAndCleanup(f"One or more controller configurations returned an error. Aborting.")
-        controllerConfigurations = [controllerConfiguration.data for controllerConfiguration in controllerConfigurations]
-
-        # Gather analytics enabled status
-        logging.info("Gathering Analytics Enabled Status")
-        getAnalyticsEnabledStatus = [controller.getAnalyticsEnabledStatusForAllApplications() for controller in self.controllers]
-        analyticsEnabledStatus = await gatherWithConcurrency(*getAnalyticsEnabledStatus)
-        if any(analyticsEnabledStatus.error is not None for analyticsEnabledStatus in analyticsEnabledStatus):
-            await self.abortAndCleanup(f"One or more analytics enabled status returned an error. Aborting.")
-        analyticsEnabledStatus = [analyticsEnabledStatus.data for analyticsEnabledStatus in analyticsEnabledStatus]
-
-        # Gather license usage
-        logging.info("Gathering License Usage")
-        getLicenseUsage = [controller.getAccountUsageSummary() for controller in self.controllers]
-        licenseUsage = await gatherWithConcurrency(*getLicenseUsage)
-        if any(licenseUsage.error is not None for licenseUsage in licenseUsage):
-            await self.abortAndCleanup(f"One or more license usages returned an error. Aborting.")
-        licenseUsage = [licenseUsage.data for licenseUsage in licenseUsage]
-
-        # Gather all dashboards
-        logging.info("Gathering Dashboards")
-        getDashboards = [controller.getDashboards() for controller in self.controllers]
-        dashboards = await asyncio.gather(*getDashboards)
-        if any(dashboard.error is not None for dashboard in dashboards):
-            await self.abortAndCleanup(f"One or more dashboard returned an error. Aborting.")
-        dashboards = [dashboard.data for dashboard in dashboards]
-
-        # Gather App Server Agent List
-        logging.info("Gathering App Server Agent Agent List")
-        getAppServerAgents = [controller.getAppServerAgents() for controller in self.controllers]
-        appServerAgents = await gatherWithConcurrency(*getAppServerAgents)
-        if any(appServerAgent.error is not None for appServerAgent in appServerAgents):
-            await self.abortAndCleanup(f"One or more App Server Agents returned an error. Aborting.")
-        appServerAgents = [appServerAgent.data for appServerAgent in appServerAgents]
-
-        # Gather Machine Agent List
-        logging.info("Gathering Machine Agent Agent List")
-        getMachineAgents = [controller.getMachineAgents() for controller in self.controllers]
-        machineAgents = await gatherWithConcurrency(*getMachineAgents)
-        if any(machineAgent.error is not None for machineAgent in machineAgents):
-            await self.abortAndCleanup(f"One or more Machine Agents returned an error. Aborting.")
-        machineAgents = [machineAgent.data for machineAgent in machineAgents]
-
-        # Gather Database Agent List
-        logging.info("Gathering Database Agent Agent List")
-        getDBAgents = [controller.getDBAgents() for controller in self.controllers]
-        dbAgents = await gatherWithConcurrency(*getDBAgents)
-        if any(dbAgent.error is not None for dbAgent in dbAgents):
-            await self.abortAndCleanup(f"One or more DB Agents returned an error. Aborting.")
-        dbAgents = [dbAgent.data for dbAgent in dbAgents]
-
-        # Gather Analytics Agent List
-        logging.info("Gathering Analytics Agent List")
-        getAnalyticsAgents = [controller.getAnalyticsAgents() for controller in self.controllers]
-        analyticsAgents = await gatherWithConcurrency(*getAnalyticsAgents)
-        if any(analyticsAgent.error is not None for analyticsAgent in analyticsAgents):
-            await self.abortAndCleanup(f"One or more Analytics Agents returned an error. Aborting.")
-        analyticsAgents = [analyticsAgent.data for analyticsAgent in analyticsAgents]
-
-        # Construct application information dictionary
-        logging.info("Constructing Controller Data Dictionary")
         for idx, controller in enumerate(self.controllers):
             self.controllerData[controller.host] = OrderedDict()
             hostData = self.controllerData[controller.host]
             hostData["controller"] = controller
-            hostData["configurations"] = controllerConfigurations[idx]
-            hostData["analyticsEnabledStatus"] = analyticsEnabledStatus[idx]
-            hostData["exportedDashboards"] = dashboards[idx]
-            hostData["licenseUsage"] = licenseUsage[idx]
-
-            hostData["appServerAgents"] = appServerAgents[idx]
-            hostData["machineAgents"] = machineAgents[idx]
-            hostData["dbAgents"] = dbAgents[idx]
-            hostData["analyticsAgents"] = analyticsAgents[idx]
-
-            hostData["apm"] = OrderedDict()
-            hostData["dashboards"] = OrderedDict()
-            hostData["containers"] = OrderedDict()
-            hostData["brum"] = OrderedDict()
-            hostData["mrum"] = OrderedDict()
-            hostData["analytics"] = OrderedDict()
-
-            for apmApplication in apmApplications[idx]:
-                self.controllerData[controller.host]["apm"][apmApplication["name"]] = apmApplication
 
     def validateThresholdsFile(self):
         logging.info(f"----------Input Validation----------")
@@ -309,7 +217,7 @@ class Engine:
 
     async def process(self):
         logging.info(f"----------Extract----------")
-        for jobStep in [*self.bsgSteps, *self.otherSteps]:
+        for jobStep in [*self.otherSteps, *self.bsgSteps]:
             await jobStep.extract(self.controllerData)
 
         logging.info(f"----------Analyze----------")

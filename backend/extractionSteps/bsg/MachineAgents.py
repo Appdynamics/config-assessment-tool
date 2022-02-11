@@ -4,12 +4,12 @@ import time
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.BSGJobStepBase import BSGJobStepBase
+from extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import substringBetween
 
 
-class MachineAgents(BSGJobStepBase):
+class MachineAgents(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -23,7 +23,7 @@ class MachineAgents(BSGJobStepBase):
 
         nodeIdToMachineAgentAvailabilityMap = {}
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -97,7 +97,7 @@ class MachineAgents(BSGJobStepBase):
         jobStepThresholds = thresholds[jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             hostInfo["machineAgentVersions"] = set()
 

@@ -1,10 +1,10 @@
 import logging
 from collections import OrderedDict
 
-from extractionSteps.BSGJobStepBase import BSGJobStepBase
+from extractionSteps.JobStepBase import JobStepBase
 
 
-class OverallAssessment(BSGJobStepBase):
+class OverallAssessment(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -37,7 +37,7 @@ class OverallAssessment(BSGJobStepBase):
         jobStepThresholds = thresholds[jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
 
