@@ -230,7 +230,7 @@ class Engine:
 
     def finalize(self):
         now = int(time.time())
-        with open(f"output/{self.jobFileName}/info.json", "w", encoding="utf-8") as f:
+        with open(f"output/{self.jobFileName}/info.json", "w", encoding="ISO-8859-1") as f:
             json.dump(
                 {"lastRun": now, "thresholds": self.thresholdsFileName},
                 fp=f,
@@ -238,7 +238,7 @@ class Engine:
                 indent=4,
             )
 
-        with open(f"output/{self.jobFileName}/controllerData.json", "w", encoding="utf-8") as f:
+        with open(f"output/{self.jobFileName}/controllerData.json", "w", encoding="ISO-8859-1") as f:
             json.dump(
                 self.controllerData,
                 fp=f,

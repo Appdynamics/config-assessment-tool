@@ -152,7 +152,7 @@ def package():
 def runBlockingCommand(command: str):
     output = ""
     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
-        line = process.communicate()[0].decode("utf-8").strip()
+        line = process.communicate()[0].decode("ISO-8859-1").strip()
         if line:
             logging.debug(line)
         output += line

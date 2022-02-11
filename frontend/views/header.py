@@ -59,7 +59,7 @@ def header() -> bool:
         pwd = pwdCol.text_input(label="password", value="hunter1", type="password")
 
         if st.form_submit_button("create"):
-            with open(f"../input/jobs/{host[:host.index('.')]}.json", "w", encoding="utf-8") as f:
+            with open(f"../input/jobs/{host[:host.index('.')]}.json", "w", encoding="ISO-8859-1") as f:
                 json.dump(
                     [
                         {
@@ -86,7 +86,7 @@ def header() -> bool:
             # if file exists
             if os.path.exists("../input/thresholds/DefaultThresholds.json"):
                 defaultThresholds = json.loads(open("../input/thresholds/DefaultThresholds.json").read())
-                with open(f"../input/thresholds/{host[:host.index('.')]}.json", "w", encoding="utf-8") as f:
+                with open(f"../input/thresholds/{host[:host.index('.')]}.json", "w", encoding="ISO-8859-1") as f:
                     json.dump(defaultThresholds, fp=f, ensure_ascii=False, indent=4)
                 if os.path.exists(f"../input/thresholds/{host[:host.index('.')]}.json"):
                     st.info(f"Successfully created thresholds for job '{host[:host.index('.')]}'")

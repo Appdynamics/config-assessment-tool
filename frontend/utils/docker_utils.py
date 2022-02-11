@@ -57,7 +57,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
     logTextBox = st.empty()
     logText = ""
     for log in client.logs(container.get("Id"), stream=True):
-        logText = log.decode("utf-8") + logText
+        logText = log.decode("ISO-8859-1") + logText
         logTextBox.text_area("", logText, height=250)
 
     # small delay to see job ended
@@ -76,7 +76,7 @@ def buildConfigAssessmentToolImage(client: APIClient):
             path=os.path.abspath("../backend"),
             tag="appdynamics/config-assessment-tool-backend",
         ):
-            output = output.decode("utf-8").strip("\r\n")
+            output = output.decode("ISO-8859-1").strip("\r\n")
             for match in re.finditer(r"({.*})+", output):
                 try:
                     logText = json.loads(match.group(1))["stream"] + logText

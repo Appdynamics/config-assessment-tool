@@ -669,7 +669,7 @@ class AppDService:
         await self.session.close()
 
     async def getResultFromResponse(self, response, debugString, isResponseJSON=True, isResponseList=True) -> Result:
-        body = (await response.content.read()).decode("utf-8")
+        body = (await response.content.read()).decode("ISO-8859-1")
         if response.status_code >= 400:
             msg = f"{self.host} - {debugString} failed with code:{response.status_code} body:{body}"
             try:
