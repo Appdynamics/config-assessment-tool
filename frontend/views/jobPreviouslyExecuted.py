@@ -95,7 +95,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
         else:
             payload = {
                 "type": "file",
-                "path": f"output/{jobName}/{jobName}-{report}.xlsx",
+                "path": f"output/{jobName}/{report}.xlsx",
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
