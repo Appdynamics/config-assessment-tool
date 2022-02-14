@@ -45,6 +45,7 @@ class AppDService:
             auth=auth,
             client=AiohttpClient(session=self.session),
         )
+        self.totalCallsProcessed = 0
 
     def __json__(self):
         return {
@@ -670,6 +671,8 @@ class AppDService:
 
     async def getResultFromResponse(self, response, debugString, isResponseJSON=True, isResponseList=True) -> Result:
         body = (await response.content.read()).decode("ISO-8859-1")
+        self.totalCallsProcessed += 1
+
         if response.status_code >= 400:
             msg = f"{self.host} - {debugString} failed with code:{response.status_code} body:{body}"
             try:

@@ -13,10 +13,10 @@ from util.xcel_utils import (
 from reports.ReportBase import ReportBase
 
 
-class BSGReport(ReportBase):
+class MaturityAssessmentReport(ReportBase):
     def createWorkbook(self, jobs, controllerData, jobFileName):
         for reportType in ["apm"]:
-            logging.info(f"Creating {reportType} BSG Report Workbook")
+            logging.info(f"Creating {reportType} Maturity Assessment Report Workbook")
 
             # Create Report with Raw Data
             workbook = Workbook()
@@ -64,5 +64,5 @@ class BSGReport(ReportBase):
             # Now that we have the data , Populate the summary sheet with headers
             writeSummarySheet(summarySheet)
 
-            logging.debug(f"Saving BSG Report Workbook")
-            workbook.save(f"output/{jobFileName}/{jobFileName}-BSGReport-{reportType}.xlsx")
+            logging.debug(f"Saving MaturityAssessment-{reportType} Workbook")
+            workbook.save(f"output/{jobFileName}/{jobFileName}-MaturityAssessment-{reportType}.xlsx")

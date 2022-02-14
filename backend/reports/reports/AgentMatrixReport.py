@@ -131,5 +131,5 @@ class AgentMatrixReport(ReportBase):
             addFilterAndFreeze(sheet, "B2")
             resizeColumnWidth(sheet)
 
-        logging.debug(f"Saving Agent Matrix Workbook")
-        workbook.save(f"output/{jobFileName}/{jobFileName}-Agent-Matrix.xlsx")
+        logging.debug(f"Saving AgentMatrix Workbook")
+        workbook.save(f"output/{jobFileName}/{jobFileName}-AgentMatrix.xlsx")
