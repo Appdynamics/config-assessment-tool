@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import math
 import os
 import sys
 import time
@@ -9,24 +10,24 @@ from collections import OrderedDict
 from pathlib import Path
 
 from api.appd.AppDService import AppDService
-from extractionSteps.bsg.ApmDashboards import ApmDashboards
-from extractionSteps.bsg.AppAgents import AppAgents
-from extractionSteps.bsg.Backends import Backends
-from extractionSteps.bsg.BusinessTransactions import BusinessTransactions
-from extractionSteps.bsg.DataCollectors import DataCollectors
-from extractionSteps.bsg.ErrorConfiguration import ErrorConfiguration
-from extractionSteps.bsg.HealthRulesAndAlerting import HealthRulesAndAlerting
-from extractionSteps.bsg.MachineAgents import MachineAgents
-from extractionSteps.bsg.OverallAssessment import OverallAssessment
-from extractionSteps.bsg.Overhead import Overhead
-from extractionSteps.bsg.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.maturityAssessment.ApmDashboards import ApmDashboards
+from extractionSteps.maturityAssessment.AppAgents import AppAgents
+from extractionSteps.maturityAssessment.Backends import Backends
+from extractionSteps.maturityAssessment.BusinessTransactions import BusinessTransactions
+from extractionSteps.maturityAssessment.DataCollectors import DataCollectors
+from extractionSteps.maturityAssessment.ErrorConfiguration import ErrorConfiguration
+from extractionSteps.maturityAssessment.HealthRulesAndAlerting import HealthRulesAndAlerting
+from extractionSteps.maturityAssessment.MachineAgents import MachineAgents
+from extractionSteps.maturityAssessment.OverallAssessment import OverallAssessment
+from extractionSteps.maturityAssessment.Overhead import Overhead
+from extractionSteps.maturityAssessment.ServiceEndpoints import ServiceEndpoints
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
 from reports.reports.AgentMatrixReport import AgentMatrixReport
-from reports.reports.BSGReport import BSGReport
+from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
 from reports.reports.LicenseReport import LicenseReport
-from reports.reports.RawBSGReport import RawDataReport
+from reports.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
 from util.asyncio_utils import gatherWithConcurrency
 from util.stdlib_utils import jsonEncoder
 
@@ -65,7 +66,11 @@ class Engine:
             for controller in self.job
         ]
         self.controllerData = OrderedDict()
-        self.bsgSteps = [
+        self.otherSteps = [
+            ControllerLevelDetails(),
+            CustomMetrics(),
+        ]
+        self.maturityAssessmentSteps = [
             AppAgents(),
             MachineAgents(),
             BusinessTransactions(),
@@ -78,13 +83,9 @@ class Engine:
             ApmDashboards(),
             OverallAssessment(),
         ]
-        self.otherSteps = [
-            ControllerLevelDetails(),
-            CustomMetrics(),
-        ]
         self.reports = [
-            BSGReport(),
-            RawDataReport(),
+            MaturityAssessmentReport(),
+            RawMaturityAssessmentReport(),
             AgentMatrixReport(),
             CustomMetricsReport(),
             LicenseReport(),
@@ -102,8 +103,32 @@ class Engine:
             # catch exceptions here, so we can terminate coroutines before program exit
             logging.error("".join(traceback.TracebackException.from_exception(e).format()))
 
+        logging.info(f"----------Complete----------")
+
+        sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
+        sizeName = ("B", "KB", "MB", "GB")
+        i = int(math.floor(math.log(sizeBytes, 1024)))
+        p = math.pow(1024, i)
+        size = round(sizeBytes / p, 2)
+
+        executionTime = time.monotonic() - startTime
+        mins, secs = divmod(executionTime, 60)
+        hours, mins = divmod(mins, 60)
+        if hours > 0:
+            executionTimeString = f"{int(hours)}h {int(mins)}m {int(secs)}s"
+        elif mins > 0:
+            executionTimeString = f"{int(mins)}m {int(secs)}s"
+        else:
+            executionTimeString = f"{int(secs)}s"
+
+        totalCalls = sum([controller.totalCallsProcessed for controller in self.controllers])
+
+        logging.info(f"Total API calls made: {totalCalls}")
+        logging.info(f"Size of data retrieved: {size} {sizeName[i]}")
+        logging.info(f"Total execution time: {executionTimeString}")
+
         await self.abortAndCleanup(
-            f"Program completed in {str(round((time.monotonic() - startTime), 2))} seconds",
+            "Exiting.",
             error=False,
         )
 
@@ -217,20 +242,20 @@ class Engine:
 
     async def process(self):
         logging.info(f"----------Extract----------")
-        for jobStep in [*self.otherSteps, *self.bsgSteps]:
+        for jobStep in [*self.otherSteps, *self.maturityAssessmentSteps]:
             await jobStep.extract(self.controllerData)
 
         logging.info(f"----------Analyze----------")
-        for jobStep in [*self.bsgSteps, *self.otherSteps]:
+        for jobStep in [*self.maturityAssessmentSteps, *self.otherSteps]:
             jobStep.analyze(self.controllerData, self.thresholds)
 
         logging.info(f"----------Report----------")
         for report in self.reports:
-            report.createWorkbook(self.bsgSteps, self.controllerData, self.jobFileName)
+            report.createWorkbook(self.maturityAssessmentSteps, self.controllerData, self.jobFileName)
 
     def finalize(self):
         now = int(time.time())
-        with open(f"output/{self.jobFileName}/info.json", "w", encoding="utf-8") as f:
+        with open(f"output/{self.jobFileName}/info.json", "w", encoding="ISO-8859-1") as f:
             json.dump(
                 {"lastRun": now, "thresholds": self.thresholdsFileName},
                 fp=f,
@@ -238,7 +263,7 @@ class Engine:
                 indent=4,
             )
 
-        with open(f"output/{self.jobFileName}/controllerData.json", "w", encoding="utf-8") as f:
+        with open(f"output/{self.jobFileName}/controllerData.json", "w", encoding="ISO-8859-1") as f:
             json.dump(
                 self.controllerData,
                 fp=f,
