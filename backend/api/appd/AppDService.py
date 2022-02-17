@@ -27,19 +27,15 @@ class AppDService:
         username: str,
         pwd: str,
         verifySsl: bool = True,
-        proxyUsername: str = None,
-        proxyPassword: str = None,
+        useProxy: bool = False,
     ):
         logging.debug(f"{host} - Initializing controller service")
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
-        if proxyUsername and proxyPassword:
-            auth = MultiAuth(ProxyAuth(proxyUsername, proxyPassword), BasicAuth(f"{username}@{account}", pwd))
-        else:
-            auth = BasicAuth(f"{username}@{account}", pwd)
+        auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
         self.username = username
         connector = aiohttp.TCPConnector(limit=50, verify_ssl=verifySsl)
-        self.session = aiohttp.ClientSession(connector=connector)
+        self.session = aiohttp.ClientSession(connector=connector, trust_env=useProxy)
         self.controller = AppdController(
             base_url=connection_url,
             auth=auth,

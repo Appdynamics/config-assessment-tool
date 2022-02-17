@@ -120,6 +120,13 @@ This program will create the following files in the `out` directory.
 
 ![Scheme](backend/resources/img/architecture.jpg)
 
+## Proxy Support
+
+Support for plain HTTP proxies and HTTP proxies that can be upgraded to HTTPS via the HTTP CONNECT method is provided by enabling the `useProxy` flag in a given job file.
+Enabling this flag will cause the backend to use the proxy specified from environment variables: HTTP_PROXY, HTTPS_PROXY, WS_PROXY or WSS_PROXY (all are case insensitive).
+Proxy credentials are given from ~/.netrc file if present.
+See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/client_advanced.html#proxy-support) for more details.
+
 ## Requirements
 
 - Python 3.5 or above
