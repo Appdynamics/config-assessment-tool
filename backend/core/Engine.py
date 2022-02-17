@@ -60,8 +60,7 @@ class Engine:
                 username=controller["username"],
                 pwd=controller["pwd"],
                 verifySsl=controller.get("verifySsl", True),
-                proxyUsername=controller.get("proxyUsername"),
-                proxyPassword=controller.get("proxyPassword"),
+                useProxy=controller.get("useProxy", False),
             )
             for controller in self.job
         ]

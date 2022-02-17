@@ -7,7 +7,6 @@
 		"username": "foo",
 		"pwd": "hunter1",
 		"verifySsl": true,
-		"proxyUsername": "",
-		"proxyPassword": ""
+		"useProxy": true
 	}
 ]
