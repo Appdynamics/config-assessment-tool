@@ -129,8 +129,9 @@ See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/cli
 
 ## Requirements
 
-- Python 3.5 or above
-- Docker
+- Python 3.5 or above if running with `bin/config-assessment-tool.py`
+- Python 3.9 or above if running from source
+- [Docker](https://www.docker.com/products/docker-desktop)
 
 ## Limitations
 
