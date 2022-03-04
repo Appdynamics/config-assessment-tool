@@ -143,4 +143,8 @@ See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/cli
 
 ## Support
 
-Please email bradley.hjelmar@appdynamics.com for any issues.
+Please email bradley.hjelmar@appdynamics.com for any issues and attach debug logs.
+
+Debug logs can be taken by either:
+- checking the `debug` checkbox in the UI
+- running the backend with the `--debug` or `-d` flag
