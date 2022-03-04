@@ -18,10 +18,7 @@ class OverallAssessmentBRUM(JobStepBase):
 
         jobStepName = type(self).__name__
 
-        jobStepNames = [
-            "NetworkRequests",
-            "HealthRulesAndAlertingBRUM"
-        ]
+        jobStepNames = ["NetworkRequests", "HealthRulesAndAlertingBRUM"]
 
         num_job_steps = len(jobStepNames)
 
