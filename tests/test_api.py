@@ -6,6 +6,7 @@ import pytest
 from api.appd.AppDService import AppDService
 
 APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_APPLICATION_ID"))
+EUM_APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_EUM_APPLICATION_ID"))
 USERNAME = os.getenv("TEST_CONTROLLER_USERNAME")
 
 
@@ -49,8 +50,8 @@ async def testLogin(controller):
 
 
 @pytest.mark.asyncio
-async def testGetApplications(controller):
-    applications = await controller.getApplications()
+async def testGetApmApplications(controller):
+    applications = await controller.getApmApplications()
     assert applications.error is None
 
     application = next(
@@ -631,5 +632,180 @@ async def testGetCustomMetrics(controller):
         assert "metricPath" in customMetric
         assert "iconPath" in customMetric
         assert "hasChildren" in customMetric
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetEumApplications(controller):
+    assert (await controller.loginToController()).error is None
+
+    eumApps = await controller.getEumApplications()
+
+    assert eumApps.error is None
+    assert len(eumApps.data) > 0
+    for eumApp in eumApps.data:
+        assert "name" in eumApp
+        assert "appKey" in eumApp
+        assert "id" in eumApp
+        assert "monitoringEnabled" in eumApp
+        assert "synTotalJobs" in eumApp
+        assert "metrics" in eumApp
+
+        folders = [
+            "syntheticEndUserResponseTime",
+            "syntheticPageRequestsPerMin",
+            "pageRequestsPerMin",
+            "javascriptErrorsPerMin",
+            "endUserResponseTime",
+            "errorRate",
+            "syntheticAvailability",
+        ]
+        metrics = ["metricId", "name", "value", "sum", "count", "graphData"]
+
+        for folder in folders:
+            assert folder in eumApp["metrics"]
+            for metric in metrics:
+                assert metric in eumApp["metrics"][folder]
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetEumPageListViewData(controller):
+    assert (await controller.loginToController()).error is None
+
+    eumPageListViewData = await controller.getEumPageListViewData(EUM_APPLICATION_ID)
+
+    assert eumPageListViewData.error is None
+    assert len(eumPageListViewData.data) > 0
+    assert "application" in eumPageListViewData.data
+    assert "pageIFrameLimit" in eumPageListViewData.data
+    assert "ajaxLimit" in eumPageListViewData.data
+    assert "id" in eumPageListViewData.data["application"]
+    assert "name" in eumPageListViewData.data["application"]
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetPagesAndFramesConfig(controller):
+    assert (await controller.loginToController()).error is None
+
+    pagesAndFramesConfig = await controller.getPagesAndFramesConfig(EUM_APPLICATION_ID)
+
+    assert pagesAndFramesConfig.error is None
+
+    assert "customNamingIncludeRules" in pagesAndFramesConfig.data
+    assert len(pagesAndFramesConfig.data["customNamingIncludeRules"]) > 0
+    for config in pagesAndFramesConfig.data["customNamingIncludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "isDefault" in config
+        assert "pageNamingConfig" in config
+
+    assert "customNamingExcludeRules" in pagesAndFramesConfig.data
+    assert len(pagesAndFramesConfig.data["customNamingExcludeRules"]) > 0
+    for config in pagesAndFramesConfig.data["customNamingExcludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "matchOnIpAddressMasks" in config
+        assert "matchOnUserAgentType" in config
+        assert "matchOnUserAgent" in config
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetAJAXConfig(controller):
+    assert (await controller.loginToController()).error is None
+
+    ajaxConfig = await controller.getAJAXConfig(EUM_APPLICATION_ID)
+
+    assert ajaxConfig.error is None
+
+    assert "customNamingIncludeRules" in ajaxConfig.data
+    assert len(ajaxConfig.data["customNamingIncludeRules"]) > 0
+    for config in ajaxConfig.data["customNamingIncludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "isDefault" in config
+        assert "pageNamingConfig" in config
+
+    assert "customNamingExcludeRules" in ajaxConfig.data
+    assert len(ajaxConfig.data["customNamingExcludeRules"]) > 0
+    for config in ajaxConfig.data["customNamingExcludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "matchOnIpAddressMasks" in config
+        assert "matchOnUserAgentType" in config
+        assert "matchOnUserAgent" in config
+
+    assert "eventServiceIncludeRules" in ajaxConfig.data
+    assert len(ajaxConfig.data["eventServiceIncludeRules"]) > 0
+    for config in ajaxConfig.data["eventServiceIncludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "matchBy" in config
+        assert "samplePercentage" in config
+
+    assert "eventServiceExcludeRules" in ajaxConfig.data
+    assert len(ajaxConfig.data["eventServiceExcludeRules"]) > 0
+    for config in ajaxConfig.data["eventServiceExcludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "matchBy" in config
+
+    await controller.close()
+
+
+@pytest.mark.asyncio
+async def testGetVirtualPagesConfig(controller):
+    assert (await controller.loginToController()).error is None
+
+    virtualPagesConfig = await controller.getVirtualPagesConfig(EUM_APPLICATION_ID)
+
+    assert virtualPagesConfig.error is None
+
+    assert "customNamingIncludeRules" in virtualPagesConfig.data
+    assert len(virtualPagesConfig.data["customNamingIncludeRules"]) > 0
+    for config in virtualPagesConfig.data["customNamingIncludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "isDefault" in config
+        assert "pageNamingConfig" in config
+
+    assert "customNamingExcludeRules" in virtualPagesConfig.data
+    assert len(virtualPagesConfig.data["customNamingExcludeRules"]) > 0
+    for config in virtualPagesConfig.data["customNamingExcludeRules"]:
+        assert "name" in config
+        assert "matchOnMobileApplicationName" in config
+        assert "enabled" in config
+        assert "priority" in config
+        assert "matchOnURL" in config
+        assert "matchOnIpAddressMasks" in config
+        assert "matchOnUserAgentType" in config
+        assert "matchOnUserAgent" in config
 
     await controller.close()

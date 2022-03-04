@@ -7,16 +7,21 @@ from reports.ReportBase import ReportBase
 
 class RawMaturityAssessmentReport(ReportBase):
     def createWorkbook(self, jobs, controllerData, jobFileName):
-        for reportType in ["apm"]:
+        for reportType in ["apm", "brum"]:
             logging.info(f"Creating {reportType} Maturity Assessment Raw Report")
 
             # Create Report with Raw Maturity Assessment Report
             workbook = Workbook()
-            del workbook["Sheet"]
 
             filteredJobs = [job for job in jobs if job.componentType == reportType]
 
-            for jobStep in jobs:
+            if filteredJobs:
+                del workbook["Sheet"]
+            else:
+                summarySheet = workbook["Sheet"]
+                summarySheet.title = "Summary"
+
+            for jobStep in filteredJobs:
                 jobStep.reportData(workbook, controllerData, type(jobStep).__name__, False, False)
 
             logging.debug(f"Saving Raw MaturityAssessment-{reportType} Workbook")

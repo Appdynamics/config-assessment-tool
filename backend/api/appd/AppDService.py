@@ -95,10 +95,10 @@ class AppDService:
         response = await self.controller.getBTs(applicationID)
         return await self.getResultFromResponse(response, debugString)
 
-    async def getApplications(self) -> Result:
+    async def getApmApplications(self) -> Result:
         debugString = f"Gathering applications"
         logging.debug(f"{self.host} - {debugString}")
-        response = await self.controller.getApplications()
+        response = await self.controller.getApmApplications()
         result = await self.getResultFromResponse(response, debugString)
         # apparently it's possible to have a null application name, the controller converts the null into "null"
         if result.error is None:
@@ -659,6 +659,59 @@ class AppDService:
         debugString = f"Gathering Analytics Agents"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getAnalyticsAgents()
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getEumApplications(self) -> Result:
+        debugString = f"Gathering EUM Applications"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getEumApplications()
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getEumPageListViewData(self, applicationId: int) -> Result:
+        debugString = f"Gathering EUM Page List View Data"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {"applicationId": applicationId, "addId": None, "timeRangeString": "last_1_hour|BEFORE_NOW|-1|-1|60", "fetchSyntheticData": False}
+        response = await self.controller.getEumPageListViewData(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getEumNetworkRequestList(self, applicationId: int) -> Result:
+        debugString = f"Gathering EUM Page List View Data"
+        logging.debug(f"{self.host} - {debugString}")
+
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+
+        body = {
+            "requestFilter": {"applicationId": applicationId, "fetchSyntheticData": False},
+            "resultColumns": ["PAGE_TYPE", "PAGE_NAME", "TOTAL_REQUESTS", "END_USER_RESPONSE_TIME", "VISUALLY_COMPLETE_TIME"],
+            "offset": 0,
+            "limit": -1,
+            "searchFilters": [],
+            "columnSorts": [{"column": "TOTAL_REQUESTS", "direction": "DESC"}],
+            "timeRangeStart": last24Hours,
+            "timeRangeEnd": currentTime,
+        }
+        response = await self.controller.getEumNetworkRequestList(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getPagesAndFramesConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering Pages and Frames Config"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getPagesAndFramesConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getAJAXConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering AJAX Config"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getAJAXConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getVirtualPagesConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering Virtual Pages Config"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getVirtualPagesConfig(applicationId)
         return await self.getResultFromResponse(response, debugString)
 
     async def close(self):
