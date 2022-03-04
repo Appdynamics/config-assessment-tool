@@ -70,21 +70,22 @@ ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThre
 
 #### Steps to run
 
-Required 
+Required
 
 1. `git clone https://github.com/Appdynamics/config-assessment-tool.git`
 2. `cd config-assessment-tool`
 3. `pipenv install`
 4. `pipenv shell`
-5. `python3 backend.py -j acme -t DefaultThresholds`
+5. `python3 backend/backend.py -j acme -t DefaultThresholds`
 
 ```
 Usage: backend.py [OPTIONS]
 
 Options:
-  -j, --job-file FILENAME
-  -t, --thresholds-file FILENAME
-  --help Show this message and exit.
+  -j, --job-file TEXT
+  -t, --thresholds-file TEXT
+  -d, --debug
+  --help                      Show this message and exit.
 ```
 
 Options `--job-file` and `--thresholds-file` will default to `DefaultJob` and `DefaultThresholds` respectively.
@@ -99,20 +100,20 @@ The frontend can be invoked by navigating to `config_assessment_tool/frontend` a
 This program will create the following files in the `out` directory.
 
 - `{jobName}-BSGReport-apm.xlsx`
-  - Bronze/Silver/Gold report
+    - Bronze/Silver/Gold report
 - `{jobName}-Agent-Matrix.xlsx`
-  - Details agent versions rolled up by application
-  - Lists the details of individual without any rollup
+    - Details agent versions rolled up by application
+    - Lists the details of individual without any rollup
 - `{jobName}-CustomMetricsReport.xlsx`
-  - Lists which applications are leveraging Custom Extensions 
+    - Lists which applications are leveraging Custom Extensions
 - `{jobName}-License.xlsx`
-  - Export of the License Usage page in the Controller
+    - Export of the License Usage page in the Controller
 - `{jobName}-RawBSGReport.xlsx`
-  - Raw metrics which go into the above BSG report 
+    - Raw metrics which go into the above BSG report
 - `controllerData.json`
-  - Contains all raw data used in analysis.
+    - Contains all raw data used in analysis.
 - `info.json`
-  - Contains information on previous job execution.
+    - Contains information on previous job execution.
 
 ## Program Architecture
 
@@ -122,15 +123,15 @@ This program will create the following files in the `out` directory.
 
 ## Proxy Support
 
-Support for plain HTTP proxies and HTTP proxies that can be upgraded to HTTPS via the HTTP CONNECT method is provided by enabling the `useProxy` flag in a given job file.
-Enabling this flag will cause the backend to use the proxy specified from environment variables: HTTP_PROXY, HTTPS_PROXY, WS_PROXY or WSS_PROXY (all are case insensitive).
-Proxy credentials are given from ~/.netrc file if present.
+Support for plain HTTP proxies and HTTP proxies that can be upgraded to HTTPS via the HTTP CONNECT method is provided by enabling the `useProxy` flag in a given job file. Enabling this flag will cause
+the backend to use the proxy specified from environment variables: HTTP_PROXY, HTTPS_PROXY, WS_PROXY or WSS_PROXY (all are case insensitive). Proxy credentials are given from ~/.netrc file if present.
 See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/client_advanced.html#proxy-support) for more details.
 
 ## Requirements
 
-- Python 3.5 or above
-- Docker
+- Python 3.5 or above if running with `bin/config-assessment-tool.py`
+- Python 3.9 or above if running from source
+- [Docker](https://www.docker.com/products/docker-desktop)
 
 ## Limitations
 
@@ -143,4 +144,9 @@ See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/cli
 
 ## Support
 
-Please email bradley.hjelmar@appdynamics.com for any issues.
+Please email bradley.hjelmar@appdynamics.com for any issues and attach debug logs.
+
+Debug logs can be taken by either:
+
+- checking the `debug` checkbox in the UI
+- running the backend with the `--debug` or `-d` flag
