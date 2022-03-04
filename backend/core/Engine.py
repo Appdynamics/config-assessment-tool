@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import math
@@ -10,19 +9,22 @@ from collections import OrderedDict
 from pathlib import Path
 
 from api.appd.AppDService import AppDService
-from extractionSteps.maturityAssessment.ApmDashboards import ApmDashboards
-from extractionSteps.maturityAssessment.AppAgents import AppAgents
-from extractionSteps.maturityAssessment.Backends import Backends
-from extractionSteps.maturityAssessment.BusinessTransactions import BusinessTransactions
-from extractionSteps.maturityAssessment.DataCollectors import DataCollectors
-from extractionSteps.maturityAssessment.ErrorConfiguration import ErrorConfiguration
-from extractionSteps.maturityAssessment.HealthRulesAndAlerting import HealthRulesAndAlerting
-from extractionSteps.maturityAssessment.MachineAgents import MachineAgents
-from extractionSteps.maturityAssessment.OverallAssessment import OverallAssessment
-from extractionSteps.maturityAssessment.Overhead import Overhead
-from extractionSteps.maturityAssessment.ServiceEndpoints import ServiceEndpoints
+from extractionSteps.maturityAssessment.apm.ApmDashboards import ApmDashboards
+from extractionSteps.maturityAssessment.apm.AppAgents import AppAgents
+from extractionSteps.maturityAssessment.apm.Backends import Backends
+from extractionSteps.maturityAssessment.apm.BusinessTransactions import BusinessTransactions
+from extractionSteps.maturityAssessment.apm.DataCollectors import DataCollectors
+from extractionSteps.maturityAssessment.apm.ErrorConfiguration import ErrorConfiguration
+from extractionSteps.maturityAssessment.apm.HealthRulesAndAlertingAPM import HealthRulesAndAlertingAPM
+from extractionSteps.maturityAssessment.apm.MachineAgents import MachineAgents
+from extractionSteps.maturityAssessment.apm.OverallAssessmentAPM import OverallAssessmentAPM
+from extractionSteps.maturityAssessment.apm.Overhead import Overhead
+from extractionSteps.maturityAssessment.apm.ServiceEndpoints import ServiceEndpoints
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
+from extractionSteps.maturityAssessment.brum.HealthRulesAndAlertingBRUM import HealthRulesAndAlertingBRUM
+from extractionSteps.maturityAssessment.brum.NetworkRequests import NetworkRequests
+from extractionSteps.maturityAssessment.brum.OverallAssessmentBrum import OverallAssessmentBRUM
 from reports.reports.AgentMatrixReport import AgentMatrixReport
 from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
@@ -35,6 +37,7 @@ from util.stdlib_utils import jsonEncoder
 class Engine:
     def __init__(self, jobFileName: str, thresholdsFileName: str):
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
+        logging.info(f"Software Version: {open(f'VERSION').read()}")
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
@@ -70,6 +73,7 @@ class Engine:
             CustomMetrics(),
         ]
         self.maturityAssessmentSteps = [
+            # APM Report
             AppAgents(),
             MachineAgents(),
             BusinessTransactions(),
@@ -77,10 +81,14 @@ class Engine:
             Overhead(),
             ServiceEndpoints(),
             ErrorConfiguration(),
-            HealthRulesAndAlerting(),
+            HealthRulesAndAlertingAPM(),
             DataCollectors(),
             ApmDashboards(),
-            OverallAssessment(),
+            OverallAssessmentAPM(),
+            # BRUM Report
+            NetworkRequests(),
+            HealthRulesAndAlertingBRUM(),
+            OverallAssessmentBRUM(),
         ]
         self.reports = [
             MaturityAssessmentReport(),
@@ -166,8 +174,8 @@ class Engine:
         logging.info(f"----------Input Validation----------")
         logging.info(f"Validating Thresholds - {self.thresholdsFileName}")
 
-        def thresholdStrictlyDecreasing(jobStep, thresholdMetric) -> bool:
-            thresholds = self.thresholds[jobStep]
+        def thresholdStrictlyDecreasing(jobStep, thresholdMetric, componentType: str) -> bool:
+            thresholds = self.thresholds[componentType][jobStep]
             if all(
                 value is True
                 for value in [
@@ -188,8 +196,8 @@ class Engine:
                 return False
             return thresholds["platinum"][thresholdMetric] >= thresholds["gold"][thresholdMetric] >= thresholds["silver"][thresholdMetric]
 
-        def thresholdStrictlyIncreasing(jobStep, thresholdMetric) -> bool:
-            thresholds = self.thresholds[jobStep]
+        def thresholdStrictlyIncreasing(jobStep, thresholdMetric, componentType: str) -> bool:
+            thresholds = self.thresholds[componentType][jobStep]
             if all(
                 value is False
                 for value in [
@@ -213,26 +221,27 @@ class Engine:
         thresholdLevels = ["platinum", "gold", "silver"]
 
         fail = False
-        for jobStep, currThresholdLevels in self.thresholds.items():
-            if list(currThresholdLevels.keys()) != thresholdLevels:
-                logging.error(f"Thresholds file does not contains all of {thresholdLevels} on JobStep {jobStep}")
-                fail = True
-                break
-            if not (currThresholdLevels["platinum"].keys() == currThresholdLevels["gold"].keys() == currThresholdLevels["silver"].keys()):
-                logging.error(f"Thresholds file does not contain same evaluation metrics for each threshold level on JobStep {jobStep}")
-                fail = True
-                break
-            self.thresholds[jobStep]["direction"] = {}  # increasing or decreasing
-            for metric in currThresholdLevels["platinum"].keys():
-                if thresholdStrictlyIncreasing(jobStep, metric):
-                    self.thresholds[jobStep]["direction"][metric] = "increasing"
-                elif thresholdStrictlyDecreasing(jobStep, metric):
-                    self.thresholds[jobStep]["direction"][metric] = "decreasing"
-                else:
-                    logging.error(
-                        f"Thresholds file does not contain strictly increasing/decreasing evaluation metric thresholds for {metric} on JobStep {jobStep}"
-                    )
+        for componentType, thresholds in self.thresholds.items():
+            for jobStep, currThresholdLevels in thresholds.items():
+                if list(currThresholdLevels.keys()) != thresholdLevels:
+                    logging.error(f"Thresholds file does not contains all of {thresholdLevels} on JobStep {jobStep}")
                     fail = True
+                    break
+                if not (currThresholdLevels["platinum"].keys() == currThresholdLevels["gold"].keys() == currThresholdLevels["silver"].keys()):
+                    logging.error(f"Thresholds file does not contain same evaluation metrics for each threshold level on JobStep {jobStep}")
+                    fail = True
+                    break
+                thresholds[jobStep]["direction"] = {}  # increasing or decreasing
+                for metric in currThresholdLevels["platinum"].keys():
+                    if thresholdStrictlyIncreasing(jobStep, metric, componentType):
+                        thresholds[jobStep]["direction"][metric] = "increasing"
+                    elif thresholdStrictlyDecreasing(jobStep, metric, componentType):
+                        thresholds[jobStep]["direction"][metric] = "decreasing"
+                    else:
+                        logging.error(
+                            f"Thresholds file does not contain strictly increasing/decreasing evaluation metric thresholds for {metric} on JobStep {jobStep}"
+                        )
+                        fail = True
         if fail:
             logging.error(f"Invalid thresholds file. Aborting.")
             sys.exit(0)

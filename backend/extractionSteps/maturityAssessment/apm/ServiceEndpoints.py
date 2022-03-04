@@ -56,7 +56,7 @@ class ServiceEndpoints(JobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')

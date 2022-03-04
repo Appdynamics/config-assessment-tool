@@ -26,9 +26,12 @@ class ControllerLevelDetails(JobStepBase):
             hostInfo["mrum"] = OrderedDict()
             hostInfo["analytics"] = OrderedDict()
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting Applications')
-            for apmApplication in (await controller.getApplications()).data:
+            logging.info(f'{hostInfo["controller"].host} - Extracting APM Applications')
+            for apmApplication in (await controller.getApmApplications()).data:
                 hostInfo["apm"][apmApplication["name"]] = apmApplication
+            logging.info(f'{hostInfo["controller"].host} - EUM Applications')
+            for eumApplication in (await controller.getEumApplications()).data:
+                hostInfo["brum"][eumApplication["name"]] = eumApplication
 
             logging.info(f'{hostInfo["controller"].host} - Extracting Controller Configurations')
             hostInfo["configurations"] = (await controller.getConfigurations()).data

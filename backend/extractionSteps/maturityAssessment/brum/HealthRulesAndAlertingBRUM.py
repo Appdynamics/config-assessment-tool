@@ -8,9 +8,9 @@ from extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import gatherWithConcurrency
 
 
-class HealthRulesAndAlerting(JobStepBase):
+class HealthRulesAndAlertingBRUM(JobStepBase):
     def __init__(self):
-        super().__init__("apm")
+        super().__init__("brum")
 
     async def extract(self, controllerData):
         """
@@ -67,9 +67,8 @@ class HealthRulesAndAlerting(JobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
-        defaultHealthRules = json.loads(open("backend/resources/controllerDefaults/defaultHealthRules.json").read())
         for host, hostInfo in controllerData.items():
             logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
@@ -85,22 +84,6 @@ class HealthRulesAndAlerting(JobStepBase):
                 policyEventCounts = application["eventCounts"]["policyViolationEventCounts"]["totalPolicyViolations"]
                 analysisDataEvaluatedMetrics["numberOfHealthRuleViolationsLast24Hours"] = policyEventCounts["warning"] + policyEventCounts["critical"]
 
-                # numberOfDefaultHealthRulesModified
-                defaultHealthRulesModified = 0
-                for hrName, heathRule in defaultHealthRules.items():
-                    if hrName in application["healthRules"]:
-                        del application["healthRules"][hrName]["id"]
-                        healthRuleDiff = DeepDiff(
-                            defaultHealthRules[hrName],
-                            application["healthRules"][hrName],
-                            ignore_order=True,
-                        )
-                        if healthRuleDiff != {}:
-                            defaultHealthRulesModified += 1
-                    else:
-                        defaultHealthRulesModified += 1
-                analysisDataEvaluatedMetrics["numberOfDefaultHealthRulesModified"] = defaultHealthRulesModified
-
                 # numberOfActionsBoundToEnabledPolicies
                 actionsInEnabledPolicies = set()
                 for policy in application["policies"]:
@@ -110,9 +93,7 @@ class HealthRulesAndAlerting(JobStepBase):
                 analysisDataEvaluatedMetrics["numberOfActionsBoundToEnabledPolicies"] = len(actionsInEnabledPolicies)
 
                 # numberOfCustomHealthRules
-                analysisDataEvaluatedMetrics["numberOfCustomHealthRules"] = len(
-                    set(application["healthRules"].keys()).symmetric_difference(defaultHealthRules.keys())
-                )
+                analysisDataEvaluatedMetrics["numberOfCustomHealthRules"] = len(application["healthRules"])
 
                 analysisDataRawMetrics["totalWarningPolicyViolationsLast24Hours"] = policyEventCounts["warning"]
                 analysisDataRawMetrics["totalCriticalPolicyViolationsLast24Hours"] = policyEventCounts["critical"]
