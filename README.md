@@ -76,7 +76,7 @@ Required
 2. `cd config-assessment-tool`
 3. `pipenv install`
 4. `pipenv shell`
-5. `python3 backend.py -j acme -t DefaultThresholds`
+5. `python3 backend/backend.py -j acme -t DefaultThresholds`
 
 ```
 Usage: backend.py [OPTIONS]
