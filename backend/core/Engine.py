@@ -37,7 +37,7 @@ from util.stdlib_utils import jsonEncoder
 class Engine:
     def __init__(self, jobFileName: str, thresholdsFileName: str):
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
-        self.codebaseVersion = open(f'VERSION').read()
+        self.codebaseVersion = open(f"VERSION").read()
         logging.info(f"Software Version: {self.codebaseVersion}")
 
         # Validate jobFileName and thresholdFileName
@@ -176,9 +176,13 @@ class Engine:
         logging.info(f"Validating Thresholds - {self.thresholdsFileName}")
 
         if "version" not in self.thresholds:
-            await self.abortAndCleanup(f"Thresholds file is not versioned. Please use thresholds file compatible with {self.codebaseVersion}. Aborting.")
+            await self.abortAndCleanup(
+                f"Thresholds file is not versioned. Please use thresholds file compatible with {self.codebaseVersion}. Aborting."
+            )
         if self.codebaseVersion != self.thresholds["version"]:
-            await self.abortAndCleanup(f"Thresholds file version {self.thresholds['version']} is incompatible with codebase version {self.codebaseVersion}. Aborting.")
+            await self.abortAndCleanup(
+                f"Thresholds file version {self.thresholds['version']} is incompatible with codebase version {self.codebaseVersion}. Aborting."
+            )
         # only need this once right here, we remove it for simpler iteration of thresholds
         del self.thresholds["version"]
 
