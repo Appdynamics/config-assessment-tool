@@ -14,10 +14,17 @@ There are three options to run the tool:
 2. Directly via Docker: The backend container can be run manually from the command line
 3. From Source: Manually install dependencies and run the `backend.py` script directly
 
-### Important step for running on windows
+### Important step for running on Windows
 
 Docker on Windows requires manually sharing the `/input`, `/output`, and `/logs` directories with the container. If you do not follow this step, you will get the following error when trying to run the
 container: `DockerException Filesharing has been cancelled`. Take a look at the documentation [here](https://docs.docker.com/desktop/windows/) for more information.
+
+### Expected Permissions
+The tool expects ONLY the following permissions to be given:
+
+- Account Owner (Default)
+- Administrator (Default)
+- Analytics Administrator (Default)
 
 ### UI method
 
