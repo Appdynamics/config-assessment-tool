@@ -121,6 +121,7 @@ def build():
         runBlockingCommand("docker build -t ghcr.io/appdynamics/config-assessment-tool-frontend:latest -f frontend/Dockerfile .")
     else:
         logging.info("Dockerfiles not found in either backend/ or frontend/.")
+        logging.info("Please either clone the full repository to build the images manually.")
 
 
 # pull latest images from ghrc.io if on a unix system

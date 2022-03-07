@@ -27,5 +27,6 @@ ENV PATH="/backend/.venv/bin:$PATH"
 
 ## Install application into container
 COPY backend ./backend
+COPY VERSION .
 
 ENTRYPOINT [ "python", "backend/backend.py" ]

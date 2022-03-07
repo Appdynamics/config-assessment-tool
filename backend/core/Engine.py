@@ -37,7 +37,8 @@ from util.stdlib_utils import jsonEncoder
 class Engine:
     def __init__(self, jobFileName: str, thresholdsFileName: str):
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
-        logging.info(f"Software Version: {open(f'VERSION').read()}")
+        self.codebaseVersion = open(f'VERSION').read()
+        logging.info(f"Software Version: {self.codebaseVersion}")
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
@@ -102,7 +103,7 @@ class Engine:
         startTime = time.monotonic()
 
         try:
-            self.validateThresholdsFile()
+            await self.validateThresholdsFile()
             await self.initControllers()
             await self.process()
             self.finalize()
@@ -170,9 +171,16 @@ class Engine:
             hostData = self.controllerData[controller.host]
             hostData["controller"] = controller
 
-    def validateThresholdsFile(self):
+    async def validateThresholdsFile(self):
         logging.info(f"----------Input Validation----------")
         logging.info(f"Validating Thresholds - {self.thresholdsFileName}")
+
+        if "version" not in self.thresholds:
+            await self.abortAndCleanup(f"Thresholds file is not versioned. Please use thresholds file compatible with {self.codebaseVersion}. Aborting.")
+        if self.codebaseVersion != self.thresholds["version"]:
+            await self.abortAndCleanup(f"Thresholds file version {self.thresholds['version']} is incompatible with codebase version {self.codebaseVersion}. Aborting.")
+        # only need this once right here, we remove it for simpler iteration of thresholds
+        del self.thresholds["version"]
 
         def thresholdStrictlyDecreasing(jobStep, thresholdMetric, componentType: str) -> bool:
             thresholds = self.thresholds[componentType][jobStep]
