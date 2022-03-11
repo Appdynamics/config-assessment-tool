@@ -92,7 +92,8 @@ Options:
   -j, --job-file TEXT
   -t, --thresholds-file TEXT
   -d, --debug
-  --help                      Show this message and exit.
+  -c, --concurrent-connections INTEGER
+  --help                          Show this message and exit.
 ```
 
 Options `--job-file` and `--thresholds-file` will default to `DefaultJob` and `DefaultThresholds` respectively.
