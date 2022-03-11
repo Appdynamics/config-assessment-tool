@@ -78,10 +78,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
     (
         openReportColumn,
         openReportButton,
-        _,
-        _,
-        _,
-    ) = st.columns([3, 2, 2, 1.5, 2])
+    ) = st.columns([4, 1])
 
     reportFiles = [f[: len(f) - 5] for f in os.listdir(f"../output/{jobName}") if f.endswith("xlsx") and not f.startswith("~$")]
     report = openReportColumn.selectbox(
