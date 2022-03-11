@@ -120,27 +120,29 @@ class Engine:
 
         logging.info(f"----------Complete----------")
 
-        sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
-        sizeName = ("B", "KB", "MB", "GB")
-        i = int(math.floor(math.log(sizeBytes, 1024)))
-        p = math.pow(1024, i)
-        size = round(sizeBytes / p, 2)
+        # if controllerData.json file exists, delete it
+        if Path(f"output/{self.jobFileName}/controllerData.json").exists():
+            sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
+            sizeName = ("B", "KB", "MB", "GB")
+            i = int(math.floor(math.log(sizeBytes, 1024)))
+            p = math.pow(1024, i)
+            size = round(sizeBytes / p, 2)
 
-        executionTime = time.monotonic() - startTime
-        mins, secs = divmod(executionTime, 60)
-        hours, mins = divmod(mins, 60)
-        if hours > 0:
-            executionTimeString = f"{int(hours)}h {int(mins)}m {int(secs)}s"
-        elif mins > 0:
-            executionTimeString = f"{int(mins)}m {int(secs)}s"
-        else:
-            executionTimeString = f"{int(secs)}s"
+            executionTime = time.monotonic() - startTime
+            mins, secs = divmod(executionTime, 60)
+            hours, mins = divmod(mins, 60)
+            if hours > 0:
+                executionTimeString = f"{int(hours)}h {int(mins)}m {int(secs)}s"
+            elif mins > 0:
+                executionTimeString = f"{int(mins)}m {int(secs)}s"
+            else:
+                executionTimeString = f"{int(secs)}s"
 
-        totalCalls = sum([controller.totalCallsProcessed for controller in self.controllers])
+            totalCalls = sum([controller.totalCallsProcessed for controller in self.controllers])
 
-        logging.info(f"Total API calls made: {totalCalls}")
-        logging.info(f"Size of data retrieved: {size} {sizeName[i]}")
-        logging.info(f"Total execution time: {executionTimeString}")
+            logging.info(f"Total API calls made: {totalCalls}")
+            logging.info(f"Size of data retrieved: {size} {sizeName[i]}")
+            logging.info(f"Total execution time: {executionTimeString}")
 
         await self.abortAndCleanup(
             "Exiting.",
