@@ -5,7 +5,7 @@ from deepdiff import DeepDiff
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class HealthRulesAndAlertingBRUM(JobStepBase):
@@ -40,9 +40,9 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
                 getHealthRulesFutures.append(controller.getHealthRules(application["id"]))
                 getPoliciesFutures.append(controller.getPolicies(application["id"]))
 
-            eventCounts = await gatherWithConcurrency(*getEventCountsFutures)
-            healthRules = await gatherWithConcurrency(*getHealthRulesFutures)
-            policies = await gatherWithConcurrency(*getPoliciesFutures)
+            eventCounts = await AsyncioUtils.gatherWithConcurrency(*getEventCountsFutures)
+            healthRules = await AsyncioUtils.gatherWithConcurrency(*getHealthRulesFutures)
+            policies = await AsyncioUtils.gatherWithConcurrency(*getPoliciesFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]

@@ -4,7 +4,7 @@ from itertools import count
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class NetworkRequests(JobStepBase):
@@ -34,11 +34,11 @@ class NetworkRequests(JobStepBase):
                 getAJAXConfigFutures.append(controller.getAJAXConfig(application["id"]))
                 getVirtualPagesConfigFutures.append(controller.getVirtualPagesConfig(application["id"]))
 
-            eumPageListViewData = await gatherWithConcurrency(*getEumPageListViewDataFutures)
-            eumNetworkRequestList = await gatherWithConcurrency(*getEumNetworkRequestListFutures)
-            pagesAndFramesConfig = await gatherWithConcurrency(*getPagesAndFramesConfigFutures)
-            ajaxConfig = await gatherWithConcurrency(*getAJAXConfigFutures)
-            virtualPagesConfig = await gatherWithConcurrency(*getVirtualPagesConfigFutures)
+            eumPageListViewData = await AsyncioUtils.gatherWithConcurrency(*getEumPageListViewDataFutures)
+            eumNetworkRequestList = await AsyncioUtils.gatherWithConcurrency(*getEumNetworkRequestListFutures)
+            pagesAndFramesConfig = await AsyncioUtils.gatherWithConcurrency(*getPagesAndFramesConfigFutures)
+            ajaxConfig = await AsyncioUtils.gatherWithConcurrency(*getAJAXConfigFutures)
+            virtualPagesConfig = await AsyncioUtils.gatherWithConcurrency(*getVirtualPagesConfigFutures)
 
             for idx, application in enumerate(hostInfo[self.componentType]):
                 hostInfo[self.componentType][application]["eumPageListViewData"] = eumPageListViewData[idx].data

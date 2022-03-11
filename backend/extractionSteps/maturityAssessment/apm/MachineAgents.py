@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
@@ -38,7 +38,7 @@ class MachineAgents(JobStepBase):
                         duration_in_mins="60",
                     )
                 )
-            machineAgentAvailability = await gatherWithConcurrency(*machineAgentAvailabilityFutures)
+            machineAgentAvailability = await AsyncioUtils.gatherWithConcurrency(*machineAgentAvailabilityFutures)
 
             # Create a dictionary of Node -> Calls Per Minute for fast lookup
             for rolledUpMetrics in machineAgentAvailability:

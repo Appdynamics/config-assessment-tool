@@ -3,7 +3,6 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
 
 
 class ControllerLevelDetails(JobStepBase):

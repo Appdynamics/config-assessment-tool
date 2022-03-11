@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from typing import Tuple, Any
 from urllib import parse
 
 import requests
@@ -10,7 +11,7 @@ from FileHandler import openFolder
 from utils.docker_utils import isDocker
 
 
-def header() -> bool:
+def header() -> tuple[bool, bool]:
     st.markdown(
         f"""
                 <style>
@@ -28,7 +29,8 @@ def header() -> bool:
 
     st.title("config-assessment-tool")
     st.markdown("""---""")
-    openJobsFolderColumn, openThresholdsFolderColumn, enableDebugColumn = st.columns(3)
+    openJobsFolderColumn, openThresholdsFolderColumn, optionsColumn = st.columns(3)
+
     if openJobsFolderColumn.button(f"Open Jobs Folder"):
         if not isDocker():
             openFolder(f"../input/jobs")
@@ -36,6 +38,7 @@ def header() -> bool:
             payload = {"type": "folder", "path": f"input/jobs"}
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
+
     if openThresholdsFolderColumn.button(f"Open Thresholds Folder"):
         if not isDocker():
             openFolder(f"../input/thresholds")
@@ -70,8 +73,7 @@ def header() -> bool:
                             "username": username,
                             "pwd": pwd,
                             "verifySsl": True,
-                            "proxyUsername": None,
-                            "proxyPassword": None,
+                            "useProxy": True,
                         }
                     ],
                     fp=f,
@@ -100,7 +102,8 @@ def header() -> bool:
             # refresh the page to see newly generated report
             raise st.script_runner.RerunException(st.script_request_queue.RerunData(None))
 
-    debug = enableDebugColumn.checkbox("Enable Debug")
+    debug = optionsColumn.checkbox("Enable Debug")
+    throttleNetworkConnections = optionsColumn.checkbox("Throttle Network Connections")
     st.markdown("""---""")
 
-    return debug
+    return debug, throttleNetworkConnections

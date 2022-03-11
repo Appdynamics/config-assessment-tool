@@ -10,7 +10,7 @@ from docker import APIClient
 from utils.streamlit_utils import rerun
 
 
-def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool = False):
+def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int):
     if not isDocker():
         root = os.path.abspath("..")
     else:
@@ -25,7 +25,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         outputSource = ("/" + outputSource[:1] + "/" + outputSource[3:]).replace("\\", "/")
         logsSource = ("/" + logsSource[:1] + "/" + logsSource[3:]).replace("\\", "/")
 
-    command = ["-j", jobFile, "-t", thresholds]
+    command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections)]
     if debug:
         command.append("-d")
 

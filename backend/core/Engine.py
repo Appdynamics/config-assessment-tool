@@ -30,12 +30,16 @@ from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
 from reports.reports.LicenseReport import LicenseReport
 from reports.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int):
+        # cd to config-assessment-tool root directory
+        path = os.path.realpath(f"{__file__}/../../..")
+        os.chdir(path)
+
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
         self.codebaseVersion = open(f"VERSION").read()
         logging.info(f"Software Version: {self.codebaseVersion}")
@@ -53,6 +57,9 @@ class Engine:
             os.makedirs(f"output/{self.jobFileName}")
         self.job = json.loads(open(f"input/jobs/{self.jobFileName}.json").read())
         self.thresholds = json.loads(open(f"input/thresholds/{self.thresholdsFileName}.json").read())
+
+        # Set concurrentConnections
+        AsyncioUtils.init(concurrentConnections)
 
         # Instantiate controllers, jobs, and report lists
         self.controllers = [
@@ -144,12 +151,12 @@ class Engine:
         logging.info(f"Validating Controller Login(s) for Job - {self.jobFileName} ")
 
         loginFutures = [controller.loginToController() for controller in self.controllers]
-        loginResults = await gatherWithConcurrency(*loginFutures)
+        loginResults = await AsyncioUtils.gatherWithConcurrency(*loginFutures)
         if any(login.error is not None for login in loginResults):
             await self.abortAndCleanup(f"Unable to connect to one or more controllers. Aborting.")
 
         userPermissionFutures = [controller.getUserPermissions(controller.username) for controller in self.controllers]
-        userPermissionsResults = await gatherWithConcurrency(*userPermissionFutures)
+        userPermissionsResults = await AsyncioUtils.gatherWithConcurrency(*userPermissionFutures)
         if any(userPermissions.error is not None for userPermissions in userPermissionsResults):
             await self.abortAndCleanup(f"Get user permissions failed for one or more controllers. Aborting.")
 
@@ -294,10 +301,8 @@ class Engine:
 
     async def abortAndCleanup(self, msg: str, error=True):
         """Closes open controller connections"""
-        await gatherWithConcurrency(*[controller.close() for controller in self.controllers])
+        await AsyncioUtils.gatherWithConcurrency(*[controller.close() for controller in self.controllers])
         if error:
             logging.error(msg)
-            sys.exit(1)
         else:
             logging.info(msg)
-            sys.exit(0)

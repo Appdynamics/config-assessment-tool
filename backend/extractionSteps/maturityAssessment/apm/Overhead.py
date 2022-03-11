@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class Overhead(JobStepBase):
@@ -34,12 +34,12 @@ class Overhead(JobStepBase):
                 getInstrumentationLevelFutures.append(controller.getInstrumentationLevel(application["id"]))
                 getAllNodePropertiesForCustomizedComponentsFutures.append(controller.getAllNodePropertiesForCustomizedComponents(application["id"]))
                 getApplicationConfigurationFutures.append(controller.getApplicationConfiguration(application["id"]))
-            devModeConfigs = await gatherWithConcurrency(*getDevModeConfigFutures)
-            instrumentationLevels = await gatherWithConcurrency(*getInstrumentationLevelFutures)
+            devModeConfigs = await AsyncioUtils.gatherWithConcurrency(*getDevModeConfigFutures)
+            instrumentationLevels = await AsyncioUtils.gatherWithConcurrency(*getInstrumentationLevelFutures)
             nodePropertiesForCustomizedComponents = [
-                component.data for component in await gatherWithConcurrency(*getAllNodePropertiesForCustomizedComponentsFutures)
+                component.data for component in await AsyncioUtils.gatherWithConcurrency(*getAllNodePropertiesForCustomizedComponentsFutures)
             ]
-            applicationConfigurationSettings = await gatherWithConcurrency(*getApplicationConfigurationFutures)
+            applicationConfigurationSettings = await AsyncioUtils.gatherWithConcurrency(*getApplicationConfigurationFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]

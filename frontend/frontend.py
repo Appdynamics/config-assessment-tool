@@ -19,7 +19,12 @@ def main():
         os.makedirs("../output")
 
     # create page header, header contains debug checkbox
-    debug = header()
+    debug, throttleNetworkConnections = header()
+
+    if throttleNetworkConnections:
+        concurrentNetworkConnections = st.sidebar.number_input("Concurrent Network Connections", min_value=1, max_value=100, value=50)
+    else:
+        concurrentNetworkConnections = 50
 
     # does docker image 'config_assessment_tool:latest' exist
     if getImage(client, "ghcr.io/appdynamics/config-assessment-tool-backend:latest") is None:
@@ -40,9 +45,9 @@ def main():
 
         for jobName in orderedJobs:
             if Path(f"../output/{jobName}/info.json").exists():
-                jobPreviouslyExecuted(client, jobName, debug)
+                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections)
             else:
-                jobNotYetExecuted(client, jobName, debug)
+                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections)
             st.markdown("""---""")
 
 

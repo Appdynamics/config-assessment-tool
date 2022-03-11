@@ -5,6 +5,9 @@ import os
 
 def initLogging(debug: bool):
     """Set up logging."""
+    # cd to config-assessment-tool root directory
+    path = os.path.realpath(f"{__file__}/../../..")
+    os.chdir(path)
 
     if not os.path.exists("logs"):
         os.makedirs("logs")
