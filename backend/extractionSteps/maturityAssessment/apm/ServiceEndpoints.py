@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class ServiceEndpoints(JobStepBase):
@@ -37,8 +37,8 @@ class ServiceEndpoints(JobStepBase):
                 )
                 getServiceEndpointMatchRulesFutures.append(controller.getServiceEndpointMatchRules(application["id"]))
 
-            serviceEndpointCallsPerMinute = await gatherWithConcurrency(*getServiceEndpointCallsPerMinuteFutures)
-            serviceEndpointMatchRules = await gatherWithConcurrency(*getServiceEndpointMatchRulesFutures)
+            serviceEndpointCallsPerMinute = await AsyncioUtils.gatherWithConcurrency(*getServiceEndpointCallsPerMinuteFutures)
+            serviceEndpointMatchRules = await AsyncioUtils.gatherWithConcurrency(*getServiceEndpointMatchRulesFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]

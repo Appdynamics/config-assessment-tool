@@ -12,7 +12,7 @@ from uplink.auth import BasicAuth, ProxyAuth, MultiAuth
 
 from api.Result import Result
 from api.appd.AppDController import AppdController
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class AppDService:
@@ -34,7 +34,7 @@ class AppDService:
         auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
         self.username = username
-        connector = aiohttp.TCPConnector(limit=50, verify_ssl=verifySsl)
+        connector = aiohttp.TCPConnector(limit=AsyncioUtils.concurrentConnections, verify_ssl=verifySsl)
         self.session = aiohttp.ClientSession(connector=connector, trust_env=useProxy)
         self.controller = AppdController(
             base_url=connection_url,
@@ -223,7 +223,7 @@ class AppDService:
                                     )
                                 )
         # TODO: this needs to be batched
-        agentConfigurations = await gatherWithConcurrency(*getAgentConfigurationFutures)
+        agentConfigurations = await AsyncioUtils.gatherWithConcurrency(*getAgentConfigurationFutures)
         return Result(agentConfigurations, None)
 
     async def getAgentConfiguration(self, applicationID: int, agentType: str, entityType: str, entityId: int) -> Result:
@@ -268,9 +268,9 @@ class AppDService:
             )
             defaultMatchRulesFutures.append(self.controller.getServiceEndpointDefaultMatchRules(body))
 
-        response = await gatherWithConcurrency(*customMatchRulesFutures)
+        response = await AsyncioUtils.gatherWithConcurrency(*customMatchRulesFutures)
         customMatchRules = [await self.getResultFromResponse(response, debugString) for response in response]
-        response = await gatherWithConcurrency(*defaultMatchRulesFutures)
+        response = await AsyncioUtils.gatherWithConcurrency(*defaultMatchRulesFutures)
         defaultMatchRules = [await self.getResultFromResponse(response, debugString) for response in response]
 
         return Result((customMatchRules, defaultMatchRules), None)
@@ -363,7 +363,7 @@ class AppDService:
         for healthRule in healthRules.data:
             healthRuleDetails.append(self.controller.getHealthRule(applicationID, healthRule["id"]))
 
-        responses = await gatherWithConcurrency(*healthRuleDetails)
+        responses = await AsyncioUtils.gatherWithConcurrency(*healthRuleDetails)
 
         healthRulesData = []
         for response, healthRule in zip(responses, healthRules.data):
@@ -448,7 +448,7 @@ class AppDService:
                     data_collector_type=dataCollectorField[0],
                 )
             )
-        snapshotResults = await gatherWithConcurrency(*snapshotsContainingDataCollectorFields)
+        snapshotResults = await AsyncioUtils.gatherWithConcurrency(*snapshotsContainingDataCollectorFields)
 
         dataCollectorFieldsWithSnapshots = []
         for collector, snapshotResult in zip(dataCollectorFields, snapshotResults):
@@ -480,7 +480,7 @@ class AppDService:
         allDashboardsMetadata = await self.getResultFromResponse(response, debugString)
 
         dashboards = []
-        batch_size = 50
+        batch_size = AsyncioUtils.concurrentConnections
         for i in range(0, len(allDashboardsMetadata.data), batch_size):
             dashboardsFutures = []
 
@@ -490,7 +490,7 @@ class AppDService:
             for dashboard in chunk:
                 dashboardsFutures.append(self.controller.getDashboard(dashboard["id"]))
 
-            response = await gatherWithConcurrency(*dashboardsFutures)
+            response = await AsyncioUtils.gatherWithConcurrency(*dashboardsFutures)
             for dashboard in [await self.getResultFromResponse(response, debugString) for response in response]:
                 dashboards.append(dashboard.data)
 

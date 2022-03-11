@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class BusinessTransactions(JobStepBase):
@@ -40,9 +40,9 @@ class BusinessTransactions(JobStepBase):
                 getAppLevelBtConfigFutures.append(controller.getAppLevelBTConfig(application["id"]))
                 getBtMatchRulesFutures.append(controller.getBtMatchRules(application["id"]))
 
-            btCallsPerMinute = await gatherWithConcurrency(*getBTCallsPerMinuteFutures)
-            appLevelBtConfig = await gatherWithConcurrency(*getAppLevelBtConfigFutures)
-            btMatchRules = await gatherWithConcurrency(*getBtMatchRulesFutures)
+            btCallsPerMinute = await AsyncioUtils.gatherWithConcurrency(*getBTCallsPerMinuteFutures)
+            appLevelBtConfig = await AsyncioUtils.gatherWithConcurrency(*getAppLevelBtConfigFutures)
+            btMatchRules = await AsyncioUtils.gatherWithConcurrency(*getBtMatchRulesFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]

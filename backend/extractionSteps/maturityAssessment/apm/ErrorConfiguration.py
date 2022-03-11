@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
@@ -37,7 +37,7 @@ class ErrorConfiguration(JobStepBase):
                     )
                 )
 
-            businessTransactionErrorsPerMinute = await gatherWithConcurrency(*getBusinessTransactionErrorsPerMinuteFutures)
+            businessTransactionErrorsPerMinute = await AsyncioUtils.gatherWithConcurrency(*getBusinessTransactionErrorsPerMinuteFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]

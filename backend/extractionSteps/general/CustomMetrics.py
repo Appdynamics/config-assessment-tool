@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class CustomMetrics(JobStepBase):
@@ -24,7 +24,7 @@ class CustomMetrics(JobStepBase):
             getTiersFutures = []
             for application in hostInfo[self.componentType].values():
                 getTiersFutures.append(controller.getTiers(application["id"]))
-            allTiers = await gatherWithConcurrency(*getTiersFutures)
+            allTiers = await AsyncioUtils.gatherWithConcurrency(*getTiersFutures)
 
             allCustomMetrics = []
             for application, tiers in zip(hostInfo[self.componentType].values(), allTiers):
@@ -36,7 +36,7 @@ class CustomMetrics(JobStepBase):
                             tierName=tier["name"],
                         )
                     )
-                customMetrics = await gatherWithConcurrency(*getCustomMetricsFutures)
+                customMetrics = await AsyncioUtils.gatherWithConcurrency(*getCustomMetricsFutures)
                 allCustomMetrics.append(customMetrics)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):

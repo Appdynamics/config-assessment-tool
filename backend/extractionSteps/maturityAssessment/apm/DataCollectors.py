@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
 from extractionSteps.JobStepBase import JobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class DataCollectors(JobStepBase):
@@ -28,7 +28,7 @@ class DataCollectors(JobStepBase):
             for application in hostInfo[self.componentType].values():
                 getDataCollectorsFutures.append(controller.getDataCollectorUsage(application["id"]))
 
-            dataCollectors = await gatherWithConcurrency(*getDataCollectorsFutures)
+            dataCollectors = await AsyncioUtils.gatherWithConcurrency(*getDataCollectorsFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
