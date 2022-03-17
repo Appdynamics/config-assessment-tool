@@ -1,210 +1,266 @@
 {
-  "AppAgents": {
-    "platinum": {
-      "percentAgentsLessThan1YearOld": 100,
-      "percentAgentsLessThan2YearsOld": 100,
-      "percentAgentsReportingData": 100,
-      "percentAgentsRunningSameVersion": 100,
-      "metricLimitNotHit": true
-    },
-    "gold": {
-      "percentAgentsLessThan1YearOld": 80,
-      "percentAgentsLessThan2YearsOld": 80,
-      "percentAgentsReportingData": 80,
-      "percentAgentsRunningSameVersion": 80,
-      "metricLimitNotHit": true
-    },
-    "silver": {
-      "percentAgentsLessThan1YearOld": 0,
-      "percentAgentsLessThan2YearsOld": 50,
-      "percentAgentsReportingData": 0,
-      "percentAgentsRunningSameVersion": 0,
-      "metricLimitNotHit": true
-    }
-  },
-  "BusinessTransactions": {
-    "platinum": {
-      "numberCustomMatchRules": 3,
-      "btLockdownEnabled": true,
-      "percentBTsWithLoad": 90,
-      "numberOfBTs": 200
-    },
-    "gold": {
-      "numberCustomMatchRules": 1,
-      "btLockdownEnabled": false,
-      "percentBTsWithLoad": 75,
-      "numberOfBTs": 400
-    },
-    "silver": {
-      "numberCustomMatchRules": 0,
-      "btLockdownEnabled": false,
-      "percentBTsWithLoad": 0,
-      "numberOfBTs": 600
-    }
-  },
-  "MachineAgents": {
-    "platinum": {
-      "percentAgentsLessThan1YearOld": 100,
-      "percentAgentsLessThan2YearsOld": 100,
-      "percentAgentsReportingData": 100,
-      "percentAgentsRunningSameVersion": 100,
-      "percentAgentsInstalledAlongsideAppAgents": 100
-    },
-    "gold": {
-      "percentAgentsLessThan1YearOld": 80,
-      "percentAgentsLessThan2YearsOld": 80,
-      "percentAgentsReportingData": 80,
-      "percentAgentsRunningSameVersion": 80,
-      "percentAgentsInstalledAlongsideAppAgents": 80
-    },
-    "silver": {
-      "percentAgentsLessThan1YearOld": 0,
-      "percentAgentsLessThan2YearsOld": 50,
-      "percentAgentsReportingData": 0,
-      "percentAgentsRunningSameVersion": 0,
-      "percentAgentsInstalledAlongsideAppAgents": 0
-    }
-  },
-  "Backends": {
-    "platinum": {
-      "backendLimitNotHit": true,
-      "percentBackendsWithLoad": 75,
-      "numberOfCustomBackendRules": 1
-    },
-    "gold": {
-      "backendLimitNotHit": true,
-      "percentBackendsWithLoad": 60,
-      "numberOfCustomBackendRules": 0
-    },
-    "silver": {
-      "backendLimitNotHit": true,
-      "percentBackendsWithLoad": 0,
-      "numberOfCustomBackendRules": 0
-    }
-  },
-  "Overhead": {
-    "platinum": {
-      "developerModeNotEnabledForAnyBT": true,
-      "developerModeNotEnabledForApplication": true,
-      "findEntryPointsNotEnabled": true,
-      "aggressiveSnapshottingNotEnabled": true
-    },
-    "gold": {
-      "developerModeNotEnabledForAnyBT": true,
-      "developerModeNotEnabledForApplication": true,
-      "findEntryPointsNotEnabled": true,
-      "aggressiveSnapshottingNotEnabled": true
-    },
-    "silver": {
-      "developerModeNotEnabledForAnyBT": true,
-      "developerModeNotEnabledForApplication": true,
-      "findEntryPointsNotEnabled": true,
-      "aggressiveSnapshottingNotEnabled": true
-    }
-  },
-  "ServiceEndpoints": {
-    "platinum": {
-      "serviceEndpointLimitNotHit": true,
-      "percentServiceEndpointsWithLoadOrDisabled": 75,
-      "numberOfCustomServiceEndpointRules": 1
-    },
-    "gold": {
-      "serviceEndpointLimitNotHit": true,
-      "percentServiceEndpointsWithLoadOrDisabled": 60,
-      "numberOfCustomServiceEndpointRules": 0
-    },
-    "silver": {
-      "serviceEndpointLimitNotHit": true,
-      "percentServiceEndpointsWithLoadOrDisabled": 0,
-      "numberOfCustomServiceEndpointRules": 0
-    }
-  },
-  "ErrorConfiguration": {
-    "platinum": {
-      "numberOfCustomRules": 1,
-      "successPercentageOfWorstTransaction": 80
-    },
-    "gold": {
-      "numberOfCustomRules": 0,
-      "successPercentageOfWorstTransaction": 80
-    },
-    "silver": {
-      "numberOfCustomRules": 0,
-      "successPercentageOfWorstTransaction": 50
-    }
-  },
-  "HealthRulesAndAlerting": {
-    "platinum": {
-      "numberOfHealthRuleViolationsLast24Hours": 10,
-      "numberOfActionsBoundToEnabledPolicies": 1,
-      "numberOfCustomHealthRules": 5,
-      "numberOfDefaultHealthRulesModified": 2
-    },
-    "gold": {
-      "numberOfHealthRuleViolationsLast24Hours": 20,
-      "numberOfActionsBoundToEnabledPolicies": 1,
-      "numberOfCustomHealthRules": 2,
-      "numberOfDefaultHealthRulesModified": 2
-    },
-    "silver": {
-      "numberOfHealthRuleViolationsLast24Hours": 50,
-      "numberOfActionsBoundToEnabledPolicies": 0,
-      "numberOfCustomHealthRules": 0,
-      "numberOfDefaultHealthRulesModified": 1
-    }
-  },
-  "DataCollectors": {
-    "platinum": {
-      "numberOfDataCollectorFieldsConfigured": 5,
-      "numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 5,
-      "numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 5,
-      "biqEnabled": true
-    },
-    "gold": {
-      "numberOfDataCollectorFieldsConfigured": 2,
-      "numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 2,
-      "numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 2,
-      "biqEnabled": false
-    },
-    "silver": {
-      "numberOfDataCollectorFieldsConfigured": 0,
-      "numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 0,
-      "numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 0,
-      "biqEnabled": false
-    }
-  },
-  "ApmDashboards": {
-    "platinum": {
-      "numberOfDashboards": 5,
-      "percentageOfDashboardsModifiedLast6Months": 100,
-      "numberOfDashboardsUsingBiQ": 1
-    },
-    "gold": {
-      "numberOfDashboards": 1,
-      "percentageOfDashboardsModifiedLast6Months": 10,
-      "numberOfDashboardsUsingBiQ": 0
-    },
-    "silver": {
-      "numberOfDashboards": 0,
-      "percentageOfDashboardsModifiedLast6Months": 0,
-      "numberOfDashboardsUsingBiQ": 0
-    }
-  },
-  "OverallAssessment": {
-    "platinum": {
-      "PercentageTotalPlatinum": 70,
-      "PercentageTotalGoldOrBetter": 100,
-      "PercentageTotalSilverOrBetter": 100
-    },
-    "gold": {
-      "PercentageTotalPlatinum": 0,
-      "PercentageTotalGoldOrBetter": 70,
-      "PercentageTotalSilverOrBetter": 100
-    },
-    "silver": {
-      "PercentageTotalPlatinum": 0,
-      "PercentageTotalGoldOrBetter": 0,
-      "PercentageTotalSilverOrBetter": 70
-    }
-  }
+	"version": "v1.4.0",
+	"apm": {
+		"AppAgents": {
+			"platinum": {
+				"percentAgentsLessThan1YearOld": 100,
+				"percentAgentsLessThan2YearsOld": 100,
+				"percentAgentsReportingData": 100,
+				"percentAgentsRunningSameVersion": 100,
+				"metricLimitNotHit": true
+			},
+			"gold": {
+				"percentAgentsLessThan1YearOld": 80,
+				"percentAgentsLessThan2YearsOld": 80,
+				"percentAgentsReportingData": 80,
+				"percentAgentsRunningSameVersion": 80,
+				"metricLimitNotHit": true
+			},
+			"silver": {
+				"percentAgentsLessThan1YearOld": 0,
+				"percentAgentsLessThan2YearsOld": 50,
+				"percentAgentsReportingData": 0,
+				"percentAgentsRunningSameVersion": 0,
+				"metricLimitNotHit": true
+			}
+		},
+		"BusinessTransactions": {
+			"platinum": {
+				"numberCustomMatchRules": 3,
+				"btLockdownEnabled": true,
+				"percentBTsWithLoad": 90,
+				"numberOfBTs": 200
+			},
+			"gold": {
+				"numberCustomMatchRules": 1,
+				"btLockdownEnabled": false,
+				"percentBTsWithLoad": 75,
+				"numberOfBTs": 400
+			},
+			"silver": {
+				"numberCustomMatchRules": 0,
+				"btLockdownEnabled": false,
+				"percentBTsWithLoad": 0,
+				"numberOfBTs": 600
+			}
+		},
+		"MachineAgents": {
+			"platinum": {
+				"percentAgentsLessThan1YearOld": 100,
+				"percentAgentsLessThan2YearsOld": 100,
+				"percentAgentsReportingData": 100,
+				"percentAgentsRunningSameVersion": 100,
+				"percentAgentsInstalledAlongsideAppAgents": 100
+			},
+			"gold": {
+				"percentAgentsLessThan1YearOld": 80,
+				"percentAgentsLessThan2YearsOld": 80,
+				"percentAgentsReportingData": 80,
+				"percentAgentsRunningSameVersion": 80,
+				"percentAgentsInstalledAlongsideAppAgents": 80
+			},
+			"silver": {
+				"percentAgentsLessThan1YearOld": 0,
+				"percentAgentsLessThan2YearsOld": 50,
+				"percentAgentsReportingData": 0,
+				"percentAgentsRunningSameVersion": 0,
+				"percentAgentsInstalledAlongsideAppAgents": 0
+			}
+		},
+		"Backends": {
+			"platinum": {
+				"backendLimitNotHit": true,
+				"percentBackendsWithLoad": 75,
+				"numberOfCustomBackendRules": 1
+			},
+			"gold": {
+				"backendLimitNotHit": true,
+				"percentBackendsWithLoad": 60,
+				"numberOfCustomBackendRules": 0
+			},
+			"silver": {
+				"backendLimitNotHit": true,
+				"percentBackendsWithLoad": 0,
+				"numberOfCustomBackendRules": 0
+			}
+		},
+		"Overhead": {
+			"platinum": {
+				"developerModeNotEnabledForAnyBT": true,
+				"developerModeNotEnabledForApplication": true,
+				"findEntryPointsNotEnabled": true,
+				"aggressiveSnapshottingNotEnabled": true
+			},
+			"gold": {
+				"developerModeNotEnabledForAnyBT": true,
+				"developerModeNotEnabledForApplication": true,
+				"findEntryPointsNotEnabled": true,
+				"aggressiveSnapshottingNotEnabled": true
+			},
+			"silver": {
+				"developerModeNotEnabledForAnyBT": true,
+				"developerModeNotEnabledForApplication": true,
+				"findEntryPointsNotEnabled": true,
+				"aggressiveSnapshottingNotEnabled": true
+			}
+		},
+		"ServiceEndpoints": {
+			"platinum": {
+				"serviceEndpointLimitNotHit": true,
+				"percentServiceEndpointsWithLoadOrDisabled": 50,
+				"numberOfCustomServiceEndpointRules": 1
+			},
+			"gold": {
+				"serviceEndpointLimitNotHit": true,
+				"percentServiceEndpointsWithLoadOrDisabled": 25,
+				"numberOfCustomServiceEndpointRules": 0
+			},
+			"silver": {
+				"serviceEndpointLimitNotHit": true,
+				"percentServiceEndpointsWithLoadOrDisabled": 0,
+				"numberOfCustomServiceEndpointRules": 0
+			}
+		},
+		"ErrorConfiguration": {
+			"platinum": {
+				"numberOfCustomRules": 1,
+				"successPercentageOfWorstTransaction": 80
+			},
+			"gold": {
+				"numberOfCustomRules": 0,
+				"successPercentageOfWorstTransaction": 80
+			},
+			"silver": {
+				"numberOfCustomRules": 0,
+				"successPercentageOfWorstTransaction": 50
+			}
+		},
+		"HealthRulesAndAlertingAPM": {
+			"platinum": {
+				"numberOfHealthRuleViolationsLast24Hours": 10,
+				"numberOfActionsBoundToEnabledPolicies": 1,
+				"numberOfCustomHealthRules": 5,
+				"numberOfDefaultHealthRulesModified": 2
+			},
+			"gold": {
+				"numberOfHealthRuleViolationsLast24Hours": 20,
+				"numberOfActionsBoundToEnabledPolicies": 1,
+				"numberOfCustomHealthRules": 2,
+				"numberOfDefaultHealthRulesModified": 1
+			},
+			"silver": {
+				"numberOfHealthRuleViolationsLast24Hours": 50,
+				"numberOfActionsBoundToEnabledPolicies": 0,
+				"numberOfCustomHealthRules": 0,
+				"numberOfDefaultHealthRulesModified": 0
+			}
+		},
+		"DataCollectors": {
+			"platinum": {
+				"numberOfDataCollectorFieldsConfigured": 5,
+				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 5,
+				"numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 5,
+				"biqEnabled": true
+			},
+			"gold": {
+				"numberOfDataCollectorFieldsConfigured": 2,
+				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 2,
+				"numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 2,
+				"biqEnabled": false
+			},
+			"silver": {
+				"numberOfDataCollectorFieldsConfigured": 0,
+				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 0,
+				"numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 0,
+				"biqEnabled": false
+			}
+		},
+		"ApmDashboards": {
+			"platinum": {
+				"numberOfDashboards": 5,
+				"percentageOfDashboardsModifiedLast6Months": 100,
+				"numberOfDashboardsUsingBiQ": 1
+			},
+			"gold": {
+				"numberOfDashboards": 1,
+				"percentageOfDashboardsModifiedLast6Months": 10,
+				"numberOfDashboardsUsingBiQ": 0
+			},
+			"silver": {
+				"numberOfDashboards": 0,
+				"percentageOfDashboardsModifiedLast6Months": 0,
+				"numberOfDashboardsUsingBiQ": 0
+			}
+		},
+		"OverallAssessmentAPM": {
+			"platinum": {
+				"percentageTotalPlatinum": 50,
+				"percentageTotalGoldOrBetter": 50,
+				"percentageTotalSilverOrBetter": 100
+			},
+			"gold": {
+				"percentageTotalPlatinum": 0,
+				"percentageTotalGoldOrBetter": 50,
+				"percentageTotalSilverOrBetter": 90
+			},
+			"silver": {
+				"percentageTotalPlatinum": 0,
+				"percentageTotalGoldOrBetter": 0,
+				"percentageTotalSilverOrBetter": 80
+			}
+		}
+	},
+	"brum": {
+		"NetworkRequests": {
+			"platinum": {
+				"collectingDataPastOneDay": true,
+				"networkRequestLimitNotHit": true,
+				"numberCustomMatchRules": 5
+			},
+			"gold": {
+				"collectingDataPastOneDay": true,
+				"networkRequestLimitNotHit": true,
+				"numberCustomMatchRules": 3
+			},
+			"silver": {
+				"collectingDataPastOneDay": true,
+				"networkRequestLimitNotHit": true,
+				"numberCustomMatchRules": 2
+			}
+		},
+		"HealthRulesAndAlertingBRUM": {
+			"platinum": {
+				"numberOfHealthRuleViolationsLast24Hours": 10,
+				"numberOfActionsBoundToEnabledPolicies": 1,
+				"numberOfCustomHealthRules": 5
+			},
+			"gold": {
+				"numberOfHealthRuleViolationsLast24Hours": 20,
+				"numberOfActionsBoundToEnabledPolicies": 1,
+				"numberOfCustomHealthRules": 2
+			},
+			"silver": {
+				"numberOfHealthRuleViolationsLast24Hours": 50,
+				"numberOfActionsBoundToEnabledPolicies": 0,
+				"numberOfCustomHealthRules": 0
+			}
+		},
+		"OverallAssessmentBRUM": {
+			"platinum": {
+				"percentageTotalPlatinum": 50,
+				"percentageTotalGoldOrBetter": 50,
+				"percentageTotalSilverOrBetter": 100
+			},
+			"gold": {
+				"percentageTotalPlatinum": 0,
+				"percentageTotalGoldOrBetter": 50,
+				"percentageTotalSilverOrBetter": 90
+			},
+			"silver": {
+				"percentageTotalPlatinum": 0,
+				"percentageTotalGoldOrBetter": 0,
+				"percentageTotalSilverOrBetter": 80
+			}
+		}
+	}
 }

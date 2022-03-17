@@ -4,13 +4,13 @@ from collections import OrderedDict
 from deepdiff import DeepDiff
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 
 
-class HealthRulesAndAlerting(BSGJobStepBase):
+class HealthRulesAndAlertingBRUM(JobStepBase):
     def __init__(self):
-        super().__init__("apm")
+        super().__init__("brum")
 
     async def extract(self, controllerData):
         """
@@ -22,7 +22,7 @@ class HealthRulesAndAlerting(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -40,9 +40,9 @@ class HealthRulesAndAlerting(BSGJobStepBase):
                 getHealthRulesFutures.append(controller.getHealthRules(application["id"]))
                 getPoliciesFutures.append(controller.getPolicies(application["id"]))
 
-            eventCounts = await gatherWithConcurrency(*getEventCountsFutures)
-            healthRules = await gatherWithConcurrency(*getHealthRulesFutures)
-            policies = await gatherWithConcurrency(*getPoliciesFutures)
+            eventCounts = await AsyncioUtils.gatherWithConcurrency(*getEventCountsFutures)
+            healthRules = await AsyncioUtils.gatherWithConcurrency(*getHealthRulesFutures)
+            policies = await AsyncioUtils.gatherWithConcurrency(*getPoliciesFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
@@ -67,11 +67,10 @@ class HealthRulesAndAlerting(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
-        defaultHealthRules = json.loads(open("backend/resources/controllerDefaults/defaultHealthRules.json").read())
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.
@@ -85,22 +84,6 @@ class HealthRulesAndAlerting(BSGJobStepBase):
                 policyEventCounts = application["eventCounts"]["policyViolationEventCounts"]["totalPolicyViolations"]
                 analysisDataEvaluatedMetrics["numberOfHealthRuleViolationsLast24Hours"] = policyEventCounts["warning"] + policyEventCounts["critical"]
 
-                # numberOfDefaultHealthRulesModified
-                defaultHealthRulesModified = 0
-                for hrName, heathRule in defaultHealthRules.items():
-                    if hrName in application["healthRules"]:
-                        del application["healthRules"][hrName]["id"]
-                        healthRuleDiff = DeepDiff(
-                            defaultHealthRules[hrName],
-                            application["healthRules"][hrName],
-                            ignore_order=True,
-                        )
-                        if healthRuleDiff != {}:
-                            defaultHealthRulesModified += 1
-                    else:
-                        defaultHealthRulesModified += 1
-                analysisDataEvaluatedMetrics["numberOfDefaultHealthRulesModified"] = defaultHealthRulesModified
-
                 # numberOfActionsBoundToEnabledPolicies
                 actionsInEnabledPolicies = set()
                 for policy in application["policies"]:
@@ -110,9 +93,7 @@ class HealthRulesAndAlerting(BSGJobStepBase):
                 analysisDataEvaluatedMetrics["numberOfActionsBoundToEnabledPolicies"] = len(actionsInEnabledPolicies)
 
                 # numberOfCustomHealthRules
-                analysisDataEvaluatedMetrics["numberOfCustomHealthRules"] = len(
-                    set(application["healthRules"].keys()).symmetric_difference(defaultHealthRules.keys())
-                )
+                analysisDataEvaluatedMetrics["numberOfCustomHealthRules"] = len(application["healthRules"])
 
                 analysisDataRawMetrics["totalWarningPolicyViolationsLast24Hours"] = policyEventCounts["warning"]
                 analysisDataRawMetrics["totalCriticalPolicyViolationsLast24Hours"] = policyEventCounts["critical"]

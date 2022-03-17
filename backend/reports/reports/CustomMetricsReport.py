@@ -59,5 +59,5 @@ class CustomMetricsReport(ReportBase):
         addFilterAndFreeze(summarySheet)
         resizeColumnWidth(summarySheet)
 
-        logging.debug(f"Saving Custom Metrics Workbook")
-        workbook.save(f"output/{jobFileName}/{jobFileName}-CustomMetricsReport.xlsx")
+        logging.debug(f"Saving CustomMetrics Workbook")
+        workbook.save(f"output/{jobFileName}/{jobFileName}-CustomMetrics.xlsx")

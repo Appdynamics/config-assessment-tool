@@ -4,12 +4,12 @@ import time
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
-class MachineAgents(BSGJobStepBase):
+class MachineAgents(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -23,7 +23,7 @@ class MachineAgents(BSGJobStepBase):
 
         nodeIdToMachineAgentAvailabilityMap = {}
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -38,7 +38,7 @@ class MachineAgents(BSGJobStepBase):
                         duration_in_mins="60",
                     )
                 )
-            machineAgentAvailability = await gatherWithConcurrency(*machineAgentAvailabilityFutures)
+            machineAgentAvailability = await AsyncioUtils.gatherWithConcurrency(*machineAgentAvailabilityFutures)
 
             # Create a dictionary of Node -> Calls Per Minute for fast lookup
             for rolledUpMetrics in machineAgentAvailability:
@@ -94,10 +94,10 @@ class MachineAgents(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             hostInfo["machineAgentVersions"] = set()
 

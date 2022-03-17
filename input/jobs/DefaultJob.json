@@ -1,10 +1,12 @@
 [
-  {
-    "host": "acme.saas.appdynamics.com",
-    "port": 443,
-    "ssl": true,
-    "account": "acme",
-    "username": "foo",
-    "pwd": "hunter1"
-  }
+	{
+		"host": "acme.saas.appdynamics.com",
+		"port": 443,
+		"ssl": true,
+		"account": "acme",
+		"username": "foo",
+		"pwd": "hunter1",
+		"verifySsl": true,
+		"useProxy": true
+	}
 ]

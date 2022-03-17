@@ -28,6 +28,7 @@ ENV PATH="/frontend/.venv/bin:$PATH"
 
 # Install application into container
 COPY frontend ./frontend
+COPY VERSION .
 
 ENTRYPOINT ["streamlit", "run"]
 CMD ["frontend/frontend.py"]

@@ -10,7 +10,7 @@ from docker import APIClient
 from utils.streamlit_utils import rerun
 
 
-def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool = False):
+def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int):
     if not isDocker():
         root = os.path.abspath("..")
     else:
@@ -25,7 +25,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         outputSource = ("/" + outputSource[:1] + "/" + outputSource[3:]).replace("\\", "/")
         logsSource = ("/" + logsSource[:1] + "/" + logsSource[3:]).replace("\\", "/")
 
-    command = ["-j", jobFile, "-t", thresholds]
+    command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections)]
     if debug:
         command.append("-d")
 
@@ -57,7 +57,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
     logTextBox = st.empty()
     logText = ""
     for log in client.logs(container.get("Id"), stream=True):
-        logText = log.decode("utf-8") + logText
+        logText = log.decode("ISO-8859-1") + logText
         logTextBox.text_area("", logText, height=250)
 
     # small delay to see job ended
@@ -76,7 +76,7 @@ def buildConfigAssessmentToolImage(client: APIClient):
             path=os.path.abspath("../backend"),
             tag="appdynamics/config-assessment-tool-backend",
         ):
-            output = output.decode("utf-8").strip("\r\n")
+            output = output.decode("ISO-8859-1").strip("\r\n")
             for match in re.finditer(r"({.*})+", output):
                 try:
                     logText = json.loads(match.group(1))["stream"] + logText

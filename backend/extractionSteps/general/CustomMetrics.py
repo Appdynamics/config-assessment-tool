@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 
 
-class CustomMetrics(BSGJobStepBase):
+class CustomMetrics(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -18,13 +18,13 @@ class CustomMetrics(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             getTiersFutures = []
             for application in hostInfo[self.componentType].values():
                 getTiersFutures.append(controller.getTiers(application["id"]))
-            allTiers = await gatherWithConcurrency(*getTiersFutures)
+            allTiers = await AsyncioUtils.gatherWithConcurrency(*getTiersFutures)
 
             allCustomMetrics = []
             for application, tiers in zip(hostInfo[self.componentType].values(), allTiers):
@@ -36,7 +36,7 @@ class CustomMetrics(BSGJobStepBase):
                             tierName=tier["name"],
                         )
                     )
-                customMetrics = await gatherWithConcurrency(*getCustomMetricsFutures)
+                customMetrics = await AsyncioUtils.gatherWithConcurrency(*getCustomMetricsFutures)
                 allCustomMetrics.append(customMetrics)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):

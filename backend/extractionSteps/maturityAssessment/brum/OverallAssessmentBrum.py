@@ -1,12 +1,12 @@
 import logging
 from collections import OrderedDict
 
-from extractionSteps.JobStepBase import BSGJobStepBase
+from extractionSteps.JobStepBase import JobStepBase
 
 
-class OverallAssessment(BSGJobStepBase):
+class OverallAssessmentBRUM(JobStepBase):
     def __init__(self):
-        super().__init__("apm")
+        super().__init__("brum")
 
     async def extract(self, controllerData):
         pass
@@ -18,26 +18,15 @@ class OverallAssessment(BSGJobStepBase):
 
         jobStepName = type(self).__name__
 
-        jobStepNames = [
-            "AppAgents",
-            "MachineAgents",
-            "BusinessTransactions",
-            "Backends",
-            "Overhead",
-            "ServiceEndpoints",
-            "ErrorConfiguration",
-            "HealthRulesAndAlerting",
-            "DataCollectors",
-            "ApmDashboards",
-        ]
+        jobStepNames = ["NetworkRequests", "HealthRulesAndAlertingBRUM"]
 
         num_job_steps = len(jobStepNames)
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
 
@@ -61,8 +50,8 @@ class OverallAssessment(BSGJobStepBase):
                     elif job_step_color[0] == "platinum":
                         num_platinum = num_platinum + 1
 
-                analysisDataEvaluatedMetrics["PercentageTotalPlatinum"] = num_platinum / num_job_steps * 100
-                analysisDataEvaluatedMetrics["PercentageTotalGoldOrBetter"] = (num_platinum + num_gold) / num_job_steps * 100
-                analysisDataEvaluatedMetrics["PercentageTotalSilverOrBetter"] = (num_platinum + num_gold + num_silver) / num_job_steps * 100
+                analysisDataEvaluatedMetrics["percentageTotalPlatinum"] = num_platinum / num_job_steps * 100
+                analysisDataEvaluatedMetrics["percentageTotalGoldOrBetter"] = (num_platinum + num_gold) / num_job_steps * 100
+                analysisDataEvaluatedMetrics["percentageTotalSilverOrBetter"] = (num_platinum + num_gold + num_silver) / num_job_steps * 100
 
                 self.applyThresholds(analysisDataEvaluatedMetrics, analysisDataRoot, jobStepThresholds)

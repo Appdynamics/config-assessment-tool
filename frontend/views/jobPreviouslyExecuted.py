@@ -12,7 +12,7 @@ from FileHandler import openFile, openFolder
 from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
-def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
+def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
 
@@ -50,7 +50,10 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
     lastRunColumn.info(f'Last Run: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}')
 
     thresholdsFiles = [f[: len(f) - 5] for f in os.listdir("../input/thresholds")]
-    default_idx = thresholdsFiles.index(info["thresholds"])
+    if info["thresholds"] in thresholdsFiles:
+        default_idx = thresholdsFiles.index(info["thresholds"])
+    else:
+        default_idx = 0
     thresholds = thresholdsColumn.selectbox(
         "Specify Thresholds File",
         thresholdsFiles,
@@ -70,15 +73,12 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug)
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections)
 
     (
         openReportColumn,
         openReportButton,
-        _,
-        _,
-        _,
-    ) = st.columns([3, 2, 2, 1.5, 2])
+    ) = st.columns([4, 1])
 
     reportFiles = [f[: len(f) - 5] for f in os.listdir(f"../output/{jobName}") if f.endswith("xlsx") and not f.startswith("~$")]
     report = openReportColumn.selectbox(
@@ -95,7 +95,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool):
         else:
             payload = {
                 "type": "file",
-                "path": f"output/{jobName}/{jobName}-{report}.xlsx",
+                "path": f"output/{jobName}/{report}.xlsx",
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")

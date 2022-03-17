@@ -14,10 +14,17 @@ There are three options to run the tool:
 2. Directly via Docker: The backend container can be run manually from the command line
 3. From Source: Manually install dependencies and run the `backend.py` script directly
 
-### Important step for running on windows
+### Important step for running on Windows
 
 Docker on Windows requires manually sharing the `/input`, `/output`, and `/logs` directories with the container. If you do not follow this step, you will get the following error when trying to run the
 container: `DockerException Filesharing has been cancelled`. Take a look at the documentation [here](https://docs.docker.com/desktop/windows/) for more information.
+
+### Expected Permissions
+The tool expects ONLY the following permissions to be given:
+
+- Account Owner (Default)
+- Administrator (Default)
+- Analytics Administrator (Default)
 
 ### UI method
 
@@ -68,15 +75,25 @@ ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThre
 
 ### From Source
 
-The backend can be invoked via `python3 backend.py`.
+#### Steps to run
+
+Required
+
+1. `git clone https://github.com/Appdynamics/config-assessment-tool.git`
+2. `cd config-assessment-tool`
+3. `pipenv install`
+4. `pipenv shell`
+5. `python3 backend/backend.py -j acme -t DefaultThresholds`
 
 ```
 Usage: backend.py [OPTIONS]
 
 Options:
-  -j, --job-file FILENAME
-  -t, --thresholds-file FILENAME
-  --help Show this message and exit.
+  -j, --job-file TEXT
+  -t, --thresholds-file TEXT
+  -d, --debug
+  -c, --concurrent-connections INTEGER
+  --help                          Show this message and exit.
 ```
 
 Options `--job-file` and `--thresholds-file` will default to `DefaultJob` and `DefaultThresholds` respectively.
@@ -91,20 +108,20 @@ The frontend can be invoked by navigating to `config_assessment_tool/frontend` a
 This program will create the following files in the `out` directory.
 
 - `{jobName}-BSGReport-apm.xlsx`
-  - Bronze/Silver/Gold report
+    - Bronze/Silver/Gold report
 - `{jobName}-Agent-Matrix.xlsx`
-  - Details agent versions rolled up by application
-  - Lists the details of individual without any rollup
+    - Details agent versions rolled up by application
+    - Lists the details of individual without any rollup
 - `{jobName}-CustomMetricsReport.xlsx`
-  - Lists which applications are leveraging Custom Extensions 
+    - Lists which applications are leveraging Custom Extensions
 - `{jobName}-License.xlsx`
-  - Export of the License Usage page in the Controller
+    - Export of the License Usage page in the Controller
 - `{jobName}-RawBSGReport.xlsx`
-  - Raw metrics which go into the above BSG report 
+    - Raw metrics which go into the above BSG report
 - `controllerData.json`
-  - Contains all raw data used in analysis.
+    - Contains all raw data used in analysis.
 - `info.json`
-  - Contains information on previous job execution.
+    - Contains information on previous job execution.
 
 ## Program Architecture
 
@@ -112,10 +129,17 @@ This program will create the following files in the `out` directory.
 
 ![Scheme](backend/resources/img/architecture.jpg)
 
+## Proxy Support
+
+Support for plain HTTP proxies and HTTP proxies that can be upgraded to HTTPS via the HTTP CONNECT method is provided by enabling the `useProxy` flag in a given job file. Enabling this flag will cause
+the backend to use the proxy specified from environment variables: HTTP_PROXY, HTTPS_PROXY, WS_PROXY or WSS_PROXY (all are case insensitive). Proxy credentials are given from ~/.netrc file if present.
+See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/client_advanced.html#proxy-support) for more details.
+
 ## Requirements
 
-- Python 3.5 or above
-- Docker
+- Python 3.5 or above if running with `bin/config-assessment-tool.py`
+- Python 3.9 or above if running from source
+- [Docker](https://www.docker.com/products/docker-desktop)
 
 ## Limitations
 
@@ -128,4 +152,9 @@ This program will create the following files in the `out` directory.
 
 ## Support
 
-Please email bradley.hjelmar@appdynamics.com for any issues.
+Please email bradley.hjelmar@appdynamics.com for any issues and attach debug logs.
+
+Debug logs can be taken by either:
+
+- checking the `debug` checkbox in the UI
+- running the backend with the `--debug` or `-d` flag

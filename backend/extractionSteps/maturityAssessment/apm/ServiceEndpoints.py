@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 
 
-class ServiceEndpoints(BSGJobStepBase):
+class ServiceEndpoints(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -19,7 +19,7 @@ class ServiceEndpoints(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -37,8 +37,8 @@ class ServiceEndpoints(BSGJobStepBase):
                 )
                 getServiceEndpointMatchRulesFutures.append(controller.getServiceEndpointMatchRules(application["id"]))
 
-            serviceEndpointCallsPerMinute = await gatherWithConcurrency(*getServiceEndpointCallsPerMinuteFutures)
-            serviceEndpointMatchRules = await gatherWithConcurrency(*getServiceEndpointMatchRulesFutures)
+            serviceEndpointCallsPerMinute = await AsyncioUtils.gatherWithConcurrency(*getServiceEndpointCallsPerMinuteFutures)
+            serviceEndpointMatchRules = await AsyncioUtils.gatherWithConcurrency(*getServiceEndpointMatchRulesFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
@@ -56,10 +56,10 @@ class ServiceEndpoints(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             # Service endpoint limit is global
             totalServiceEndpoints = sum(len(application["serviceEndpoints"]) for application in hostInfo[self.componentType].values())

@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 
 
-class BusinessTransactions(BSGJobStepBase):
+class BusinessTransactions(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -20,7 +20,7 @@ class BusinessTransactions(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -40,9 +40,9 @@ class BusinessTransactions(BSGJobStepBase):
                 getAppLevelBtConfigFutures.append(controller.getAppLevelBTConfig(application["id"]))
                 getBtMatchRulesFutures.append(controller.getBtMatchRules(application["id"]))
 
-            btCallsPerMinute = await gatherWithConcurrency(*getBTCallsPerMinuteFutures)
-            appLevelBtConfig = await gatherWithConcurrency(*getAppLevelBtConfigFutures)
-            btMatchRules = await gatherWithConcurrency(*getBtMatchRulesFutures)
+            btCallsPerMinute = await AsyncioUtils.gatherWithConcurrency(*getBTCallsPerMinuteFutures)
+            appLevelBtConfig = await AsyncioUtils.gatherWithConcurrency(*getAppLevelBtConfigFutures)
+            btMatchRules = await AsyncioUtils.gatherWithConcurrency(*getBtMatchRulesFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
@@ -62,10 +62,10 @@ class BusinessTransactions(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

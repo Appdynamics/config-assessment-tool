@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 
 
-class Overhead(BSGJobStepBase):
+class Overhead(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -21,7 +21,7 @@ class Overhead(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -34,12 +34,12 @@ class Overhead(BSGJobStepBase):
                 getInstrumentationLevelFutures.append(controller.getInstrumentationLevel(application["id"]))
                 getAllNodePropertiesForCustomizedComponentsFutures.append(controller.getAllNodePropertiesForCustomizedComponents(application["id"]))
                 getApplicationConfigurationFutures.append(controller.getApplicationConfiguration(application["id"]))
-            devModeConfigs = await gatherWithConcurrency(*getDevModeConfigFutures)
-            instrumentationLevels = await gatherWithConcurrency(*getInstrumentationLevelFutures)
+            devModeConfigs = await AsyncioUtils.gatherWithConcurrency(*getDevModeConfigFutures)
+            instrumentationLevels = await AsyncioUtils.gatherWithConcurrency(*getInstrumentationLevelFutures)
             nodePropertiesForCustomizedComponents = [
-                component.data for component in await gatherWithConcurrency(*getAllNodePropertiesForCustomizedComponentsFutures)
+                component.data for component in await AsyncioUtils.gatherWithConcurrency(*getAllNodePropertiesForCustomizedComponentsFutures)
             ]
-            applicationConfigurationSettings = await gatherWithConcurrency(*getApplicationConfigurationFutures)
+            applicationConfigurationSettings = await AsyncioUtils.gatherWithConcurrency(*getApplicationConfigurationFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
@@ -61,10 +61,10 @@ class Overhead(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

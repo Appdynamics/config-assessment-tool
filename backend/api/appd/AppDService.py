@@ -8,28 +8,40 @@ from typing import List
 
 import aiohttp
 from uplink import AiohttpClient
+from uplink.auth import BasicAuth, ProxyAuth, MultiAuth
 
 from api.Result import Result
 from api.appd.AppDController import AppdController
-from util.asyncio_utils import gatherWithConcurrency
+from util.asyncio_utils import AsyncioUtils
 
 
 class AppDService:
     controller: AppdController
 
-    def __init__(self, host: str, port: int, ssl: bool, account: str, username: str, pwd: str):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        ssl: bool,
+        account: str,
+        username: str,
+        pwd: str,
+        verifySsl: bool = True,
+        useProxy: bool = False,
+    ):
         logging.debug(f"{host} - Initializing controller service")
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
-        auth = (f"{username}@{account}", pwd)
+        auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
         self.username = username
-        connector = aiohttp.TCPConnector(limit=50)
-        self.session = aiohttp.ClientSession(connector=connector)
+        connector = aiohttp.TCPConnector(limit=AsyncioUtils.concurrentConnections, verify_ssl=verifySsl)
+        self.session = aiohttp.ClientSession(connector=connector, trust_env=useProxy)
         self.controller = AppdController(
             base_url=connection_url,
             auth=auth,
             client=AiohttpClient(session=self.session),
         )
+        self.totalCallsProcessed = 0
 
     def __json__(self):
         return {
@@ -83,10 +95,10 @@ class AppDService:
         response = await self.controller.getBTs(applicationID)
         return await self.getResultFromResponse(response, debugString)
 
-    async def getApplications(self) -> Result:
+    async def getApmApplications(self) -> Result:
         debugString = f"Gathering applications"
         logging.debug(f"{self.host} - {debugString}")
-        response = await self.controller.getApplications()
+        response = await self.controller.getApmApplications()
         result = await self.getResultFromResponse(response, debugString)
         # apparently it's possible to have a null application name, the controller converts the null into "null"
         if result.error is None:
@@ -211,7 +223,7 @@ class AppDService:
                                     )
                                 )
         # TODO: this needs to be batched
-        agentConfigurations = await gatherWithConcurrency(*getAgentConfigurationFutures)
+        agentConfigurations = await AsyncioUtils.gatherWithConcurrency(*getAgentConfigurationFutures)
         return Result(agentConfigurations, None)
 
     async def getAgentConfiguration(self, applicationID: int, agentType: str, entityType: str, entityId: int) -> Result:
@@ -256,9 +268,9 @@ class AppDService:
             )
             defaultMatchRulesFutures.append(self.controller.getServiceEndpointDefaultMatchRules(body))
 
-        response = await gatherWithConcurrency(*customMatchRulesFutures)
+        response = await AsyncioUtils.gatherWithConcurrency(*customMatchRulesFutures)
         customMatchRules = [await self.getResultFromResponse(response, debugString) for response in response]
-        response = await gatherWithConcurrency(*defaultMatchRulesFutures)
+        response = await AsyncioUtils.gatherWithConcurrency(*defaultMatchRulesFutures)
         defaultMatchRules = [await self.getResultFromResponse(response, debugString) for response in response]
 
         return Result((customMatchRules, defaultMatchRules), None)
@@ -351,7 +363,7 @@ class AppDService:
         for healthRule in healthRules.data:
             healthRuleDetails.append(self.controller.getHealthRule(applicationID, healthRule["id"]))
 
-        responses = await gatherWithConcurrency(*healthRuleDetails)
+        responses = await AsyncioUtils.gatherWithConcurrency(*healthRuleDetails)
 
         healthRulesData = []
         for response, healthRule in zip(responses, healthRules.data):
@@ -436,7 +448,7 @@ class AppDService:
                     data_collector_type=dataCollectorField[0],
                 )
             )
-        snapshotResults = await gatherWithConcurrency(*snapshotsContainingDataCollectorFields)
+        snapshotResults = await AsyncioUtils.gatherWithConcurrency(*snapshotsContainingDataCollectorFields)
 
         dataCollectorFieldsWithSnapshots = []
         for collector, snapshotResult in zip(dataCollectorFields, snapshotResults):
@@ -468,7 +480,7 @@ class AppDService:
         allDashboardsMetadata = await self.getResultFromResponse(response, debugString)
 
         dashboards = []
-        batch_size = 50
+        batch_size = AsyncioUtils.concurrentConnections
         for i in range(0, len(allDashboardsMetadata.data), batch_size):
             dashboardsFutures = []
 
@@ -478,7 +490,7 @@ class AppDService:
             for dashboard in chunk:
                 dashboardsFutures.append(self.controller.getDashboard(dashboard["id"]))
 
-            response = await gatherWithConcurrency(*dashboardsFutures)
+            response = await AsyncioUtils.gatherWithConcurrency(*dashboardsFutures)
             for dashboard in [await self.getResultFromResponse(response, debugString) for response in response]:
                 dashboards.append(dashboard.data)
 
@@ -649,12 +661,67 @@ class AppDService:
         response = await self.controller.getAnalyticsAgents()
         return await self.getResultFromResponse(response, debugString)
 
+    async def getEumApplications(self) -> Result:
+        debugString = f"Gathering EUM Applications"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getEumApplications()
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getEumPageListViewData(self, applicationId: int) -> Result:
+        debugString = f"Gathering EUM Page List View Data"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {"applicationId": applicationId, "addId": None, "timeRangeString": "last_1_hour|BEFORE_NOW|-1|-1|60", "fetchSyntheticData": False}
+        response = await self.controller.getEumPageListViewData(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getEumNetworkRequestList(self, applicationId: int) -> Result:
+        debugString = f"Gathering EUM Page List View Data"
+        logging.debug(f"{self.host} - {debugString}")
+
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+
+        body = {
+            "requestFilter": {"applicationId": applicationId, "fetchSyntheticData": False},
+            "resultColumns": ["PAGE_TYPE", "PAGE_NAME", "TOTAL_REQUESTS", "END_USER_RESPONSE_TIME", "VISUALLY_COMPLETE_TIME"],
+            "offset": 0,
+            "limit": -1,
+            "searchFilters": [],
+            "columnSorts": [{"column": "TOTAL_REQUESTS", "direction": "DESC"}],
+            "timeRangeStart": last24Hours,
+            "timeRangeEnd": currentTime,
+        }
+        response = await self.controller.getEumNetworkRequestList(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getPagesAndFramesConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering Pages and Frames Config"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getPagesAndFramesConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getAJAXConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering AJAX Config"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getAJAXConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getVirtualPagesConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering Virtual Pages Config"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getVirtualPagesConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
     async def close(self):
         logging.debug(f"{self.host} - Closing connection")
         await self.session.close()
 
     async def getResultFromResponse(self, response, debugString, isResponseJSON=True, isResponseList=True) -> Result:
-        body = (await response.content.read()).decode("utf-8")
+        body = (await response.content.read()).decode("ISO-8859-1")
+        self.totalCallsProcessed += 1
+
         if response.status_code >= 400:
             msg = f"{self.host} - {debugString} failed with code:{response.status_code} body:{body}"
             try:

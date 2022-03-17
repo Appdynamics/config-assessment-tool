@@ -33,7 +33,7 @@ class AppdController(Consumer):
 
     @params({"output": "json"})
     @get("/controller/rest/applications")
-    def getApplications(self):
+    def getApmApplications(self):
         """Retrieves Applications"""
 
     @params({"output": "json"})
@@ -258,3 +258,33 @@ class AppdController(Consumer):
     @get("/controller/restui/analytics/agents/agentsStatus")
     def getAnalyticsAgents(self):
         """Retrieves analytics agent summary list"""
+
+    @params({"output": "json", "time-range": "last_1_day.BEFORE_NOW.-1.-1.1440"})
+    @get("/controller/restui/eumApplications/getAllEumApplicationsData")
+    def getEumApplications(self):
+        """Retrieves all Eum Applications"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/pageList/getEumPageListViewData")
+    def getEumPageListViewData(self, body: Body):
+        """Retrieves Eum Page List View Data"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/web/pagelist")
+    def getEumNetworkRequestList(self, body: Body):
+        """Retrieves Eum Network Request List"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/browserRUMConfig/getPagesAndFramesConfig/{applicationId}")
+    def getPagesAndFramesConfig(self, applicationId: Path):
+        """Retrieves pages and frames config"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/browserRUMConfig/getAJAXConfig/{applicationId}")
+    def getAJAXConfig(self, applicationId: Path):
+        """Retrieves AJAX config"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/browserRUMConfig/getVirtualPagesConfig/{applicationId}")
+    def getVirtualPagesConfig(self, applicationId: Path):
+        """Retrieves virtual pages config"""

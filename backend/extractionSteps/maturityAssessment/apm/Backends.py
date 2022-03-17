@@ -2,12 +2,12 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
-class Backends(BSGJobStepBase):
+class Backends(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -23,7 +23,7 @@ class Backends(BSGJobStepBase):
 
         backendNameToCallsPerMinuteMap = {}
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -44,10 +44,10 @@ class Backends(BSGJobStepBase):
                         duration_in_mins="3600",
                     )
                 )
-            backends = await gatherWithConcurrency(*getBackendsFutures)
-            allCustomExitPoints = await gatherWithConcurrency(*getAllCustomExitPointsFutures)
-            backendDiscoveryConfigs = await gatherWithConcurrency(*getBackendDiscoveryConfigsFutures)
-            backendCallsPerMinute = await gatherWithConcurrency(*backendCallsPerMinuteFutures)
+            backends = await AsyncioUtils.gatherWithConcurrency(*getBackendsFutures)
+            allCustomExitPoints = await AsyncioUtils.gatherWithConcurrency(*getAllCustomExitPointsFutures)
+            backendDiscoveryConfigs = await AsyncioUtils.gatherWithConcurrency(*getBackendDiscoveryConfigsFutures)
+            backendCallsPerMinute = await AsyncioUtils.gatherWithConcurrency(*backendCallsPerMinuteFutures)
 
             # Create a dictionary of Node -> Calls Per Minute for fast lookup
             for rolledUpMetrics in backendCallsPerMinute:
@@ -90,10 +90,10 @@ class Backends(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

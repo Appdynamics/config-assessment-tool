@@ -2,11 +2,11 @@ import logging
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 
 
-class DataCollectors(BSGJobStepBase):
+class DataCollectors(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -19,7 +19,7 @@ class DataCollectors(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -28,7 +28,7 @@ class DataCollectors(BSGJobStepBase):
             for application in hostInfo[self.componentType].values():
                 getDataCollectorsFutures.append(controller.getDataCollectorUsage(application["id"]))
 
-            dataCollectors = await gatherWithConcurrency(*getDataCollectorsFutures)
+            dataCollectors = await AsyncioUtils.gatherWithConcurrency(*getDataCollectorsFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
@@ -43,10 +43,10 @@ class DataCollectors(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

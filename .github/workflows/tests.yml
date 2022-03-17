@@ -37,6 +37,7 @@ jobs:
           TEST_CONTROLLER_SSL: ${{ secrets.TEST_CONTROLLER_SSL }}
           TEST_CONTROLLER_USERNAME: ${{ secrets.TEST_CONTROLLER_USERNAME }}
           TEST_CONTROLLER_APPLICATION_ID: ${{ secrets.TEST_CONTROLLER_APPLICATION_ID }}
+          TEST_CONTROLLER_EUM_APPLICATION_ID: ${{ secrets.TEST_CONTROLLER_EUM_APPLICATION_ID }}
         run: |
           pipenv run pytest --cov=backend \
             --cov=backend/api \

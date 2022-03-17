@@ -4,12 +4,12 @@ import time
 from collections import OrderedDict
 
 from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import BSGJobStepBase
-from util.asyncio_utils import gatherWithConcurrency
+from extractionSteps.JobStepBase import JobStepBase
+from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
-class AppAgents(BSGJobStepBase):
+class AppAgents(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 
@@ -25,7 +25,7 @@ class AppAgents(BSGJobStepBase):
         nodeIdToAppAgentAvailabilityMap = {}
         nodeIdToMetricLimitMap = {}
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -52,9 +52,9 @@ class AppAgents(BSGJobStepBase):
                         duration_in_mins="60",
                     )
                 )
-            nodes = await gatherWithConcurrency(*getNodesFutures)
-            appAgentAvailability = await gatherWithConcurrency(*appAgentAvailabilityFutures)
-            nodeMetricsUploadRequestsExceedingLimit = await gatherWithConcurrency(*nodeMetricsUploadRequestsExceedingLimitFutures)
+            nodes = await AsyncioUtils.gatherWithConcurrency(*getNodesFutures)
+            appAgentAvailability = await AsyncioUtils.gatherWithConcurrency(*appAgentAvailabilityFutures)
+            nodeMetricsUploadRequestsExceedingLimit = await AsyncioUtils.gatherWithConcurrency(*nodeMetricsUploadRequestsExceedingLimitFutures)
 
             # Create a dictionary of Node -> Calls Per Minute for fast lookup
             for rolledUpMetrics in appAgentAvailability:
@@ -143,10 +143,10 @@ class AppAgents(BSGJobStepBase):
         jobStepName = type(self).__name__
 
         # Get thresholds related to job
-        jobStepThresholds = thresholds[jobStepName]
+        jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing details for {jobStepName}')
+            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             hostInfo["appAgentVersions"] = set()
 
