@@ -8,11 +8,12 @@ This project aims to provide a single source of truth for performing AppDynamics
 
 ## Usage
 
-There are three options to run the tool:
+There are four options to run the tool:
 
 1. UI Method: The config-assessment-tool provides a frontend UI to view/run jobs
 2. Directly via Docker: The backend container can be run manually from the command line
 3. From Source: Manually install dependencies and run the `backend.py` script directly
+4. Platform executable: An Operating System specific bundle if you are not using Docker and Python 
 
 ### Important step for running on Windows
 
@@ -103,6 +104,21 @@ excluding .json), not full path.
 
 The frontend can be invoked by navigating to `config_assessment_tool/frontend` and invoking `streamlit run frontend.py`
 
+
+### Platform executable
+
+Use this method if you are not able to use Docker or Python in your target deployment environment. Currently, platform bundles are available for Windows and Linux only.
+
+1. Download and unzip (or untar in case of linux) the latest `config-assessment-tool-<OS>.<zip|tgz>` from [here](https://github.com/Appdynamics/config-assessment-tool/releases) where OS is one of windows/linux depending on your target host
+2. cd into the expanded directory and edit `input/jobs/DefaultJobs.json` to match your target controller. You may also create a job file of your own. e.g. `input/jobs/<job-file-name>.json`
+3. Run the executable for your target platform:
+   1. For Linux: using a command line shell/terminal run `./config-assessment-tool` if using DefaultJob.json or `./config-assessment-tool -j <job-file-name>` if you created your own job file
+   2. For Windows: using a CMD or PowerShell terminal run `.\config-assessment-tool.exe` if using DefaultJob.json or `./config-assessment-tool.exe -j <job-file-name>` if you created your own job file
+
+This mode of running the tool currently does not support using the UI. You may only use command line instructions as outlined above. You can change the settings by editing the included configuration files directly.
+
+
+
 ## Output
 
 This program will create the following files in the `out` directory.
@@ -140,6 +156,7 @@ See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/cli
 - Python 3.5 or above if running with `bin/config-assessment-tool.py`
 - Python 3.9 or above if running from source
 - [Docker](https://www.docker.com/products/docker-desktop)
+- None if running using Platform executable method. Tested on most Linux distributions and Windows 10/11
 
 ## Limitations
 

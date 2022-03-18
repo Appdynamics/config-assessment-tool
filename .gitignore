@@ -1,11 +1,8 @@
 /logs
 /output
 /.idea
-.git-bitbucket
+*.ipr
 *.iml
-__pycache__/
-
-input/jobs/*
-!input/jobs/DefaultJob.json
-
-
+*.iws
+.git-bitbucket
+__pycache__
