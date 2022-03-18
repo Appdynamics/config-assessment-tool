@@ -15,7 +15,7 @@ There are four options to run the tool:
 3. From Source: Manually install dependencies and run the `backend.py` script directly
 4. Platform executable: An Operating System specific bundle if you are not using Docker and Python 
 
-### Important step for running on Windows
+### Important step for running on Windows(applies to methods 1-3 above)
 
 Docker on Windows requires manually sharing the `/input`, `/output`, and `/logs` directories with the container. If you do not follow this step, you will get the following error when trying to run the
 container: `DockerException Filesharing has been cancelled`. Take a look at the documentation [here](https://docs.docker.com/desktop/windows/) for more information.
@@ -115,7 +115,7 @@ Use this method if you are not able to use Docker or Python in your target deplo
    1. For Linux: using a command line shell/terminal run `./config-assessment-tool` if using DefaultJob.json or `./config-assessment-tool -j <job-file-name>` if you created your own job file
    2. For Windows: using a CMD or PowerShell terminal run `.\config-assessment-tool.exe` if using DefaultJob.json or `./config-assessment-tool.exe -j <job-file-name>` if you created your own job file
 
-This mode of running the tool currently does not support using the UI. You may only use command line instructions as outlined above. You can change the settings by editing the included configuration files directly.
+This method of running the tool currently does not support using the UI. You may only use command line instructions as outlined above. You can change the settings by editing the included configuration files directly.
 
 
 
