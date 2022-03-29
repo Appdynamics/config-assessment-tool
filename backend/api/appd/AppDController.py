@@ -288,3 +288,18 @@ class AppdController(Consumer):
     @get("/controller/restui/browserRUMConfig/getVirtualPagesConfig/{applicationId}")
     def getVirtualPagesConfig(self, applicationId: Path):
         """Retrieves virtual pages config"""
+
+    @params({"output": "json", "time-range": "last_1_day.BEFORE_NOW.-1.-1.1440"})
+    @get("/controller/restui/eumApplications/getAllMobileApplicationsData")
+    def getMRUMApplications(self):
+        """Retrieves all Mrum Applications"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/mobileRUMConfig/networkRequestsConfig/{applicationId}")
+    def getMRUMNetworkRequestConfig(self, applicationId: Path):
+        """Retrieves Mrum network requests config"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/mobileRequestListUiService/getNetworkRequestLimit/{applicationId}")
+    def getNetworkRequestLimit(self, applicationId: Path):
+        """Retrieves network request limit"""

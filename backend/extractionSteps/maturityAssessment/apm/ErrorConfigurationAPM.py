@@ -7,7 +7,7 @@ from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
-class ErrorConfiguration(JobStepBase):
+class ErrorConfigurationAPM(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 

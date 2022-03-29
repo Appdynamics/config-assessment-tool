@@ -9,7 +9,7 @@ from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
 
 
-class AppAgents(JobStepBase):
+class AppAgentsAPM(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 

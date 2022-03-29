@@ -4,9 +4,9 @@ from collections import OrderedDict
 from extractionSteps.JobStepBase import JobStepBase
 
 
-class OverallAssessmentAPM(JobStepBase):
+class OverallAssessmentMRUM(JobStepBase):
     def __init__(self):
-        super().__init__("apm")
+        super().__init__("mrum")
 
     async def extract(self, controllerData):
         pass
@@ -18,18 +18,7 @@ class OverallAssessmentAPM(JobStepBase):
 
         jobStepName = type(self).__name__
 
-        jobStepNames = [
-            "AppAgentsAPM",
-            "MachineAgentsAPM",
-            "BusinessTransactionsAPM",
-            "BackendsAPM",
-            "OverheadAPM",
-            "ServiceEndpointsAPM",
-            "ErrorConfigurationAPM",
-            "HealthRulesAndAlertingAPM",
-            "DataCollectorsAPM",
-            "DashboardsAPM",
-        ]
+        jobStepNames = ["NetworkRequestsMRUM", "HealthRulesAndAlertingMRUM"]
 
         num_job_steps = len(jobStepNames)
 

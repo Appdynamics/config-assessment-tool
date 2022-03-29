@@ -6,7 +6,7 @@ from extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
 
 
-class Overhead(JobStepBase):
+class OverheadAPM(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 

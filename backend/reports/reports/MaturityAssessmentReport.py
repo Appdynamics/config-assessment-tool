@@ -15,7 +15,7 @@ from reports.ReportBase import ReportBase
 
 class MaturityAssessmentReport(ReportBase):
     def createWorkbook(self, jobs, controllerData, jobFileName):
-        for reportType in ["apm", "brum"]:
+        for reportType in ["apm", "brum", "mrum"]:
             logging.info(f"Creating {reportType} Maturity Assessment Report Workbook")
 
             # Create Report with Raw Data
