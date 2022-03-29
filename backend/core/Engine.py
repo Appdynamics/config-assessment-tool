@@ -9,27 +9,33 @@ from collections import OrderedDict
 from pathlib import Path
 
 from api.appd.AppDService import AppDService
-from extractionSteps.maturityAssessment.apm.ApmDashboards import ApmDashboards
-from extractionSteps.maturityAssessment.apm.AppAgents import AppAgents
-from extractionSteps.maturityAssessment.apm.Backends import Backends
-from extractionSteps.maturityAssessment.apm.BusinessTransactions import BusinessTransactions
-from extractionSteps.maturityAssessment.apm.DataCollectors import DataCollectors
-from extractionSteps.maturityAssessment.apm.ErrorConfiguration import ErrorConfiguration
-from extractionSteps.maturityAssessment.apm.HealthRulesAndAlertingAPM import HealthRulesAndAlertingAPM
-from extractionSteps.maturityAssessment.apm.MachineAgents import MachineAgents
-from extractionSteps.maturityAssessment.apm.OverallAssessmentAPM import OverallAssessmentAPM
-from extractionSteps.maturityAssessment.apm.Overhead import Overhead
-from extractionSteps.maturityAssessment.apm.ServiceEndpoints import ServiceEndpoints
+
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
+from extractionSteps.maturityAssessment.apm.AppAgentsAPM import AppAgentsAPM
+from extractionSteps.maturityAssessment.apm.BackendsAPM import BackendsAPM
+from extractionSteps.maturityAssessment.apm.BusinessTransactionsAPM import BusinessTransactionsAPM
+from extractionSteps.maturityAssessment.apm.DashboardsAPM import DashboardsAPM
+from extractionSteps.maturityAssessment.apm.DataCollectorsAPM import DataCollectorsAPM
+from extractionSteps.maturityAssessment.apm.ErrorConfigurationAPM import ErrorConfigurationAPM
+from extractionSteps.maturityAssessment.apm.HealthRulesAndAlertingAPM import HealthRulesAndAlertingAPM
+from extractionSteps.maturityAssessment.apm.MachineAgentsAPM import MachineAgentsAPM
+from extractionSteps.maturityAssessment.apm.OverallAssessmentAPM import OverallAssessmentAPM
+from extractionSteps.maturityAssessment.apm.OverheadAPM import OverheadAPM
+from extractionSteps.maturityAssessment.apm.ServiceEndpointsAPM import ServiceEndpointsAPM
 from extractionSteps.maturityAssessment.brum.HealthRulesAndAlertingBRUM import HealthRulesAndAlertingBRUM
-from extractionSteps.maturityAssessment.brum.NetworkRequests import NetworkRequests
-from extractionSteps.maturityAssessment.brum.OverallAssessmentBrum import OverallAssessmentBRUM
+from extractionSteps.maturityAssessment.brum.NetworkRequestsBRUM import NetworkRequestsBRUM
+from extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import OverallAssessmentBRUM
+from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
+from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
+from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
+
 from reports.reports.AgentMatrixReport import AgentMatrixReport
 from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
 from reports.reports.LicenseReport import LicenseReport
 from reports.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
+
 from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import jsonEncoder
 
@@ -82,21 +88,25 @@ class Engine:
         ]
         self.maturityAssessmentSteps = [
             # APM Report
-            AppAgents(),
-            MachineAgents(),
-            BusinessTransactions(),
-            Backends(),
-            Overhead(),
-            ServiceEndpoints(),
-            ErrorConfiguration(),
+            AppAgentsAPM(),
+            MachineAgentsAPM(),
+            BusinessTransactionsAPM(),
+            BackendsAPM(),
+            OverheadAPM(),
+            ServiceEndpointsAPM(),
+            ErrorConfigurationAPM(),
             HealthRulesAndAlertingAPM(),
-            DataCollectors(),
-            ApmDashboards(),
+            DataCollectorsAPM(),
+            DashboardsAPM(),
             OverallAssessmentAPM(),
             # BRUM Report
-            NetworkRequests(),
+            NetworkRequestsBRUM(),
             HealthRulesAndAlertingBRUM(),
             OverallAssessmentBRUM(),
+            # MRUM Report
+            NetworkRequestsMRUM(),
+            HealthRulesAndAlertingMRUM(),
+            OverallAssessmentMRUM(),
         ]
         self.reports = [
             MaturityAssessmentReport(),
@@ -306,5 +316,7 @@ class Engine:
         await AsyncioUtils.gatherWithConcurrency(*[controller.close() for controller in self.controllers])
         if error:
             logging.error(msg)
+            sys.exit(1)
         else:
             logging.info(msg)
+            sys.exit(0)

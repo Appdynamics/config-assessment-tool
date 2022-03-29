@@ -1,7 +1,7 @@
 {
 	"version": "v1.4.0",
 	"apm": {
-		"AppAgents": {
+		"AppAgentsAPM": {
 			"platinum": {
 				"percentAgentsLessThan1YearOld": 100,
 				"percentAgentsLessThan2YearsOld": 100,
@@ -24,7 +24,7 @@
 				"metricLimitNotHit": true
 			}
 		},
-		"BusinessTransactions": {
+		"BusinessTransactionsAPM": {
 			"platinum": {
 				"numberCustomMatchRules": 3,
 				"btLockdownEnabled": true,
@@ -44,7 +44,7 @@
 				"numberOfBTs": 600
 			}
 		},
-		"MachineAgents": {
+		"MachineAgentsAPM": {
 			"platinum": {
 				"percentAgentsLessThan1YearOld": 100,
 				"percentAgentsLessThan2YearsOld": 100,
@@ -67,7 +67,7 @@
 				"percentAgentsInstalledAlongsideAppAgents": 0
 			}
 		},
-		"Backends": {
+		"BackendsAPM": {
 			"platinum": {
 				"backendLimitNotHit": true,
 				"percentBackendsWithLoad": 75,
@@ -84,7 +84,7 @@
 				"numberOfCustomBackendRules": 0
 			}
 		},
-		"Overhead": {
+		"OverheadAPM": {
 			"platinum": {
 				"developerModeNotEnabledForAnyBT": true,
 				"developerModeNotEnabledForApplication": true,
@@ -104,7 +104,7 @@
 				"aggressiveSnapshottingNotEnabled": true
 			}
 		},
-		"ServiceEndpoints": {
+		"ServiceEndpointsAPM": {
 			"platinum": {
 				"serviceEndpointLimitNotHit": true,
 				"percentServiceEndpointsWithLoadOrDisabled": 50,
@@ -121,7 +121,7 @@
 				"numberOfCustomServiceEndpointRules": 0
 			}
 		},
-		"ErrorConfiguration": {
+		"ErrorConfigurationAPM": {
 			"platinum": {
 				"numberOfCustomRules": 1,
 				"successPercentageOfWorstTransaction": 80
@@ -155,7 +155,7 @@
 				"numberOfDefaultHealthRulesModified": 0
 			}
 		},
-		"DataCollectors": {
+		"DataCollectorsAPM": {
 			"platinum": {
 				"numberOfDataCollectorFieldsConfigured": 5,
 				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 5,
@@ -175,7 +175,7 @@
 				"biqEnabled": false
 			}
 		},
-		"ApmDashboards": {
+		"DashboardsAPM": {
 			"platinum": {
 				"numberOfDashboards": 5,
 				"percentageOfDashboardsModifiedLast6Months": 100,
@@ -211,7 +211,7 @@
 		}
 	},
 	"brum": {
-		"NetworkRequests": {
+		"NetworkRequestsBRUM": {
 			"platinum": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
@@ -246,6 +246,59 @@
 			}
 		},
 		"OverallAssessmentBRUM": {
+			"platinum": {
+				"percentageTotalPlatinum": 50,
+				"percentageTotalGoldOrBetter": 50,
+				"percentageTotalSilverOrBetter": 100
+			},
+			"gold": {
+				"percentageTotalPlatinum": 0,
+				"percentageTotalGoldOrBetter": 50,
+				"percentageTotalSilverOrBetter": 90
+			},
+			"silver": {
+				"percentageTotalPlatinum": 0,
+				"percentageTotalGoldOrBetter": 0,
+				"percentageTotalSilverOrBetter": 80
+			}
+		}
+	},
+	"mrum": {
+		"NetworkRequestsMRUM": {
+			"platinum": {
+				"collectingDataPastOneDay": true,
+				"networkRequestLimitNotHit": true,
+				"numberCustomMatchRules": 5
+			},
+			"gold": {
+				"collectingDataPastOneDay": true,
+				"networkRequestLimitNotHit": true,
+				"numberCustomMatchRules": 3
+			},
+			"silver": {
+				"collectingDataPastOneDay": true,
+				"networkRequestLimitNotHit": true,
+				"numberCustomMatchRules": 2
+			}
+		},
+		"HealthRulesAndAlertingMRUM": {
+			"platinum": {
+				"numberOfHealthRuleViolationsLast24Hours": 10,
+				"numberOfActionsBoundToEnabledPolicies": 1,
+				"numberOfCustomHealthRules": 5
+			},
+			"gold": {
+				"numberOfHealthRuleViolationsLast24Hours": 20,
+				"numberOfActionsBoundToEnabledPolicies": 1,
+				"numberOfCustomHealthRules": 2
+			},
+			"silver": {
+				"numberOfHealthRuleViolationsLast24Hours": 50,
+				"numberOfActionsBoundToEnabledPolicies": 0,
+				"numberOfCustomHealthRules": 0
+			}
+		},
+		"OverallAssessmentMRUM": {
 			"platinum": {
 				"percentageTotalPlatinum": 50,
 				"percentageTotalGoldOrBetter": 50,

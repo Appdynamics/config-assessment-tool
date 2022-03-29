@@ -6,7 +6,7 @@ from extractionSteps.JobStepBase import JobStepBase
 from util.stdlib_utils import get_recursively
 
 
-class ApmDashboards(JobStepBase):
+class DashboardsAPM(JobStepBase):
     def __init__(self):
         super().__init__("apm")
 

@@ -7,7 +7,7 @@ from extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
 
 
-class NetworkRequests(JobStepBase):
+class NetworkRequestsBRUM(JobStepBase):
     def __init__(self):
         super().__init__("brum")
 

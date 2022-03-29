@@ -440,14 +440,17 @@ class AppDService:
                 )
 
         snapshotsContainingDataCollectorFields = []
+        distinctDataCollectors = set()
         for dataCollectorField in dataCollectorFields:
-            snapshotsContainingDataCollectorFields.append(
-                self.getSnapshotsWithDataCollector(
-                    applicationID=applicationID,
-                    data_collector_name=dataCollectorField[1],
-                    data_collector_type=dataCollectorField[0],
+            if (applicationID, dataCollectorField[1], dataCollectorField[0]) not in distinctDataCollectors:
+                snapshotsContainingDataCollectorFields.append(
+                    self.getSnapshotsWithDataCollector(
+                        applicationID=applicationID,
+                        data_collector_name=dataCollectorField[1],
+                        data_collector_type=dataCollectorField[0],
+                    )
                 )
-            )
+            distinctDataCollectors.add((applicationID, dataCollectorField[1], dataCollectorField[0]))
         snapshotResults = await AsyncioUtils.gatherWithConcurrency(*snapshotsContainingDataCollectorFields)
 
         dataCollectorFieldsWithSnapshots = []
@@ -668,14 +671,14 @@ class AppDService:
         return await self.getResultFromResponse(response, debugString)
 
     async def getEumPageListViewData(self, applicationId: int) -> Result:
-        debugString = f"Gathering EUM Page List View Data"
+        debugString = f"Gathering EUM Page List View Data for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
         body = {"applicationId": applicationId, "addId": None, "timeRangeString": "last_1_hour|BEFORE_NOW|-1|-1|60", "fetchSyntheticData": False}
         response = await self.controller.getEumPageListViewData(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def getEumNetworkRequestList(self, applicationId: int) -> Result:
-        debugString = f"Gathering EUM Page List View Data"
+        debugString = f"Gathering EUM Page List View Data for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
 
         # get current timestamp in milliseconds
@@ -697,21 +700,39 @@ class AppDService:
         return await self.getResultFromResponse(response, debugString)
 
     async def getPagesAndFramesConfig(self, applicationId: int) -> Result:
-        debugString = f"Gathering Pages and Frames Config"
+        debugString = f"Gathering Pages and Frames Config for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getPagesAndFramesConfig(applicationId)
         return await self.getResultFromResponse(response, debugString)
 
     async def getAJAXConfig(self, applicationId: int) -> Result:
-        debugString = f"Gathering AJAX Config"
+        debugString = f"Gathering AJAX Config for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getAJAXConfig(applicationId)
         return await self.getResultFromResponse(response, debugString)
 
     async def getVirtualPagesConfig(self, applicationId: int) -> Result:
-        debugString = f"Gathering Virtual Pages Config"
+        debugString = f"Gathering Virtual Pages Config for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getVirtualPagesConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getMRUMApplications(self) -> Result:
+        debugString = f"Gathering MRUM Applications"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getMRUMApplications()
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getMRUMNetworkRequestConfig(self, applicationId: int) -> Result:
+        debugString = f"Gathering MRUM Network Request Config for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getMRUMNetworkRequestConfig(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getNetworkRequestLimit(self, applicationId: int) -> Result:
+        debugString = f"Gathering MRUM Network Request Limit for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getNetworkRequestLimit(applicationId)
         return await self.getResultFromResponse(response, debugString)
 
     async def close(self):
