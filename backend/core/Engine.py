@@ -42,8 +42,15 @@ from util.stdlib_utils import jsonEncoder
 
 class Engine:
     def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int):
-        # cd to config-assessment-tool root directory
-        path = os.path.realpath(f"{__file__}/../../..")
+
+        if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+            # running as a bundle
+            path = sys._MEIPASS
+        else:
+            # running live
+            # cd to config-assessment-tool root directory
+            path = os.path.realpath(f"{__file__}/../../..")
+
         os.chdir(path)
 
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
