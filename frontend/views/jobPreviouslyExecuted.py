@@ -21,8 +21,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
         openJobFileColumn,
         openThresholdsFileColumn,
         _,
-        _,
-    ) = st.columns([2, 1.5, 2, 3, 2])
+    ) = st.columns([1.25, 1, 1.3, 1])
 
     openOutputFolderColumn.text("")  # vertical padding
     openOutputFolderColumn.text("")  # vertical padding

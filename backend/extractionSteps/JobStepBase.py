@@ -50,6 +50,10 @@ class JobStepBase(ABC):
         metricFolder = "evaluated" if useEvaluatedMetrics else "raw"
 
         rawDataSheet = workbook.create_sheet(f"{jobStepName}")
+        if len(list(controllerData.values())[0][self.componentType]) == 0:
+            logging.warning(f"No data found for {jobStepName}")
+            return
+
         rawDataHeaders = list(list(controllerData.values())[0][self.componentType].values())[0][jobStepName][metricFolder].keys()
         writeUncoloredRow(rawDataSheet, 1, ["controller", "application", *rawDataHeaders])
 
