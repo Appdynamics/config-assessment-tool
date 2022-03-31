@@ -15,9 +15,7 @@ def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool, concurrentCo
         openJobFileColumn,
         openThresholdsFileColumn,
         _,
-        _,
-        _,
-    ) = st.columns([1.5, 2, 1.5, 3, 2])
+    ) = st.columns([1, 2, 2])
 
     openJobFileColumn.text("")  # vertical padding
     openJobFileColumn.text("")  # vertical padding
