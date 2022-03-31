@@ -69,7 +69,7 @@ jobs:
         token: ${{ secrets.WORKFLOW_TOKEN }}
 
   build-macosx:
-   name: build linux binary
+   name: build macosx binary
    runs-on: macos-latest
    steps:
      - name: Checkout repository
