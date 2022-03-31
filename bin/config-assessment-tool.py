@@ -47,7 +47,7 @@ def run(path: str):
 
     # start FileHandler
     logging.info("Starting FileHandler")
-    runNonBlockingCommand("python frontend/FileHandler.py")
+    runNonBlockingCommand("python3 frontend/FileHandler.py")
 
     # wait for file handler to start
     while True:
