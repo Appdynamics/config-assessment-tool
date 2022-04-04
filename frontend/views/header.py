@@ -9,6 +9,7 @@ import streamlit as st
 
 from FileHandler import openFolder
 from utils.docker_utils import isDocker
+from utils.streamlit_utils import rerun
 
 
 def header() -> tuple[bool, bool]:
@@ -100,7 +101,7 @@ def header() -> tuple[bool, bool]:
             # small delay to see job ended
             time.sleep(2)
             # refresh the page to see newly generated report
-            raise st.script_runner.RerunException(st.script_request_queue.RerunData(None))
+            rerun()
 
     debug = optionsColumn.checkbox("Enable Debug")
     throttleNetworkConnections = optionsColumn.checkbox("Throttle Network Connections")
