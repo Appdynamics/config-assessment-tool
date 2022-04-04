@@ -10,12 +10,20 @@ This project aims to provide a single source of truth for performing AppDynamics
 
 There are four options to run the tool:
 
-1. UI Method: The config-assessment-tool provides a frontend UI to view/run jobs
-2. Platform executable: An Operating System specific bundle if you are not using Docker and Python
-3. Directly via Docker: The backend container can be run manually from the command line
-4. From Source: Manually install dependencies and run the `backend.py` script directly
+1. [UI Method](https://github.com/Appdynamics/config-assessment-tool#ui-method)
+   - Run jobs from a convenient web based UI
+   - Recommended for most users
+2. [Platform executable](https://github.com/Appdynamics/config-assessment-tool#platform-executable)
+   - An OS specific bundle if you are not using Docker and Python
+   - Recommended for users unable to use Docker
+3. [Directly via Docker](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
+   - The backend container can be run manually from the command line
+   - Recommended for users with Docker who do not want to use the UI
+4. [From Source](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
+   - Manually install dependencies and run the `backend.py` script directly
+   - Recommended for users who want to build the tool from source
 
-### Important step for running on Windows(Ignore this step if using method 2 above - Platform executable)
+### Important step for running on Windows (Ignore this step if using method 2 or 4 above)
 
 Docker on Windows requires manually sharing the `/input`, `/output`, and `/logs` directories with the container. If you do not follow this step, you will get the following error when trying to run the
 container: `DockerException Filesharing has been cancelled`. Take a look at the documentation [here](https://docs.docker.com/desktop/windows/) for more information.
@@ -31,8 +39,17 @@ The tool expects ONLY the following permissions to be given:
 
 Obtain frontend and backend Docker images via:
 
+#### If on Mac/Linux
+
 1. Download the latest `config-assessment-tool.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
 2. Pull from ghrc with `python3 bin/config-assessment-tool.py --pull`
+3. Run with `python3 bin/config-assessment-tool.py --run`
+4. Navigate to `http://localhost:8501`
+
+#### If on Windows
+
+1. Download the latest `Source Code.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
+2. Build Docker images with `python3 bin/config-assessment-tool.py --build`
 3. Run with `python3 bin/config-assessment-tool.py --run`
 4. Navigate to `http://localhost:8501`
 
@@ -135,17 +152,25 @@ The frontend can be invoked by navigating to `config_assessment_tool/frontend` a
 
 This program will create the following files in the `out` directory.
 
-- `{jobName}-BSGReport-apm.xlsx`
-  - Bronze/Silver/Gold report
-- `{jobName}-Agent-Matrix.xlsx`
+- `{jobName}-MaturityAssessment-apm.xlsx`
+  - MaturityAssessment report for APM
+- `{jobName}-MaturityAssessment-brum.xlsx`
+  - MaturityAssessment report for BRUM
+- `{jobName}-MaturityAssessment-mrum.xlsx`
+  - MaturityAssessment report for MRUM
+- `{jobName}-AgentMatrix.xlsx`
   - Details agent versions rolled up by application
   - Lists the details of individual without any rollup
-- `{jobName}-CustomMetricsReport.xlsx`
+- `{jobName}-CustomMetrics.xlsx`
   - Lists which applications are leveraging Custom Extensions
 - `{jobName}-License.xlsx`
   - Export of the License Usage page in the Controller
-- `{jobName}-RawBSGReport.xlsx`
-  - Raw metrics which go into the above BSG report
+- `{jobName}-MaturityAssessmentRaw-apm.xlsx`
+  - Raw metrics which go into MaturityAssessment for APM report
+- `{jobName}-MaturityAssessmentRaw-brum.xlsx`
+  - Raw metrics which go into MaturityAssessment for BRUM report
+- `{jobName}-MaturityAssessmentRaw-mrum.xlsx`
+  - Raw metrics which go into MaturityAssessment for MRUM report
 - `controllerData.json`
   - Contains all raw data used in analysis.
 - `info.json`
@@ -156,6 +181,10 @@ This program will create the following files in the `out` directory.
 ### Backend
 
 ![Scheme](backend/resources/img/architecture.jpg)
+
+### Frontend
+
+![Scheme](frontend/resources/img/architecture.jpg)
 
 ## Proxy Support
 
