@@ -12,7 +12,7 @@ from util.logging_utils import initLogging
 @click.option("-j", "--job-file", default="DefaultJob")
 @click.option("-t", "--thresholds-file", default="DefaultThresholds")
 @click.option("-d", "--debug", is_flag=True)
-@click.option("-c", "--concurrent-connections", default=50)
+@click.option("-c", "--concurrent-connections", type=int)
 @coro
 async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int):
     initLogging(debug)

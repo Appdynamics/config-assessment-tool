@@ -24,21 +24,29 @@ class NetworkRequestsMRUM(JobStepBase):
 
             getMRUMNetworkRequestConfigFutures = []
             getNetworkRequestLimitFutures = []
+            getMobileSnapshotsWithServerSnapshotsFutures = []
             for application in hostInfo[self.componentType].values():
                 getMRUMNetworkRequestConfigFutures.append(controller.getMRUMNetworkRequestConfig(application["applicationId"]))
                 getNetworkRequestLimitFutures.append(controller.getNetworkRequestLimit(application["mobileAppId"]))
+                getMobileSnapshotsWithServerSnapshotsFutures.append(
+                    controller.getMobileSnapshotsWithServerSnapshots(
+                        application["applicationId"], application["mobileAppId"], application["platform"]
+                    )
+                )
 
             mrumNetworkRequestConfigs = await AsyncioUtils.gatherWithConcurrency(*getMRUMNetworkRequestConfigFutures)
             networkRequestLimits = await AsyncioUtils.gatherWithConcurrency(*getNetworkRequestLimitFutures)
+            mobileSnapshotsWithServerSnapshots = await AsyncioUtils.gatherWithConcurrency(*getMobileSnapshotsWithServerSnapshotsFutures)
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
 
                 application["eumPageListViewData"] = mrumNetworkRequestConfigs[idx].data
                 application["networkRequestLimit"] = networkRequestLimits[idx].data
+                application["mobileSnapshotsWithServerSnapshots"] = mobileSnapshotsWithServerSnapshots[idx].data
 
     def analyze(self, controllerData, thresholds):
-        """k
+        """
         Analysis of node level details.
         1. Determines if Developer Mode is either enabled application wide or for any BT.
         """
@@ -74,5 +82,13 @@ class NetworkRequestsMRUM(JobStepBase):
                 numberOfCustomExcludeRules = len(application["eumPageListViewData"]["customNamingExcludeRules"])
 
                 analysisDataEvaluatedMetrics["numberCustomMatchRules"] = numberOfCustomIncludeRules + numberOfCustomExcludeRules
+
+                analysisDataEvaluatedMetrics["hasBtCorrelation"] = len(application["mobileSnapshotsWithServerSnapshots"]) > 0
+                analysisDataRawMetrics["numberOfMobileSnapshots"] = len(application["mobileSnapshotsWithServerSnapshots"])
+
+                analysisDataEvaluatedMetrics["hasCustomEventServiceIncludeRule"] = (
+                    len(application["eumPageListViewData"]["eventServiceIncludeRules"]) > 0
+                )
+                analysisDataRawMetrics["numberOfCustomEventServiceIncludeRules"] = len(application["eumPageListViewData"]["eventServiceIncludeRules"])
 
                 self.applyThresholds(analysisDataEvaluatedMetrics, analysisDataRoot, jobStepThresholds)

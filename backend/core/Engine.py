@@ -71,7 +71,13 @@ class Engine:
         self.job = json.loads(open(f"input/jobs/{self.jobFileName}.json").read())
         self.thresholds = json.loads(open(f"input/thresholds/{self.thresholdsFileName}.json").read())
 
-        # Set concurrentConnections
+        # Default concurrent connections to 10 for On-Premise controllers
+        if any(job for job in self.job if "saas.appdynamics.com" not in job["host"]):
+            logging.info(f"On-Premise controller detected. It is recommended to use a maximum of 10 concurrent connections.")
+            concurrentConnections = 10 if concurrentConnections is None else concurrentConnections
+        else:
+            logging.info(f"SaaS controller detected. It is recommended to use a maximum of 50 concurrent connections.")
+            concurrentConnections = 50 if concurrentConnections is None else concurrentConnections
         AsyncioUtils.init(concurrentConnections)
 
         # Instantiate controllers, jobs, and report lists
@@ -162,7 +168,7 @@ class Engine:
             logging.info(f"Total execution time: {executionTimeString}")
 
         await self.abortAndCleanup(
-            "Exiting.",
+            "Exiting",
             error=False,
         )
 

@@ -289,6 +289,11 @@ class AppdController(Consumer):
     def getVirtualPagesConfig(self, applicationId: Path):
         """Retrieves virtual pages config"""
 
+    @params({"output": "json"})
+    @post("/controller/restui/browserSnapshotList/getSnapshots")
+    def getBrowserSnapshots(self, body: Body):
+        """Retrieves browser snapshots"""
+
     @params({"output": "json", "time-range": "last_1_day.BEFORE_NOW.-1.-1.1440"})
     @get("/controller/restui/eumApplications/getAllMobileApplicationsData")
     def getMRUMApplications(self):
@@ -303,3 +308,8 @@ class AppdController(Consumer):
     @get("/controller/restui/mobileRequestListUiService/getNetworkRequestLimit/{applicationId}")
     def getNetworkRequestLimit(self, applicationId: Path):
         """Retrieves network request limit"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/mobileSnapshotListUiService/getMobileSnapshotSummaries")
+    def getMobileSnapshots(self, body: Body):
+        """Retrieves mobile snapshots"""

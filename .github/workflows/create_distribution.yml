@@ -1,0 +1,29 @@
+name: create distribution package
+on:
+  release:
+    types: [ published ]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  build-and-push-image-unix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Package release files
+        shell: bash
+        run: |
+          python ./bin/config-assessment-tool.py --package
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: config-assessment-tool-dist.zip
+          token: ${{ secrets.WORKFLOW_TOKEN }}

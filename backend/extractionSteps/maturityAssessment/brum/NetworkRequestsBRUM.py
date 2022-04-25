@@ -27,18 +27,21 @@ class NetworkRequestsBRUM(JobStepBase):
             getPagesAndFramesConfigFutures = []
             getAJAXConfigFutures = []
             getVirtualPagesConfigFutures = []
+            getBrowserSnapshotsWithServerSnapshotsFutures = []
             for application in hostInfo[self.componentType].values():
                 getEumPageListViewDataFutures.append(controller.getEumPageListViewData(application["id"]))
                 getEumNetworkRequestListFutures.append(controller.getEumNetworkRequestList(application["id"]))
                 getPagesAndFramesConfigFutures.append(controller.getPagesAndFramesConfig(application["id"]))
                 getAJAXConfigFutures.append(controller.getAJAXConfig(application["id"]))
                 getVirtualPagesConfigFutures.append(controller.getVirtualPagesConfig(application["id"]))
+                getBrowserSnapshotsWithServerSnapshotsFutures.append(controller.getBrowserSnapshotsWithServerSnapshots(application["id"]))
 
             eumPageListViewData = await AsyncioUtils.gatherWithConcurrency(*getEumPageListViewDataFutures)
             eumNetworkRequestList = await AsyncioUtils.gatherWithConcurrency(*getEumNetworkRequestListFutures)
             pagesAndFramesConfig = await AsyncioUtils.gatherWithConcurrency(*getPagesAndFramesConfigFutures)
             ajaxConfig = await AsyncioUtils.gatherWithConcurrency(*getAJAXConfigFutures)
             virtualPagesConfig = await AsyncioUtils.gatherWithConcurrency(*getVirtualPagesConfigFutures)
+            browserSnapshotsWithServerSnapshots = await AsyncioUtils.gatherWithConcurrency(*getBrowserSnapshotsWithServerSnapshotsFutures)
 
             for idx, application in enumerate(hostInfo[self.componentType]):
                 hostInfo[self.componentType][application]["eumPageListViewData"] = eumPageListViewData[idx].data
@@ -46,6 +49,7 @@ class NetworkRequestsBRUM(JobStepBase):
                 hostInfo[self.componentType][application]["pagesAndFramesConfig"] = pagesAndFramesConfig[idx].data
                 hostInfo[self.componentType][application]["ajaxConfig"] = ajaxConfig[idx].data
                 hostInfo[self.componentType][application]["virtualPagesConfig"] = virtualPagesConfig[idx].data
+                hostInfo[self.componentType][application]["browserSnapshotsWithServerSnapshots"] = browserSnapshotsWithServerSnapshots[idx].data
 
     def analyze(self, controllerData, thresholds):
         """
@@ -120,5 +124,14 @@ class NetworkRequestsBRUM(JobStepBase):
                 analysisDataRawMetrics["numberOfCustomAJAXExcludeRules"] = numberOfCustomAJAXExcludeRules
                 analysisDataRawMetrics["numberOfCustomVirtualIncludeRules"] = numberOfCustomVirtualIncludeRules
                 analysisDataRawMetrics["numberOfCustomVirtualExcludeRules"] = numberOfCustomVirtualExcludeRules
+
+                numBrowserSnapshotsWithServerSnapshots = 0
+                if application["browserSnapshotsWithServerSnapshots"].get("snapshots"):
+                    numBrowserSnapshotsWithServerSnapshots = len(application["browserSnapshotsWithServerSnapshots"]["snapshots"])
+                analysisDataEvaluatedMetrics["hasBtCorrelation"] = numBrowserSnapshotsWithServerSnapshots > 0
+                analysisDataRawMetrics["numberOfBrowserSnapshots"] = numBrowserSnapshotsWithServerSnapshots
+
+                analysisDataEvaluatedMetrics["hasCustomEventServiceIncludeRule"] = len(application["ajaxConfig"]["eventServiceIncludeRules"]) > 0
+                analysisDataRawMetrics["numberOfCustomEventServiceIncludeRules"] = len(application["ajaxConfig"]["eventServiceIncludeRules"])
 
                 self.applyThresholds(analysisDataEvaluatedMetrics, analysisDataRoot, jobStepThresholds)

@@ -508,12 +508,15 @@ class AppDService:
         # dashboards = [await self.getResultFromResponse(response, debugString) for response in response]
         # dashboards = [dashboard.data for dashboard in dashboards if dashboard.error is None]
 
+        returnedDashboards = []
         for dashboardSchema, dashboardOverview in zip(dashboards, allDashboardsMetadata.data):
-            dashboardSchema["createdBy"] = dashboardOverview["createdBy"]
-            dashboardSchema["createdOn"] = dashboardOverview["createdOn"]
-            dashboardSchema["modifiedOn"] = dashboardOverview["modifiedOn"]
+            if "schemaVersion" in dashboardSchema:
+                dashboardSchema["createdBy"] = dashboardOverview["createdBy"]
+                dashboardSchema["createdOn"] = dashboardOverview["createdOn"]
+                dashboardSchema["modifiedOn"] = dashboardOverview["modifiedOn"]
+                returnedDashboards.append(dashboardSchema)
 
-        return Result(dashboards, None)
+        return Result(returnedDashboards, None)
 
     async def getUserPermissions(self, username: str) -> Result:
         debugString = f"Gathering Permission set for user: {username}"
@@ -597,6 +600,8 @@ class AppDService:
 
             if result.error is None:
                 allAgents.extend(result.data["data"])
+            else:
+                logging.warning(f"{self.host} - Failed to get App Server Agents: {result.error}")
 
         return Result(allAgents, None)
 
@@ -649,6 +654,8 @@ class AppDService:
 
             if result.error is None:
                 allAgents.extend(result.data["data"])
+            else:
+                logging.warning(f"{self.host} - Failed to get Machine Agents: {result.error}")
 
         return Result(allAgents, None)
 
@@ -717,6 +724,41 @@ class AppDService:
         response = await self.controller.getVirtualPagesConfig(applicationId)
         return await self.getResultFromResponse(response, debugString)
 
+    async def getBrowserSnapshotsWithServerSnapshots(self, applicationId: int) -> Result:
+        debugString = f"Gathering Browser Snapshots for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {
+            "applicationId": applicationId,
+            "timeRangeString": "last_1_hour.BEFORE_NOW.-1.-1.60",
+            "filters": {
+                "_classType": "BrowserSnapshotFilters",
+                "serverSnapshotExists": {"type": "BOOLEAN", "name": "ms_serverSnapshotExists", "value": True},
+                "pages": {
+                    "type": "FLY_OUT_SELECT",
+                    "name": "ms_pagesAndAjaxRequestsNavLabel",
+                    "values": None,
+                    "alternateOptionsString": None,
+                    "flyoutTitle": "Select Pages",
+                },
+                "devices": {
+                    "type": "FLY_OUT_SELECT",
+                    "name": "ms_devices",
+                    "values": None,
+                    "alternateOptionsString": "Show Only Device Type (mobile vs computer, etc)",
+                    "flyoutTitle": "Select Devices",
+                },
+                "browsers": {
+                    "type": "FLY_OUT_SELECT",
+                    "name": "ms_browsers",
+                    "values": None,
+                    "alternateOptionsString": "Show Browser Versions",
+                    "flyoutTitle": "Select Browsers",
+                },
+            },
+        }
+        response = await self.controller.getBrowserSnapshots(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString, isResponseList=False)
+
     async def getMRUMApplications(self) -> Result:
         debugString = f"Gathering MRUM Applications"
         logging.debug(f"{self.host} - {debugString}")
@@ -733,6 +775,19 @@ class AppDService:
         debugString = f"Gathering MRUM Network Request Limit for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getNetworkRequestLimit(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getMobileSnapshotsWithServerSnapshots(self, applicationId: int, mobileApplicationId: int, platform: str) -> Result:
+        debugString = f"Gathering Mobile Snapshots for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {
+            "applicationId": applicationId,
+            "timeRangeString": "last_1_hour|BEFORE_NOW|-1|-1|60",
+            "platform": platform,
+            "mobileAppId": mobileApplicationId,
+            "serverSnapshotExists": True,
+        }
+        response = await self.controller.getMobileSnapshots(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def close(self):

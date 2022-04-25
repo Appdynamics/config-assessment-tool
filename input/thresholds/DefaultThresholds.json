@@ -215,17 +215,23 @@
 			"platinum": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
-				"numberCustomMatchRules": 5
+				"numberCustomMatchRules": 5,
+				"hasBtCorrelation": true,
+				"hasCustomEventServiceIncludeRule": true
 			},
 			"gold": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
-				"numberCustomMatchRules": 3
+				"numberCustomMatchRules": 3,
+				"hasBtCorrelation": false,
+				"hasCustomEventServiceIncludeRule": false
 			},
 			"silver": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
-				"numberCustomMatchRules": 2
+				"numberCustomMatchRules": 2,
+				"hasBtCorrelation": false,
+				"hasCustomEventServiceIncludeRule": false
 			}
 		},
 		"HealthRulesAndAlertingBRUM": {
@@ -268,17 +274,23 @@
 			"platinum": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
-				"numberCustomMatchRules": 5
+				"numberCustomMatchRules": 5,
+				"hasBtCorrelation": true,
+				"hasCustomEventServiceIncludeRule": true
 			},
 			"gold": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
-				"numberCustomMatchRules": 3
+				"numberCustomMatchRules": 3,
+				"hasBtCorrelation": false,
+				"hasCustomEventServiceIncludeRule": false
 			},
 			"silver": {
 				"collectingDataPastOneDay": true,
 				"networkRequestLimitNotHit": true,
-				"numberCustomMatchRules": 2
+				"numberCustomMatchRules": 2,
+				"hasBtCorrelation": false,
+				"hasCustomEventServiceIncludeRule": false
 			}
 		},
 		"HealthRulesAndAlertingMRUM": {

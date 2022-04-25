@@ -39,19 +39,10 @@ The tool expects ONLY the following permissions to be given:
 
 Obtain frontend and backend Docker images via:
 
-#### If on Mac/Linux
-
-1. Download the latest `config-assessment-tool.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
+1. Download the latest `config-assessment-tool-dist.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
 2. Pull from ghrc with `python3 bin/config-assessment-tool.py --pull`
 3. Run with `python3 bin/config-assessment-tool.py --run`
-4. Navigate to `http://localhost:8501`
-
-#### If on Windows
-
-1. Download the latest `Source Code.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
-2. Build Docker images with `python3 bin/config-assessment-tool.py --build`
-3. Run with `python3 bin/config-assessment-tool.py --run`
-4. Navigate to `http://localhost:8501`
+4. Your browser will automatically open `http://localhost:8501`
 
 ![Scheme](frontend/resources/img/frontend.png)
 
