@@ -39,9 +39,9 @@ The tool expects ONLY the following permissions to be given:
 
 Obtain frontend and backend Docker images via:
 
-1. Download the latest `config-assessment-tool-dist.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
-2. Pull from ghrc with `python3 bin/config-assessment-tool.py --pull`
-3. Run with `python3 bin/config-assessment-tool.py --run`
+1. Download or clone the latest `Source Code.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
+2. `cd config-assessment-tool`
+3. `python3 bin/config-assessment-tool.py --run`
 4. Your browser will automatically open `http://localhost:8501`
 
 ![Scheme](frontend/resources/img/frontend.png)
@@ -92,7 +92,7 @@ docker run \
 -e HOST_ROOT="$(pwd)" \
 -p 8501:8501 \
 --rm \
-ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThresholds
+ghcr.io/appdynamics/config-assessment-tool-backend-{platform}:{tag} -j DefaultJob -t DefaultThresholds
 ```
 
 Windows
@@ -106,7 +106,7 @@ docker run `
 -e HOST_ROOT=$pwd `
 -p 8501:8501 `
 --rm `
-ghcr.io/appdynamics/config-assessment-tool-backend:latest -j acme -t DefaultThresholds
+ghcr.io/appdynamics/config-assessment-tool-backend-{platform}:{tag} -j DefaultJob -t DefaultThresholds
 ```
 
 ### From Source
@@ -119,7 +119,7 @@ Required
 2. `cd config-assessment-tool`
 3. `pipenv install`
 4. `pipenv shell`
-5. `python3 backend/backend.py -j acme -t DefaultThresholds`
+5. `python3 backend/backend.py -j DefaultJob -t DefaultThresholds`
 
 ```
 Usage: backend.py [OPTIONS]
