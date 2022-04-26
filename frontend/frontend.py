@@ -45,13 +45,21 @@ def main():
             st.write.error(f"Unsupported platform {sys.platform}")
             platformStr = "unknown"
             exit(1)
+
+        # determine tag
+        # get local tag from VERSION file
+        tag = "unknown"
+        if os.path.isfile("VERSION"):
+            with open("VERSION", "r") as versionFile:
+                tag = versionFile.read().strip()
     else:
         platformStr = os.environ["PLATFORM_STR"]
+        tag = os.environ["TAG"]
 
     # does docker image 'config_assessment_tool:latest' exist
-    if getImage(client, f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:latest") is None:
-        st.write(f"Image config-assessment-tool-backend-{platformStr}:latest not found")
-        st.write(f"Please either build from source with --build or pull from ghrc with --pull")
+    if getImage(client, f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") is None:
+        st.write(f"Image config-assessment-tool-backend-{platformStr}:{tag} not found")
+        st.write(f"Please either build from source with --build")
         st.write(f"In order to --build you will need to download the full source")
     else:
         # order jobs which have already been ran at the top
@@ -68,9 +76,9 @@ def main():
 
         for jobName in orderedJobs:
             if Path(f"../output/{jobName}/info.json").exists():
-                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr)
+                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
             else:
-                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr)
+                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
             st.markdown("""---""")
 
 

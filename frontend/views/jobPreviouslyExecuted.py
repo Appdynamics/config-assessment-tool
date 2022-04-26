@@ -12,7 +12,7 @@ from FileHandler import openFile, openFolder
 from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
-def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, platformStr: str):
+def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
 
@@ -72,7 +72,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, platformStr)
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, platformStr, tag)
 
     (
         openReportColumn,

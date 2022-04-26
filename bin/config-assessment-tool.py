@@ -13,7 +13,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 
-def run(path: str, platformStr: str):
+def run(path: str, platformStr: str, tag: str):
     splash = """
                           __ _                                                              _        _              _
           ___ ___  _ __  / _(_) __ _        __ _ ___ ___  ___  ___ ___ _ __ ___   ___ _ __ | |_     | |_ ___   ___ | |
@@ -26,12 +26,11 @@ def run(path: str, platformStr: str):
 
     # Check if config-assessment-tool-frontend exists
     if (
-        runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:latest") == ""
-        or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:latest") == ""
+        runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag}") == ""
+        or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
     ):
-        logging.error("Necessary Docker images not found.")
-        logging.error("Please re-run with --pull or --build.")
-        sys.exit(1)
+        logging.info("Necessary Docker images not found.")
+        update(platformStr, tag)
 
     # stop FileHandler
     logging.info("Terminating FileHandler if already running")
@@ -72,17 +71,18 @@ def run(path: str, platformStr: str):
         f"-v {path}/input:/input "
         f'-e HOST_ROOT="{path}" '
         f'-e PLATFORM_STR="{platformStr}" '
+        f'-e TAG="{tag}" '
         f"-p 8501:8501 "
         f"--rm "
-        f"ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:latest &"
+        f"ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag} &"
     )
 
     # wait for config-assessment-tool-frontend to start
     while True:
-        logging.info(f"Waiting for config-assessment-tool-frontend-{platformStr} to start")
+        logging.info(f"Waiting for config-assessment-tool-frontend-{platformStr}:{tag} to start")
         try:
             if urlopen("http://localhost:8501").status == 200:
-                logging.info(f"config-assessment-tool-frontend-{platformStr} started")
+                logging.info(f"config-assessment-tool-frontend-{platformStr}:{tag} started")
                 break
         except (URLError, RemoteDisconnected):
             pass
@@ -108,26 +108,26 @@ def run(path: str, platformStr: str):
             time.sleep(1)
     except KeyboardInterrupt:
         logging.info("Received KeyboardInterrupt")
-        logging.info(f"Terminating config-assessment-tool-frontend-{platformStr} container if still running")
-        containerId = runBlockingCommand("docker ps -f name=config-assessment-tool-frontend" + platformStr + ' --format "{{.ID}}"')
+        logging.info(f"Terminating config-assessment-tool-frontend-{platformStr}:{tag} container if still running")
+        containerId = runBlockingCommand(f"docker ps -f name=config-assessment-tool-frontend-{platformStr}:{tag}" + ' --format "{{.ID}}"')
         if containerId:
             runBlockingCommand(f"docker container stop {containerId}")
 
 
 # build docker images from source
-def build(platform: str):
+def update(platform: str, tag: str):
     if os.path.isfile("backend/Dockerfile") and os.path.isfile("frontend/Dockerfile"):
-        logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:latest from Dockerfile")
-        runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:latest -f backend/Dockerfile .")
-        logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:latest from Dockerfile")
-        runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:latest -f frontend/Dockerfile .")
+        logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} from Dockerfile")
+        runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} -f backend/Dockerfile .")
+        logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag} from Dockerfile")
+        runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag} -f frontend/Dockerfile .")
     else:
         logging.info("Dockerfiles not found in either backend/ or frontend/.")
         logging.info("Please either clone the full repository to build the images manually.")
 
 
 # pull latest images from ghrc.io if on a unix system
-def pull(platformStr: str):
+def pull(platformStr: str, tag: str):
     logging.info(f"Pulling ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:latest")
     runBlockingCommand(f"docker pull ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:latest")
     logging.info(f"Pulling ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:latest")
@@ -164,7 +164,7 @@ def runNonBlockingCommand(command: str):
 
 
 # verify current software version against GitHub release tags
-def verifySoftwareVersion():
+def verifySoftwareVersion() -> str:
     if sys.platform == "win32":
         latestTag = runBlockingCommand(
             'powershell -Command "(Invoke-WebRequest https://api.github.com/repos/appdynamics/config-assessment-tool/tags | ConvertFrom-Json)[0].name"'
@@ -187,6 +187,8 @@ def verifySoftwareVersion():
         logging.warning("You can get the latest version from https://github.com/Appdynamics/config-assessment-tool/releases")
     else:
         logging.info(f"You are using the latest version of the software. Current {localTag}")
+
+    return localTag
 
 
 if __name__ == "__main__":
@@ -212,7 +214,7 @@ if __name__ == "__main__":
         ],
     )
 
-    verifySoftwareVersion()
+    tag = verifySoftwareVersion()
 
     # determine platform
     if sys.platform.lower() == "win32":  # windows
@@ -238,19 +240,16 @@ if __name__ == "__main__":
     Usage: config-assessment-tool.py [OPTIONS]
     Options:
       --run, Run the config-assessment-tool
-      --build, Build frontend and backend from Dockerfile
-      --pull, Pull latest images from GitHub
+      --update, Build frontend and backend from Dockerfile
       --package, Create lightweight package for distribution
       --help, Show this message and exit.
               """.strip()
         print(msg)
         sys.exit(1)
     if sys.argv[1] == "--run":
-        run(path, platformStr)
-    elif sys.argv[1] == "--build":
-        build(platformStr)
-    elif sys.argv[1] == "--pull":
-        pull(platformStr)
+        run(path, platformStr, tag)
+    elif sys.argv[1] == "--update":
+        update(platformStr, tag)
     elif sys.argv[1] == "--package":
         package()
     else:
