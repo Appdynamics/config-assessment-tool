@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import logging
 import re
@@ -34,8 +35,20 @@ class AppDService:
         auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
         self.username = username
+
+        cookie_jar = aiohttp.CookieJar()
+        try:
+            if ipaddress.ip_address(host):
+                logging.warning(f"Configured host {host} is an IP address. Consider using the DNS instead.")
+                logging.warning(f"RFC 2109 explicitly forbids cookie accepting from URLs with IP address instead of DNS name.")
+                logging.warning(f"Using unsafe Cookie Jar.")
+                cookie_jar = aiohttp.CookieJar(unsafe=True)
+        except ValueError:
+            pass
+
         connector = aiohttp.TCPConnector(limit=AsyncioUtils.concurrentConnections, verify_ssl=verifySsl)
-        self.session = aiohttp.ClientSession(connector=connector, trust_env=useProxy)
+        self.session = aiohttp.ClientSession(connector=connector, trust_env=useProxy, cookie_jar=cookie_jar)
+
         self.controller = AppdController(
             base_url=connection_url,
             auth=auth,
