@@ -30,7 +30,7 @@ def run(path: str, platformStr: str, tag: str):
         or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
     ):
         logging.info("Necessary Docker images not found.")
-        update(platformStr, tag)
+        build(platformStr, tag)
 
     # stop FileHandler
     logging.info("Terminating FileHandler if already running")
@@ -115,7 +115,7 @@ def run(path: str, platformStr: str, tag: str):
 
 
 # build docker images from source
-def update(platform: str, tag: str):
+def build(platform: str, tag: str):
     if os.path.isfile("backend/Dockerfile") and os.path.isfile("frontend/Dockerfile"):
         logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} from Dockerfile")
         runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} -f backend/Dockerfile .")
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     Usage: config-assessment-tool.py [OPTIONS]
     Options:
       --run, Run the config-assessment-tool
-      --update, Build frontend and backend from Dockerfile
+      --build, Build frontend and backend from Dockerfile
       --package, Create lightweight package for distribution
       --help, Show this message and exit.
               """.strip()
@@ -248,8 +248,8 @@ if __name__ == "__main__":
         sys.exit(1)
     if sys.argv[1] == "--run":
         run(path, platformStr, tag)
-    elif sys.argv[1] == "--update":
-        update(platformStr, tag)
+    elif sys.argv[1] == "--build":
+        build(platformStr, tag)
     elif sys.argv[1] == "--package":
         package()
     else:
