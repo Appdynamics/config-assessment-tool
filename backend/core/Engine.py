@@ -12,6 +12,7 @@ from api.appd.AppDService import AppDService
 
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
+from extractionSteps.general.Synthetics import Synthetics
 from extractionSteps.maturityAssessment.apm.AppAgentsAPM import AppAgentsAPM
 from extractionSteps.maturityAssessment.apm.BackendsAPM import BackendsAPM
 from extractionSteps.maturityAssessment.apm.BusinessTransactionsAPM import BusinessTransactionsAPM
@@ -35,6 +36,7 @@ from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
 from reports.reports.LicenseReport import LicenseReport
 from reports.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
+from reports.reports.SyntheticsReport import SyntheticsReport
 
 from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import jsonEncoder
@@ -98,6 +100,7 @@ class Engine:
         self.otherSteps = [
             ControllerLevelDetails(),
             CustomMetrics(),
+            Synthetics(),
         ]
         self.maturityAssessmentSteps = [
             # APM Report
@@ -127,6 +130,7 @@ class Engine:
             AgentMatrixReport(),
             CustomMetricsReport(),
             LicenseReport(),
+            SyntheticsReport(),
         ]
 
     async def run(self):

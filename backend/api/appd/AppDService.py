@@ -803,6 +803,35 @@ class AppDService:
         response = await self.controller.getMobileSnapshots(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
+    async def getSyntheticJobs(self, applicationId: int):
+        debugString = f"Gathering Mobile Snapshots for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getSyntheticJobs(applicationId)
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getSyntheticBillableTime(self, applicationId: int, scheduleIds: list[str]) -> Result:
+        debugString = f"Gathering Synthetic Billable Time for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+
+        body = {
+            "scheduleIds": scheduleIds,
+            "appId": applicationId,
+            "startTime": last24Hours,
+            "currentTime": currentTime,
+        }
+        response = await self.controller.getSyntheticBillableTime(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getSyntheticPrivateAgentUtilization(self, applicationId: int, jobsJson: list[dict]) -> Result:
+        debugString = f"Gathering Synthetic Private Agent Utilization for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getSyntheticPrivateAgentUtilization(applicationId, json.dumps(jobsJson))
+        return await self.getResultFromResponse(response, debugString)
+
     async def close(self):
         logging.debug(f"{self.host} - Closing connection")
         await self.session.close()

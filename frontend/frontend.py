@@ -49,8 +49,8 @@ def main():
         # determine tag
         # get local tag from VERSION file
         tag = "unknown"
-        if os.path.isfile("VERSION"):
-            with open("VERSION", "r") as versionFile:
+        if os.path.isfile("../VERSION"):
+            with open("../VERSION", "r") as versionFile:
                 tag = versionFile.read().strip()
     else:
         platformStr = os.environ["PLATFORM_STR"]

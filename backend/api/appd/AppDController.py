@@ -313,3 +313,18 @@ class AppdController(Consumer):
     @post("/controller/restui/mobileSnapshotListUiService/getMobileSnapshotSummaries")
     def getMobileSnapshots(self, body: Body):
         """Retrieves mobile snapshots"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/synthetic/schedule/getJobList/{applicationId}")
+    def getSyntheticJobs(self, applicationId: Path):
+        """Retrieves Synthetic Job List"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/eumSyntheticJobListUiService/getBillableTimeData")
+    def getSyntheticBillableTime(self, body: Body):
+        """Retrieves Synthetic Billable Time"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/synthetic/schedule/{applicationId}/getJobPAUtilizations")
+    def getSyntheticPrivateAgentUtilization(self, applicationId: Path, body: Body):
+        """Retrieves Synthetic Private Agent Utilization"""
