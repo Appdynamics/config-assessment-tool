@@ -10,7 +10,7 @@ from docker import APIClient
 from utils.streamlit_utils import rerun
 
 
-def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int):
+def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str):
     if not isDocker():
         root = os.path.abspath("..")
     else:
@@ -30,8 +30,8 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         command.append("-d")
 
     container = client.create_container(
-        image="ghcr.io/appdynamics/config-assessment-tool-backend:latest",
-        name="config-assessment-tool-backend",
+        image=f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}",
+        name=f"config-assessment-tool-backend-{platformStr}",
         volumes=[inputSource, outputSource],
         host_config=client.create_host_config(
             auto_remove=True,
@@ -61,12 +61,12 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         logTextBox.text_area("", logText, height=250)
 
     # small delay to see job ended
-    time.sleep(3)
+    time.sleep(5)
     # refresh the page to see newly generated report
     rerun()
 
 
-def buildConfigAssessmentToolImage(client: APIClient):
+def buildConfigAssessmentToolImage(client: APIClient, platformStr: str, tag: str):
     st.write(f"Docker image config_assessment_tool:latest not found. Please build the image.")
     if st.button(f"Build Image"):
         logTextBox = st.empty()
@@ -74,7 +74,7 @@ def buildConfigAssessmentToolImage(client: APIClient):
 
         for output in client.build(
             path=os.path.abspath("../backend"),
-            tag="appdynamics/config-assessment-tool-backend",
+            tag=f"appdynamics/config-assessment-tool-backend-{platformStr}:{tag}",
         ):
             output = output.decode("ISO-8859-1").strip("\r\n")
             for match in re.finditer(r"({.*})+", output):

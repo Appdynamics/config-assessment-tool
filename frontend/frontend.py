@@ -1,4 +1,7 @@
 import os
+import platform
+import sys
+from platform import uname
 
 import docker
 from pathlib import Path
@@ -6,7 +9,7 @@ from pathlib import Path
 import requests
 import streamlit as st
 
-from utils.docker_utils import getImage
+from utils.docker_utils import getImage, isDocker
 from views.jobPreviouslyExecuted import jobPreviouslyExecuted
 from views.jobNotYetExecuted import jobNotYetExecuted
 from views.header import header
@@ -26,10 +29,38 @@ def main():
     else:
         concurrentNetworkConnections = 50
 
+    if not isDocker():
+        # determine platform
+        if sys.platform.lower() == "win32":  # windows
+            platformStr = "windows"
+        elif "microsoft" in uname().release.lower():  # wsl
+            platformStr = "linux"
+        elif sys.platform.lower() == "darwin":  # mac
+            platformStr = "mac"
+            if platform.processor() == "arm":
+                platformStr = "mac-m1"
+        elif sys.platform.lower() == "linux":  # linux
+            platformStr = "linux"
+        else:
+            st.write.error(f"Unsupported platform {sys.platform}")
+            platformStr = "unknown"
+            exit(1)
+
+        # determine tag
+        # get local tag from VERSION file
+        tag = "unknown"
+        if os.path.isfile("../VERSION"):
+            with open("../VERSION", "r") as versionFile:
+                tag = versionFile.read().strip()
+    else:
+        platformStr = os.environ["PLATFORM_STR"]
+        tag = os.environ["TAG"]
+
     # does docker image 'config_assessment_tool:latest' exist
-    if getImage(client, "ghcr.io/appdynamics/config-assessment-tool-backend:latest") is None:
-        st.write(f"Image config-assessment-tool-backend:latest not found")
-        st.write(f"Please either build from source with --build or pull from ghrc with --pull")
+    if getImage(client, f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") is None:
+        st.write(f"Image config-assessment-tool-backend-{platformStr}:{tag} not found")
+        st.write(f"Please either build from source with --build")
+        st.write(f"In order to --build you will need to download the full source")
     else:
         # order jobs which have already been ran at the top
         orderedJobs = []
@@ -45,9 +76,9 @@ def main():
 
         for jobName in orderedJobs:
             if Path(f"../output/{jobName}/info.json").exists():
-                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections)
+                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
             else:
-                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections)
+                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
             st.markdown("""---""")
 
 

@@ -13,17 +13,20 @@ from utils.streamlit_utils import rerun
 
 
 def header() -> tuple[bool, bool]:
+    st.set_page_config(
+        page_title="config-assessment-tool",
+    )
     st.markdown(
         f"""
-                <style>
-                    h1{{
-                        text-align: center;
-                    }}
-                    .reportview-container .main .block-container{{
-                        max-width: {1000}px;
-                    }}
-
-                </style>
+            <style>
+                h1{{
+                    text-align: center;
+                }}
+                .stTextArea textarea {{ 
+                    font-family: monospace;
+                    font-size: 15px; 
+                }}
+            </style>
             """,
         unsafe_allow_html=True,
     )
