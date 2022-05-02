@@ -90,20 +90,17 @@ class Engine:
                 ssl=controller["ssl"],
                 account=controller["account"],      # Attention, a user can pass multiple controllers,
                 username=controller["username"],    # i.e. multiple controller credentials in one job.file
-                pwd=controller["pwd"],  # setting password in ALL controllers in job.file
-                # value_when_true if condition else value_when_false
-
-                verifySsl=controller.get("verifySsl", True),
+                pwd=password_dynamically if password_dynamically != "None" else controller["pwd"],  # This line
+                verifySsl=controller.get("verifySsl", True),  # will set passwords in ALL controllers in job.file
                 useProxy=controller.get("useProxy", False),
             )
-
-            # Put an information, taht if the user puts the pwd dynamicly
-                                                    # it will change pwds for all the controllers
-                                                    # and add this info when there are multiple jobs in one job file (not only one)
+                                        # Put an information, taht if the user puts the pwd dynamicly
+                                        # it will change pwds for all the controllers
+                                        # and add this info when there are multiple jobs in one job file (not only one)
             for controller in self.job
         ]
-        if password_dynamically:
-            print("Password is set to dynamically :D")
+        if password_dynamically != "None":
+            print("Password dynamic password change was used!")
         else:
             print("Using password from jobfile")
         self.controllerData = OrderedDict()
