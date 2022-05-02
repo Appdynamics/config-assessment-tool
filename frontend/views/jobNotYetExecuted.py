@@ -4,9 +4,8 @@ from urllib import parse
 import requests
 import streamlit as st
 from docker import APIClient
-
 from FileHandler import openFile, openFolder
-from utils.docker_utils import runConfigAssessmentTool, isDocker
+from utils.docker_utils import isDocker, runConfigAssessmentTool
 
 
 def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str):

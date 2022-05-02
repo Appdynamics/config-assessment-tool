@@ -1,12 +1,10 @@
 import json
+import os
 import re
 import time
 
 import streamlit as st
-import os
-
 from docker import APIClient
-
 from utils.streamlit_utils import rerun
 
 

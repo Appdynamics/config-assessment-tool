@@ -9,7 +9,6 @@ from collections import OrderedDict
 from pathlib import Path
 
 from api.appd.AppDService import AppDService
-
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
 from extractionSteps.general.Synthetics import Synthetics
@@ -30,14 +29,12 @@ from extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import Overal
 from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
 from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
 from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
-
 from reports.reports.AgentMatrixReport import AgentMatrixReport
-from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.CustomMetricsReport import CustomMetricsReport
 from reports.reports.LicenseReport import LicenseReport
+from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from reports.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
 from reports.reports.SyntheticsReport import SyntheticsReport
-
 from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import jsonEncoder
 
