@@ -10,7 +10,9 @@ from docker import APIClient
 from utils.streamlit_utils import rerun
 
 
-def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, password_dynamically: bool, platformStr: str, tag: str):
+def runConfigAssessmentTool(
+    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, password_dynamically: bool, platformStr: str, tag: str
+):
     if not isDocker():
         root = os.path.abspath("..")
     else:
@@ -28,7 +30,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
     command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections), "-p", str(password_dynamically)]
     if debug:
         command.append("-d")
-#-----------------Was used in previous idea-----------------------------------------
+    # -----------------Was used in previous idea-----------------------------------------
     # if password_dynamically:
     #     command.append("-p")
 

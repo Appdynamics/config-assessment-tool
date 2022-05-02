@@ -60,6 +60,5 @@ class Synthetics(JobStepBase):
                         job["billableTime"] = syntheticBillableTimesMap[job["config"]["id"]]
                         job["privateAgentUtilization"] = None
 
-
     def analyze(self, controllerData, thresholds):
         pass
