@@ -55,4 +55,4 @@ def jobNotYetExecuted(
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password, platformStr, tag)
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, platformStr, tag)

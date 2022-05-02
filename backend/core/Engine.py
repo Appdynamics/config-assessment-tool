@@ -87,18 +87,13 @@ class Engine:
                 port=controller["port"],
                 ssl=controller["ssl"],
                 account=controller["account"],
-                username=username if username else controller["username"],
-                pwd=password if password else controller["pwd"],
+                username=controller["username"],
+                pwd=controller["pwd"],
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
             )
-
             for controller in self.job
         ]
-        if password:  # I will let it here until it's the final version, so that we will
-            print("Dynamic password change was used!")  # have confirmation, that it's working as intended
-        else:
-            print("Using password from jobfile")
         self.controllerData = OrderedDict()
         self.otherSteps = [
             ControllerLevelDetails(),
