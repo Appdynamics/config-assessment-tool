@@ -12,8 +12,7 @@ from FileHandler import openFile, openFolder
 from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
-def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password_dynamically: bool, platformStr: str, tag: str):
-    # password_dynamically = False
+def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password_dynamically: str, platformStr: str, tag: str):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
 
@@ -44,7 +43,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    thresholdsColumn, lastRunColumn, runColumn, dynamicPWD = st.columns([1, 1, 0.3, 0.1])
+    thresholdsColumn, lastRunColumn, runColumn, dynamicPwd = st.columns([1, 1, 0.3, 0.1])
 
     lastRunColumn.text("")  # vertical padding
     lastRunColumn.info(f'Last Run: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}')
@@ -71,14 +70,18 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    dynamicPWD = st.checkbox('DynamicsPWD')
-    if dynamicPWD:
-        st.write('Noice')
-        st.write('Status of the checkbox:', dynamicPWD)
+    dynamicCredentials = st.expander("Use different credentials (This is optional!)")
+    dynamicCredentials.write("Attention, if you use this option, it will dynamicly change credentials for ALL controllers on the job file!")
+    pwdCol, _, dynChckCol = dynamicCredentials.columns(3)
+    newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password")
+    dynChckCol.text("")
+    dynChckCol.text("")
+    dynamicPwd = dynChckCol.checkbox("Dynamic Credentials")
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, dynamicPWD, platformStr, tag)
+        password_dynamically = newPwd if dynamicPwd else "None"
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password_dynamically, platformStr, tag)
 
     (
         openReportColumn,
@@ -104,34 +107,3 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
-
-
-
-
-
-    # (
-    #     pwdColumnNew,
-    #     saveNewPwd,
-    # ) = st.columns([4, 1])
-    #
-    # job_info = (json.loads(open(f"../input/jobs/{jobName}.json").read()))[0]
-    # # print(type(info))
-    # # print(type(user_info))
-    # # print(type(user_info[0]))
-    # password = pwdColumnNew.text_input(label="Password", value=job_info["pwd"], type="password", key=f"{jobName}-pwdNew")
-    # saveNewPwd.text("") # vertical padding
-    # saveNewPwd.text("") # vertical padding
-    #
-    # if saveNewPwd.button(f"Save", key=f"{jobName}-pwdNew"):  # editing the json file to change the password
-    #     if not isDocker():
-    #         job_to_edit = open(f"../input/jobs/{jobName}.json", "w")
-    #         job_info["pwd"] = password
-    #         tmp_dump = json.dumps([job_info], indent= 4)
-    #         job_to_edit.write(tmp_dump)
-    #         job_to_edit.close()
-    #         print("Written file:", tmp_dump)
-    #         # user_info = (json.loads(open(f"../input/jobs/{jobName}.json").)
-    #     else:
-    #         print("It's docker ;_____;")
-    #         print("Finnishing action")
-

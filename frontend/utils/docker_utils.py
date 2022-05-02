@@ -25,12 +25,12 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         outputSource = ("/" + outputSource[:1] + "/" + outputSource[3:]).replace("\\", "/")
         logsSource = ("/" + logsSource[:1] + "/" + logsSource[3:]).replace("\\", "/")
 
-    command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections)]
+    command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections), "-p", str(password_dynamically)]
     if debug:
         command.append("-d")
-
-    if password_dynamically:
-        command.append("-p")
+#-----------------Was used in previous idea-----------------------------------------
+    # if password_dynamically:
+    #     command.append("-p")
 
     container = client.create_container(
         image=f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}",
