@@ -12,7 +12,9 @@ from FileHandler import openFile, openFolder
 from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
-def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password_dynamically: str, platformStr: str, tag: str):
+def jobPreviouslyExecuted(
+    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password_dynamically: str, platformStr: str, tag: str
+):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
 
