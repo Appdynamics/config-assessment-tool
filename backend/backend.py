@@ -13,10 +13,11 @@ from util.logging_utils import initLogging
 @click.option("-t", "--thresholds-file", default="DefaultThresholds")
 @click.option("-d", "--debug", is_flag=True)
 @click.option("-c", "--concurrent-connections", type=int)
+@click.option("-p", "--password-dynamically", is_flag=True)
 @coro
-async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int):
+async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, password_dynamically: bool):
     initLogging(debug)
-    engine = Engine(job_file, thresholds_file, concurrent_connections)
+    engine = Engine(job_file, thresholds_file, concurrent_connections, password_dynamically)
     await engine.run()
 
 

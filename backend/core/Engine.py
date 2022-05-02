@@ -43,7 +43,7 @@ from util.stdlib_utils import jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, password_dynamically: bool):
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as a bundle
@@ -82,20 +82,32 @@ class Engine:
             concurrentConnections = 50 if concurrentConnections is None else concurrentConnections
         AsyncioUtils.init(concurrentConnections)
 
+        self.password_dynamically = password_dynamically
+
         # Instantiate controllers, jobs, and report lists
         self.controllers = [
             AppDService(
                 host=controller["host"],
                 port=controller["port"],
                 ssl=controller["ssl"],
-                account=controller["account"],
-                username=controller["username"],
-                pwd=controller["pwd"],
+                account=controller["account"],      # Attention, a user can pass multiple controllers,
+                username=controller["username"],    # i.e. multiple controller credentials in one job.file
+                pwd=controller["pwd"],  # setting password in ALL controllers in job.file
+                # value_when_true if condition else value_when_false
+
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
             )
+
+            # Put an information, taht if the user puts the pwd dynamicly
+                                                    # it will change pwds for all the controllers
+                                                    # and add this info when there are multiple jobs in one job file (not only one)
             for controller in self.job
         ]
+        if password_dynamically:
+            print("Password is set to dynamically :D")
+        else:
+            print("Using password from jobfile")
         self.controllerData = OrderedDict()
         self.otherSteps = [
             ControllerLevelDetails(),
