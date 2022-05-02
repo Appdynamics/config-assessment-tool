@@ -8,11 +8,10 @@ from math import ceil
 from typing import List
 
 import aiohttp
-from uplink import AiohttpClient
-from uplink.auth import BasicAuth, ProxyAuth, MultiAuth
-
-from api.Result import Result
 from api.appd.AppDController import AppdController
+from api.Result import Result
+from uplink import AiohttpClient
+from uplink.auth import BasicAuth, MultiAuth, ProxyAuth
 from util.asyncio_utils import AsyncioUtils
 
 

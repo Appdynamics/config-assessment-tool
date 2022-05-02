@@ -9,7 +9,6 @@ import zipfile
 from http.client import RemoteDisconnected
 from platform import uname
 from urllib.error import URLError
-
 from urllib.request import urlopen
 
 
@@ -47,7 +46,7 @@ def run(path: str, platformStr: str, tag: str):
 
     # start FileHandler
     logging.info("Starting FileHandler")
-    runNonBlockingCommand(sys.executable + " frontend/FileHandler.py")
+    runNonBlockingCommand(f"'{sys.executable}'" + " frontend/FileHandler.py")
 
     # wait for file handler to start
     while True:
@@ -66,9 +65,9 @@ def run(path: str, platformStr: str, tag: str):
         f"docker run "
         f'--name "config-assessment-tool-frontend-{platformStr}" '
         f"-v /var/run/docker.sock:/var/run/docker.sock "
-        f"-v {path}/logs:/logs "
-        f"-v {path}/output:/output "
-        f"-v {path}/input:/input "
+        f"-v '{path}/logs:/logs' "
+        f"-v '{path}/output:/output' "
+        f"-v '{path}/input:/input' "
         f'-e HOST_ROOT="{path}" '
         f'-e PLATFORM_STR="{platformStr}" '
         f'-e TAG="{tag}" '

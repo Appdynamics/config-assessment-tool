@@ -3,7 +3,6 @@ import logging
 import sys
 
 import click
-
 from core.Engine import Engine
 from util.click_utils import coro
 from util.logging_utils import initLogging

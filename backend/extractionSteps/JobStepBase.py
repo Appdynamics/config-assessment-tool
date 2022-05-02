@@ -1,13 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from util.xcel_utils import (
-    writeUncoloredRow,
-    addFilterAndFreeze,
-    resizeColumnWidth,
-    writeColoredRow,
-    Color,
-)
+from util.xcel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeUncoloredRow
 
 
 class JobStepBase(ABC):

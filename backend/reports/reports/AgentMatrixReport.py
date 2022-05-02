@@ -3,10 +3,8 @@ from collections import Counter
 from datetime import datetime
 
 from openpyxl import Workbook
-
-from util.xcel_utils import writeUncoloredRow, addFilterAndFreeze, resizeColumnWidth
-
 from reports.ReportBase import ReportBase
+from util.xcel_utils import addFilterAndFreeze, resizeColumnWidth, writeUncoloredRow
 
 
 class AgentMatrixReport(ReportBase):

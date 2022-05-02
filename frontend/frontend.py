@@ -1,18 +1,16 @@
 import os
 import platform
 import sys
+from pathlib import Path
 from platform import uname
 
 import docker
-from pathlib import Path
-
 import requests
 import streamlit as st
-
 from utils.docker_utils import getImage, isDocker
-from views.jobPreviouslyExecuted import jobPreviouslyExecuted
-from views.jobNotYetExecuted import jobNotYetExecuted
 from views.header import header
+from views.jobNotYetExecuted import jobNotYetExecuted
+from views.jobPreviouslyExecuted import jobPreviouslyExecuted
 
 
 def main():

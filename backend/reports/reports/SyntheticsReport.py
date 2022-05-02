@@ -2,16 +2,8 @@ import logging
 from datetime import datetime
 
 from openpyxl import Workbook
-
-from util.xcel_utils import (
-    writeUncoloredRow,
-    writeColoredRow,
-    addFilterAndFreeze,
-    resizeColumnWidth,
-    writeSummarySheet,
-)
-
 from reports.ReportBase import ReportBase
+from util.xcel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
 
 
 class SyntheticsReport(ReportBase):

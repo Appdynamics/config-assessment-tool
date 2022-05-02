@@ -6,10 +6,9 @@ from urllib import parse
 import requests
 import streamlit as st
 from docker import APIClient
-from tzlocal import get_localzone
-
 from FileHandler import openFile, openFolder
-from utils.docker_utils import runConfigAssessmentTool, isDocker
+from tzlocal import get_localzone
+from utils.docker_utils import isDocker, runConfigAssessmentTool
 
 
 def jobPreviouslyExecuted(

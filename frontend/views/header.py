@@ -1,12 +1,11 @@
 import json
 import os
 import time
-from typing import Tuple, Any
+from typing import Any, Tuple
 from urllib import parse
 
 import requests
 import streamlit as st
-
 from FileHandler import openFolder
 from utils.docker_utils import isDocker
 from utils.streamlit_utils import rerun
