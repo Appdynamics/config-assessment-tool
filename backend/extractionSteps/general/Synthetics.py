@@ -29,6 +29,10 @@ class Synthetics(JobStepBase):
             allSyntheticBillableTimes = []
             allSyntheticPrivateAgentUtilization = []
             for idx, application in enumerate(hostInfo[self.componentType].values()):
+                if syntheticJobs[idx].error:
+                    application["syntheticJobs"] = {}
+                    application["syntheticJobs"]["jobListDatas"] = []
+                    continue
                 scheduleIds = [job["config"]["id"] for job in syntheticJobs[idx].data["jobListDatas"]]
                 allSyntheticBillableTimes.append(controller.getSyntheticBillableTime(application["id"], scheduleIds))
                 if len(syntheticJobs[idx].data["jobListDatas"]):
@@ -50,7 +54,8 @@ class Synthetics(JobStepBase):
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
-
+                if syntheticJobs[idx].error:
+                    continue
                 application["syntheticJobs"] = syntheticJobs[idx].data
                 for job in application["syntheticJobs"]["jobListDatas"]:
                     if job["hasPrivateAgent"]:
