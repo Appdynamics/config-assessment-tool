@@ -25,6 +25,9 @@ def header() -> tuple[bool, bool]:
                     font-family: monospace;
                     font-size: 15px; 
                 }}
+                .block-container{{
+                    min-width: 1000px;
+                }}
             </style>
             """,
         unsafe_allow_html=True,
