@@ -49,8 +49,8 @@ class Synthetics(JobStepBase):
 
             syntheticPrivateAgentUtilizationMap = {}
             for syntheticPrivateAgentUtilizationData in syntheticPrivateAgentUtilization:
-                for syntheticPrivateAgentUtilizationData in syntheticPrivateAgentUtilizationData.data:
-                    syntheticPrivateAgentUtilizationMap[syntheticPrivateAgentUtilizationData["id"]] = syntheticPrivateAgentUtilizationData
+                for syntheticPrivateAgentUtilizationDataEntry in syntheticPrivateAgentUtilizationData.data:
+                    syntheticPrivateAgentUtilizationMap[syntheticPrivateAgentUtilizationDataEntry["id"]] = syntheticPrivateAgentUtilizationDataEntry
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
@@ -59,10 +59,16 @@ class Synthetics(JobStepBase):
                 application["syntheticJobs"] = syntheticJobs[idx].data
                 for job in application["syntheticJobs"]["jobListDatas"]:
                     if job["hasPrivateAgent"]:
-                        job["privateAgentUtilization"] = syntheticPrivateAgentUtilizationMap[job["config"]["id"]]
+                        job["privateAgentUtilization"] = (
+                            syntheticPrivateAgentUtilizationMap[job["config"]["id"]]
+                            if job["config"]["id"] in syntheticPrivateAgentUtilizationMap
+                            else 0
+                        )
                         job["billableTime"] = None
                     else:
-                        job["billableTime"] = syntheticBillableTimesMap[job["config"]["id"]]
+                        job["billableTime"] = (
+                            syntheticBillableTimesMap[job["config"]["id"]] if job["config"]["id"] in syntheticBillableTimesMap else 0
+                        )
                         job["privateAgentUtilization"] = None
 
     def analyze(self, controllerData, thresholds):
