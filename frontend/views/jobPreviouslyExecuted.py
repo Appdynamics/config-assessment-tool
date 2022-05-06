@@ -13,7 +13,7 @@ from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
 def jobPreviouslyExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password_dynamically: str, platformStr: str, tag: str
+    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password: str, platformStr: str, tag: str
 ):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
@@ -82,8 +82,9 @@ def jobPreviouslyExecuted(
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        password_dynamically = newPwd if dynamicPwd else "None"
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password_dynamically, platformStr, tag)
+        password = newPwd if dynamicPwd else None  # I changed from "None" to None, but not sure if it's a correct
+                                                   # implemenation of this tho
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password, platformStr, tag)
 
     (
         openReportColumn,

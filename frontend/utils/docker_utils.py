@@ -11,7 +11,7 @@ from utils.streamlit_utils import rerun
 
 
 def runConfigAssessmentTool(
-    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, password_dynamically: bool, platformStr: str, tag: str
+    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, password: bool, platformStr: str, tag: str
 ):
     if not isDocker():
         root = os.path.abspath("..")
@@ -27,12 +27,12 @@ def runConfigAssessmentTool(
         outputSource = ("/" + outputSource[:1] + "/" + outputSource[3:]).replace("\\", "/")
         logsSource = ("/" + logsSource[:1] + "/" + logsSource[3:]).replace("\\", "/")
 
-    command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections), "-p", str(password_dynamically)]
+    command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections)]
     if debug:
         command.append("-d")
-    # -----------------Was used in previous idea-----------------------------------------
-    # if password_dynamically:
-    #     command.append("-p")
+
+    if password:
+        command.extend(["-p", password])
 
     container = client.create_container(
         image=f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}",

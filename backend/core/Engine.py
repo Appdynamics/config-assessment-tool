@@ -82,27 +82,23 @@ class Engine:
             concurrentConnections = 50 if concurrentConnections is None else concurrentConnections
         AsyncioUtils.init(concurrentConnections)
 
-        self.password_dynamically = password_dynamically
-
         # Instantiate controllers, jobs, and report lists
         self.controllers = [
             AppDService(
                 host=controller["host"],
                 port=controller["port"],
                 ssl=controller["ssl"],
-                account=controller["account"],  # Attention, a user can pass multiple controllers,
-                username=controller["username"],  # i.e. multiple controller credentials in one job.file
-                pwd=password_dynamically if password_dynamically != "None" else controller["pwd"],  # This line
-                verifySsl=controller.get("verifySsl", True),  # will set passwords in ALL controllers in job.file
+                account=controller["account"],
+                username=controller["username"],
+                pwd=password_dynamically if password_dynamically else controller["pwd"],
+                verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
             )
-            # Put an information, taht if the user puts the pwd dynamicly
-            # it will change pwds for all the controllers
-            # and add this info when there are multiple jobs in one job file (not only one)
+
             for controller in self.job
         ]
-        if password_dynamically != "None":
-            print("Password dynamic password change was used!")
+        if password_dynamically:  # I will let it here until it's the final version, so that we will
+            print("Dynamic password change was used!")  # have confirmation, that it's working as intended
         else:
             print("Using password from jobfile")
         self.controllerData = OrderedDict()

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 
 import click
@@ -13,12 +14,14 @@ from util.logging_utils import initLogging
 @click.option("-t", "--thresholds-file", default="DefaultThresholds")
 @click.option("-d", "--debug", is_flag=True)
 @click.option("-c", "--concurrent-connections", type=int)
-@click.option("-p", "--password-dynamically", default=None)
+@click.option("-p", "--password", default=None, help="Adds the option to put password dynamically")
 @coro
-async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, password_dynamically: str):
+async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, password: str):
     initLogging(debug)
-    engine = Engine(job_file, thresholds_file, concurrent_connections, password_dynamically)
+    engine = Engine(job_file, thresholds_file, concurrent_connections, password)
     await engine.run()
+    logging.info(debug)
+    logging.info(password)
 
 
 if __name__ == "__main__":

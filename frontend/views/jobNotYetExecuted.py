@@ -10,7 +10,7 @@ from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
 def jobNotYetExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password_dynamically: bool, platformStr: str, tag: str
+    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password: bool, platformStr: str, tag: str
 ):
     st.header(f"{jobName}")
     (
@@ -56,4 +56,4 @@ def jobNotYetExecuted(
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password_dynamically, platformStr, tag)
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password, platformStr, tag)
