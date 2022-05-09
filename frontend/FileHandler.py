@@ -2,7 +2,6 @@ import logging
 import os
 import subprocess
 import sys
-
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib import parse
 
@@ -20,29 +19,35 @@ def openFile(filename):
     logging.info("Opening file: " + filename)
     platform = getPlatform()
 
-    if platform == "darwin":
-        subprocess.call(("open", filename))
-    elif platform in ["win64", "win32"]:
-        os.startfile(filename.replace("/", "\\"))
-    elif platform == "wsl":
-        subprocess.call(["wslview", filename])
-    else:  # linux variants
-        subprocess.call(("xdg-open", filename))
+    try:
+        if platform == "darwin":
+            subprocess.call(("open", filename))
+        elif platform in ["win64", "win32"]:
+            os.startfile(filename.replace("/", "\\"))
+        elif platform == "wsl":
+            subprocess.call(["wslview", filename])
+        else:  # linux variants
+            subprocess.call(("xdg-open", filename))
+    except Exception as e:
+        logging.error("Error opening file: " + str(e))
 
 
 def openFolder(path):
     logging.info("Opening folder: " + path)
     platform = getPlatform()
 
-    if platform == "darwin":
-        subprocess.call(["open", "--", path])
-    elif platform in ["win64", "win32"]:
-        subprocess.call(["start", path])
-    elif platform == "wsl":
-        command = "explorer.exe `wslpath -w " + path + "`"
-        subprocess.run(["bash", "-c", command])
-    else:  # linux variants
-        subprocess.call(["xdg-open", "--", path])
+    try:
+        if platform == "darwin":
+            subprocess.call(["open", "--", path])
+        elif platform in ["win64", "win32"]:
+            subprocess.call(["start", path])
+        elif platform == "wsl":
+            command = "explorer.exe `wslpath -w " + path + "`"
+            subprocess.run(["bash", "-c", command])
+        else:  # linux variants
+            subprocess.call(["xdg-open", "--", path])
+    except Exception as e:
+        logging.error("Error opening folder: " + str(e))
 
 
 class MyServer(BaseHTTPRequestHandler):
@@ -76,6 +81,7 @@ if __name__ == "__main__":
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[
             logging.FileHandler("logs/config-assessment-tool-frontend.log"),
+            logging.StreamHandler()
         ],
     )
 

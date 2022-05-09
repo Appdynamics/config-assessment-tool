@@ -9,7 +9,6 @@ import zipfile
 from http.client import RemoteDisconnected
 from platform import uname
 from urllib.error import URLError
-
 from urllib.request import urlopen
 
 
@@ -24,13 +23,15 @@ def run(path: str, platformStr: str, tag: str):
         """
     logging.info(splash)
 
-    # Check if config-assessment-tool-frontend exists
+    # Check if config-assessment-tool images exist
     if (
         runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag}") == ""
         or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
     ):
         logging.info("Necessary Docker images not found.")
         build(platformStr, tag)
+    else:
+        logging.info("Necessary Docker images found.")
 
     # stop FileHandler
     logging.info("Terminating FileHandler if already running")
@@ -47,11 +48,11 @@ def run(path: str, platformStr: str, tag: str):
 
     # start FileHandler
     logging.info("Starting FileHandler")
-    runNonBlockingCommand(sys.executable + " frontend/FileHandler.py")
+    runNonBlockingCommand(f"{sys.executable}" + " frontend/FileHandler.py")
 
     # wait for file handler to start
     while True:
-        logging.info("Waiting for FileHandler to start")
+        logging.info("Waiting for FileHandler to start on http://localhost:16225")
         try:
             if urlopen("http://localhost:16225/ping").read() == b"pong":
                 logging.info("FileHandler started")
@@ -66,9 +67,9 @@ def run(path: str, platformStr: str, tag: str):
         f"docker run "
         f'--name "config-assessment-tool-frontend-{platformStr}" '
         f"-v /var/run/docker.sock:/var/run/docker.sock "
-        f"-v {path}/logs:/logs "
-        f"-v {path}/output:/output "
-        f"-v {path}/input:/input "
+        f'-v "{path}/logs:/logs" '
+        f'-v "{path}/output:/output" '
+        f'-v "{path}/input:/input" '
         f'-e HOST_ROOT="{path}" '
         f'-e PLATFORM_STR="{platformStr}" '
         f'-e TAG="{tag}" '
@@ -124,6 +125,14 @@ def build(platform: str, tag: str):
     else:
         logging.info("Dockerfiles not found in either backend/ or frontend/.")
         logging.info("Please either clone the full repository to build the images manually.")
+
+    # Check if config-assessment-tool images exist
+    if (
+            runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag}") == ""
+            or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
+    ):
+        logging.info("Failed to build Docker images.")
+        sys.exit(1)
 
 
 # pull latest images from ghrc.io if on a unix system
@@ -194,10 +203,6 @@ def verifySoftwareVersion() -> str:
 if __name__ == "__main__":
     assert sys.version_info >= (3, 5), "Python 3.5 or higher required"
 
-    # cd to config-assessment-tool root directory
-    path = os.path.realpath(f"{__file__}/../..")
-    os.chdir(path)
-
     # create logs and output directories
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -213,6 +218,11 @@ if __name__ == "__main__":
             logging.StreamHandler(),
         ],
     )
+
+    # cd to config-assessment-tool root directory
+    path = os.path.realpath(f"{__file__}/../..")
+    os.chdir(path)
+    logging.info(f"Working directory is {os.getcwd()}")
 
     tag = verifySoftwareVersion()
 

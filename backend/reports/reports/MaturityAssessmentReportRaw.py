@@ -1,7 +1,6 @@
 import logging
 
 from openpyxl import Workbook
-
 from reports.ReportBase import ReportBase
 
 

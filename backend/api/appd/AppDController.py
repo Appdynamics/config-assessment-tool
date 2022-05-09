@@ -1,14 +1,4 @@
-from uplink import (
-    Consumer,
-    get,
-    params,
-    error_handler,
-    post,
-    Path,
-    Body,
-    Query,
-    headers,
-)
+from uplink import Body, Consumer, Path, Query, error_handler, get, headers, params, post
 
 
 class ApiError(Exception):

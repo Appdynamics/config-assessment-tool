@@ -1,12 +1,11 @@
 import json
 import os
 import time
-from typing import Tuple, Any
+from typing import Any, Tuple
 from urllib import parse
 
 import requests
 import streamlit as st
-
 from FileHandler import openFolder
 from utils.docker_utils import isDocker
 from utils.streamlit_utils import rerun
@@ -25,6 +24,9 @@ def header() -> tuple[bool, bool]:
                 .stTextArea textarea {{ 
                     font-family: monospace;
                     font-size: 15px; 
+                }}
+                .block-container{{
+                    min-width: 1000px;
                 }}
             </style>
             """,

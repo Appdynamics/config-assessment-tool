@@ -1,9 +1,9 @@
 import json
 import logging
 from collections import OrderedDict
-from deepdiff import DeepDiff
 
 from api.appd.AppDService import AppDService
+from deepdiff import DeepDiff
 from extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
 
