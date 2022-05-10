@@ -43,7 +43,7 @@ from util.stdlib_utils import jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, password_dynamically: str):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str,  password: str):
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as a bundle
@@ -89,15 +89,15 @@ class Engine:
                 port=controller["port"],
                 ssl=controller["ssl"],
                 account=controller["account"],
-                username=controller["username"],
-                pwd=password_dynamically if password_dynamically else controller["pwd"],
+                username=username if username else controller["username"],
+                pwd=password if password else controller["pwd"],
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
             )
 
             for controller in self.job
         ]
-        if password_dynamically:  # I will let it here until it's the final version, so that we will
+        if password:  # I will let it here until it's the final version, so that we will
             print("Dynamic password change was used!")  # have confirmation, that it's working as intended
         else:
             print("Using password from jobfile")

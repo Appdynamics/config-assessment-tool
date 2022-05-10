@@ -13,7 +13,7 @@ from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
 def jobPreviouslyExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password: str, platformStr: str, tag: str
+    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, username: str, password: str, platformStr: str, tag: str
 ):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
@@ -45,7 +45,7 @@ def jobPreviouslyExecuted(
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    thresholdsColumn, lastRunColumn, runColumn, dynamicPwd = st.columns([1, 1, 0.3, 0.1])
+    thresholdsColumn, lastRunColumn, runColumn, dynamicCheck = st.columns([1, 1, 0.3, 0.1])
 
     lastRunColumn.text("")  # vertical padding
     lastRunColumn.info(f'Last Run: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}')
@@ -74,17 +74,19 @@ def jobPreviouslyExecuted(
 
     dynamicCredentials = st.expander("Use different credentials (This is optional!)")
     dynamicCredentials.write("Attention, if you use this option, it will dynamicly change credentials for ALL controllers on the job file!")
-    pwdCol, _, dynChckCol = dynamicCredentials.columns(3)
+    usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
+    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff")
     newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password")
     dynChckCol.text("")
     dynChckCol.text("")
-    dynamicPwd = dynChckCol.checkbox("Dynamic Credentials")
+    dynamicCheck = dynChckCol.checkbox("Dynamic Credentials")
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        password = newPwd if dynamicPwd else None  # I changed from "None" to None, but not sure if it's a correct
+        username = newUsrName if dynamicCheck else None
+        password = newPwd if dynamicCheck else None  # I changed from "None" to None, but not sure if it's a correct
                                                    # implemenation of this tho
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, password, platformStr, tag)
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, username, password, platformStr, tag)
 
     (
         openReportColumn,

@@ -11,7 +11,7 @@ from utils.streamlit_utils import rerun
 
 
 def runConfigAssessmentTool(
-    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, password: bool, platformStr: str, tag: str
+    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, username: str, password: str, platformStr: str, tag: str
 ):
     if not isDocker():
         root = os.path.abspath("..")
@@ -30,6 +30,9 @@ def runConfigAssessmentTool(
     command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections)]
     if debug:
         command.append("-d")
+
+    if username:
+        command.extend(["-u", username])
 
     if password:
         command.extend(["-p", password])

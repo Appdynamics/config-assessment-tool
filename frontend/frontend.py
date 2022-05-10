@@ -29,7 +29,9 @@ def main():
     else:
         concurrentNetworkConnections = 50
 
-    password_dynamically = False
+    '''-----The dynamic stuff-----'''
+    username = None
+    password = None
 
     if not isDocker():
         # determine platform
@@ -78,9 +80,9 @@ def main():
 
         for jobName in orderedJobs:
             if Path(f"../output/{jobName}/info.json").exists():
-                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, password_dynamically, platformStr, tag)
+                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, username, password, platformStr, tag)
             else:
-                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, password_dynamically, platformStr, tag)
+                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, password, platformStr, tag)
             st.markdown("""---""")
 
 
