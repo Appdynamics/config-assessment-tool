@@ -9,9 +9,7 @@ from FileHandler import openFile, openFolder
 from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 
-def jobNotYetExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password: bool, platformStr: str, tag: str
-):
+def jobNotYetExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password: bool, platformStr: str, tag: str):
     st.header(f"{jobName}")
     (
         openJobFileColumn,

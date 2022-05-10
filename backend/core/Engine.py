@@ -43,7 +43,7 @@ from util.stdlib_utils import jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str,  password: str):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str):
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as a bundle
@@ -94,7 +94,6 @@ class Engine:
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
             )
-
             for controller in self.job
         ]
         if password:  # I will let it here until it's the final version, so that we will

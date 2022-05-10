@@ -125,6 +125,14 @@ def build(platform: str, tag: str):
         logging.info("Dockerfiles not found in either backend/ or frontend/.")
         logging.info("Please either clone the full repository to build the images manually.")
 
+    # Check if config-assessment-tool images exist
+    if (
+        runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag}") == ""
+        or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
+    ):
+        logging.info("Failed to build Docker images.")
+        sys.exit(1)
+
 
 # pull latest images from ghrc.io if on a unix system
 def pull(platformStr: str, tag: str):
