@@ -61,18 +61,28 @@ def addList(slide: Slide, text: List[str], color: Color = Color.BLACK, fontSize:
             run.font.color.rgb = color.value
 
 
-def addTable(slide, data, color: Color = Color.BLACK, fontSize: int = 16):
-    x, y, cx, cy = Inches(.25), Inches(3.5), Inches(9.5), Inches(1.5)
-    shape = slide.shapes.add_table(len(data), len(data[0]), x, y, cx, cy)
+def addTable(slide, data, color: Color = Color.BLACK, fontSize: int = 16, left: int = 0.25, top: int = 3.5, width: int = 9.5, height: int = 1.5):
+    shape = slide.shapes.add_table(len(data), len(data[0]), Inches(left), Inches(top), Inches(width), Inches(height))
     table = shape.table
 
     for i, row in enumerate(data):
         for j, cell in enumerate(row):
-            table.cell(i, j).text = cell
+            table.cell(i, j).text = str(cell)
             for paragraph in table.cell(i, j).text_frame.paragraphs:
                 for run in paragraph.runs:
                     run.font.size = Pt(fontSize)
                     run.font.color.rgb = color.value
+
+
+def getValuesInColumn(sheet, param):
+    values = []
+    for column_cell in sheet.iter_cols(1, sheet.max_column):
+        if column_cell[0].value == param:
+            j = 0
+            for data in column_cell[1:]:
+                values.append(data.value)
+            break
+    return values
 
 
 @click.command()
@@ -121,27 +131,49 @@ def main(folder: str):
         "Bronze - All remaining applications",
     ]
     addList(slide, text)
-
     wb = load_workbook(filename=f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
+    totalApplications = wb["Analysis"].max_row - 1
     sheet = wb["Analysis"]
-    scores = []
-    for column_cell in sheet.iter_cols(1, sheet.max_column):
-        if column_cell[0].value == 'OverallAssessment':
-            j = 0
-            for data in column_cell[1:]:
-                scores.append(data.value)
-            break
-
-
+    scores = getValuesInColumn(sheet, "OverallAssessment")
     data = [
         ["Controller", "Apps", "Bronze% (#)", "Silver% (#)", "Gold% (#)", "Platinum% (#)"],
         [
             folder,
-            str(wb["Analysis"].max_row - 1),
-            f"{format(scores.count('bronze')/(wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('bronze')})",
-            f"{format(scores.count('silver')/(wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('silver')})",
-            f"{format(scores.count('gold')/(wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('gold')})",
-            f"{format(scores.count('platinum')/(wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('platinum')})",
+            str(totalApplications),
+            f"{format(scores.count('bronze') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('bronze')})",
+            f"{format(scores.count('silver') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('silver')})",
+            f"{format(scores.count('gold') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('gold')})",
+            f"{format(scores.count('platinum') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('platinum')})",
+        ],
+    ]
+    addTable(slide, data)
+
+    # App & Machine Agents
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"App & Machine Agents")
+    text = [
+        "AppD Agents are supported for 1 year from release",
+        "*Machine Agents Reporting No Data includes uninstrumented apps",
+    ]
+    addList(slide, text)
+    percentAgentsLessThan1YearOld = getValuesInColumn(wb["AppAgentsAPM"], "percentAgentsLessThan1YearOld")
+    percentAgentsReportingData = getValuesInColumn(wb["AppAgentsAPM"], "percentAgentsReportingData")
+    percentMachineAgentsLessThan1YearOld = getValuesInColumn(wb["MachineAgentsAPM"], "percentAgentsLessThan1YearOld")
+    percentMachineAgentsReportingData = getValuesInColumn(wb["MachineAgentsAPM"], "percentAgentsReportingData")
+    data = [
+        [
+            "Controller",
+            "100% App Agents Older Than 1yr",
+            "% App Agents Reporting No Data",
+            "100% Machine Agents Older Than 1yr",
+            "% Machine Agents Reporting No Data*",
+        ],
+        [
+            folder,
+            str(format(len([x for x in percentAgentsLessThan1YearOld if x != 100]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in percentAgentsReportingData if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in percentMachineAgentsLessThan1YearOld if x != 100]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in percentMachineAgentsReportingData if x == 0]) / totalApplications * 100, ".0f")) + "%",
         ],
     ]
     addTable(slide, data)
