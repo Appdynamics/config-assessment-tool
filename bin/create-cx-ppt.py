@@ -40,7 +40,7 @@ def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int 
     title.text_frame.paragraphs[0].font.color.rgb = color.value
 
 
-def addList(slide: Slide, text: List[str], color: Color = Color.BLACK, fontSize: int = 12):
+def addBulletedText(slide: Slide, text: List[str], color: Color = Color.BLACK, fontSize: int = 12):
     shapes = slide.shapes
     body_shape = shapes.placeholders[1]
     tf = body_shape.text_frame
@@ -105,6 +105,7 @@ def main(folder: str):
     """
 
     # Title Slide
+    logging.info(f"Creating Title Slide")
     slide = root.slides.add_slide(root.slide_layouts[0])
     setBackgroundImage(root, slide, "bin/ppt-assets/background.jpg")
     setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48)
@@ -112,16 +113,19 @@ def main(folder: str):
     slide.placeholders[1].text = f'Data As Of: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}'
 
     # Criteria Slide
+    logging.info(f"Creating Criteria Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Configuration Assessment Tool Criteria")
     slide.shapes.add_picture("bin/ppt-assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
 
-    # Criteria Slide ctd...
+    # Criteria ctd... Slide
+    logging.info(f"Creating Criteria Slide ctd...")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Configuration Assessment Tool Criteria ctd...")
     slide.shapes.add_picture("bin/ppt-assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
 
     # S/G/P Criteria & Scoring Slide
+    logging.info(f"Creating S/G/P Criteria & Scoring Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"B/S/G/P Criteria & Scoring")
     text = [
@@ -130,7 +134,7 @@ def main(folder: str):
         "Silver - 70% of criteria for an application must be Silver or higher",
         "Bronze - All remaining applications",
     ]
-    addList(slide, text)
+    addBulletedText(slide, text)
     wb = load_workbook(filename=f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
     totalApplications = wb["Analysis"].max_row - 1
     sheet = wb["Analysis"]
@@ -149,13 +153,14 @@ def main(folder: str):
     addTable(slide, data)
 
     # App & Machine Agents
+    logging.info(f"Creating App & Machine Agents Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"App & Machine Agents")
     text = [
         "AppD Agents are supported for 1 year from release",
         "*Machine Agents Reporting No Data includes uninstrumented apps",
     ]
-    addList(slide, text)
+    addBulletedText(slide, text)
     percentAgentsLessThan1YearOld = getValuesInColumn(wb["AppAgentsAPM"], "percentAgentsLessThan1YearOld")
     percentAgentsReportingData = getValuesInColumn(wb["AppAgentsAPM"], "percentAgentsReportingData")
     percentMachineAgentsLessThan1YearOld = getValuesInColumn(wb["MachineAgentsAPM"], "percentAgentsLessThan1YearOld")
@@ -174,6 +179,97 @@ def main(folder: str):
             str(format(len([x for x in percentAgentsReportingData if x == 0]) / totalApplications * 100, ".0f")) + "%",
             str(format(len([x for x in percentMachineAgentsLessThan1YearOld if x != 100]) / totalApplications * 100, ".0f")) + "%",
             str(format(len([x for x in percentMachineAgentsReportingData if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Business Transactions
+    logging.info(f"Creating Business Transactions Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Business Transactions")
+    text = [
+        "The more BTs monitored, the less meaningful they become",
+        "AppD recommends limiting monitored BTs per app to fewer than 200",
+    ]
+    addBulletedText(slide, text)
+    numberOfBTs = getValuesInColumn(wb["BusinessTransactionsAPM"], "numberOfBTs")
+    percentBTsWithLoad = getValuesInColumn(wb["BusinessTransactionsAPM"], "percentBTsWithLoad")
+    btLockdownEnabled = getValuesInColumn(wb["BusinessTransactionsAPM"], "btLockdownEnabled")
+    numberCustomMatchRules = getValuesInColumn(wb["BusinessTransactionsAPM"], "numberCustomMatchRules")
+    data = [
+        [
+            "Controller",
+            "% Apps with >200 BTs",
+            "% Apps w/BTs without Any Load",
+            "% Apps without BT Lockdown Enabled",
+            "% Apps without Custom Match Rules",
+        ],
+        [
+            folder,
+            str(format(len([x for x in numberOfBTs if x >= 200]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in percentBTsWithLoad if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in btLockdownEnabled if x == "=FALSE()"]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberCustomMatchRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Backends
+    logging.info(f"Creating Backends Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Backends")
+    text = [
+        "Backends represent external service calls made by an application",
+        "While the out of the box default configurations are good, it is recommended to configure them manually for maximum visibility",
+    ]
+    addBulletedText(slide, text)
+    percentBackendsWithLoad = getValuesInColumn(wb["BackendsAPM"], "percentBackendsWithLoad")
+    backendLimitNotHit = getValuesInColumn(wb["BackendsAPM"], "backendLimitNotHit")
+    numberOfCustomBackendRules = getValuesInColumn(wb["BackendsAPM"], "numberOfCustomBackendRules")
+    data = [
+        [
+            "Controller",
+            "% Apps without Backends Detected",
+            "% Apps Hitting Backend Limit",
+            "% Apps without Custom Detection Rules",
+        ],
+        [
+            folder,
+            str(format(len([x for x in percentBackendsWithLoad if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in backendLimitNotHit if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberOfCustomBackendRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Overhead
+    logging.info(f"Creating Overhead Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Overhead")
+    text = [
+        "AppDynamics allows several different means to extract additional information from the APM data",
+        "While okay to use in lower environments, it is never recommended to use these features in a production environment",
+        "Leaving some of these settings enabled can cause significant overhead",
+    ]
+    addBulletedText(slide, text)
+    developerModeNotEnabledForAnyBT = getValuesInColumn(wb["OverheadAPM"], "developerModeNotEnabledForAnyBT")
+    findEntryPointsNotEnabled = getValuesInColumn(wb["OverheadAPM"], "findEntryPointsNotEnabled")
+    aggressiveSnapshottingNotEnabled = getValuesInColumn(wb["OverheadAPM"], "aggressiveSnapshottingNotEnabled")
+    developerModeNotEnabledForApplication = getValuesInColumn(wb["OverheadAPM"], "developerModeNotEnabledForApplication")
+    data = [
+        [
+            "Controller",
+            "% Apps with BT Developer Mode Enabled",
+            "% Apps with Find Entry Points Enabled",
+            "% Apps with Aggressive Snapshotting Enabled",
+            "% Apps with Developer Mode Enabled",
+        ],
+        [
+            folder,
+            str(format(len([x for x in developerModeNotEnabledForAnyBT if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in findEntryPointsNotEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in aggressiveSnapshottingNotEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in developerModeNotEnabledForApplication if x == 0]) / totalApplications * 100, ".0f")) + "%",
         ],
     ]
     addTable(slide, data)
