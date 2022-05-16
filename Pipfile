@@ -21,6 +21,7 @@ requests = "==2.26.0"
 pexpect = "==4.8.0"
 pyinstaller = "*"
 isort = "==5.10.1"
+python-pptx = "==0.6.21"
 
 [dev-packages]
 

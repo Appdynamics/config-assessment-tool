@@ -203,6 +203,10 @@ def verifySoftwareVersion() -> str:
 if __name__ == "__main__":
     assert sys.version_info >= (3, 5), "Python 3.5 or higher required"
 
+    # cd to config-assessment-tool root directory
+    path = os.path.realpath(f"{__file__}/../..")
+    os.chdir(path)
+
     # create logs and output directories
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -219,9 +223,6 @@ if __name__ == "__main__":
         ],
     )
 
-    # cd to config-assessment-tool root directory
-    path = os.path.realpath(f"{__file__}/../..")
-    os.chdir(path)
     logging.info(f"Working directory is {os.getcwd()}")
 
     tag = verifySoftwareVersion()
