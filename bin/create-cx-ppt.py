@@ -274,6 +274,139 @@ def main(folder: str):
     ]
     addTable(slide, data)
 
+    # Service Endpoints
+    logging.info(f"Creating Service Endpoints Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Service Endpoints")
+    text = [
+        "Service endpoints",
+    ]
+    addBulletedText(slide, text)
+    numberOfCustomServiceEndpointRules = getValuesInColumn(wb["ServiceEndpointsAPM"], "numberOfCustomServiceEndpointRules")
+    serviceEndpointLimitNotHit = getValuesInColumn(wb["ServiceEndpointsAPM"], "serviceEndpointLimitNotHit")
+    percentServiceEndpointsWithLoadOrDisabled = getValuesInColumn(wb["ServiceEndpointsAPM"], "percentServiceEndpointsWithLoadOrDisabled")
+    data = [
+        [
+            "Controller",
+            "% Apps without Custom SEP Rules",
+            "% Apps with SEP Limit Hit",
+            "% Apps not Leveraging SEPs",
+        ],
+        [
+            folder,
+            str(format(len([x for x in numberOfCustomServiceEndpointRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in serviceEndpointLimitNotHit if x == "=FALSE()"]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in percentServiceEndpointsWithLoadOrDisabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Error Configuration
+    logging.info(f"Creating Error Configuration Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Error Configuration")
+    text = [
+        "Ideally, there should be no BT with 100% error rate",
+    ]
+    addBulletedText(slide, text)
+    successPercentageOfWorstTransaction = getValuesInColumn(wb["ErrorConfigurationAPM"], "successPercentageOfWorstTransaction")
+    numberOfCustomRules = getValuesInColumn(wb["ErrorConfigurationAPM"], "numberOfCustomRules")
+    data = [
+        [
+            "Controller",
+            "% Apps w/BTs at 100% Error Rate",
+            "% Apps without Custom Error Detection Rules",
+        ],
+        [
+            folder,
+            str(format(len([x for x in successPercentageOfWorstTransaction if x == 100]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberOfCustomRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Health Rules and Alerting
+    logging.info(f"Creating Health Rules and Alerting Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Health Rules and Alerting")
+    text = [
+        "Default Health Rules can be modified (along with Custom HRs) and tied to Policies and Actions",
+    ]
+    addBulletedText(slide, text)
+    numberOfHealthRuleViolationsLast24Hours = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolationsLast24Hours")
+    numberOfDefaultHealthRulesModified = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfDefaultHealthRulesModified")
+    numberOfActionsBoundToEnabledPolicies = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfActionsBoundToEnabledPolicies")
+    numberOfCustomHealthRules = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfCustomHealthRules")
+    data = [
+        [
+            "Controller",
+            "% Apps with > 50 Health Rule Violations/Day",
+            "% Apps without Default Health Rules Modified",
+            "% Apps not Sending Alerts Anywhere",
+            "% Apps without Custom Health Rules",
+        ],
+        [
+            folder,
+            str(format(len([x for x in numberOfHealthRuleViolationsLast24Hours if x >= 50]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberOfDefaultHealthRulesModified if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberOfActionsBoundToEnabledPolicies if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberOfCustomHealthRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Data Collectors and BiQ
+    logging.info(f"Creating Data Collectors and BiQ Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Data Collectors and BiQ")
+    text = [
+        "Data collectors are used to extract additional data from applications",
+    ]
+    addBulletedText(slide, text)
+    numberOfDataCollectorFieldsConfigured = getValuesInColumn(wb["DataCollectorsAPM"], "numberOfDataCollectorFieldsConfigured")
+    biqEnabled = getValuesInColumn(wb["DataCollectorsAPM"], "biqEnabled")
+    data = [
+        [
+            "Controller",
+            "% Apps without Data Collectors Configured",
+            "% Apps with BiQ Disabled",
+        ],
+        [
+            folder,
+            str(format(len([x for x in numberOfDataCollectorFieldsConfigured if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in biqEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
+    # Dashboards
+    logging.info(f"Creating Dashboards Slide")
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Dashboards")
+    text = [
+        "Apps with most associated dashboards typically have greatest activity/interest",
+        "Possible outreach efforts if these teams’ needs are being met",
+    ]
+    addBulletedText(slide, text)
+    numberOfDashboards = getValuesInColumn(wb["DashboardsAPM"], "numberOfDashboards")
+    percentageOfDashboardsModifiedLast6Months = getValuesInColumn(wb["DashboardsAPM"], "percentageOfDashboardsModifiedLast6Months")
+    numberOfDashboardsUsingBiQ = getValuesInColumn(wb["DashboardsAPM"], "numberOfDashboardsUsingBiQ")
+    data = [
+        [
+            "Controller",
+            "% Apps w/5 or More Dashboards",
+            "% Apps Dashboards Modified in Last 6 Months",
+            "% Apps Dashboards Leveraging BiQ",
+        ],
+        [
+            folder,
+            str(format(len([x for x in numberOfDashboards if x >= 5]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in percentageOfDashboardsModifiedLast6Months if x != 0]) / totalApplications * 100, ".0f")) + "%",
+            str(format(len([x for x in numberOfDashboardsUsingBiQ if x != 0]) / totalApplications * 100, ".0f")) + "%",
+        ],
+    ]
+    addTable(slide, data)
+
     # Saving file
     logging.info(f"Saving presentation to output/{folder}/{folder}-cx-presentation.pptx")
     root.save(f"output/{folder}/{folder}-cx-presentation.pptx")
