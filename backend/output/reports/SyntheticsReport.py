@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from openpyxl import Workbook
-from reports.ReportBase import ReportBase
+from output.ReportBase import ReportBase
 from util.xcel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
 
 

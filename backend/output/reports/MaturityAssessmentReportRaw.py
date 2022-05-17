@@ -1,7 +1,7 @@
 import logging
 
 from openpyxl import Workbook
-from reports.ReportBase import ReportBase
+from output.ReportBase import ReportBase
 
 
 class RawMaturityAssessmentReport(ReportBase):
