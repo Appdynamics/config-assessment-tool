@@ -3,9 +3,9 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import List
 
-import click
 from openpyxl import load_workbook
 from tzlocal import get_localzone
 from pptx import Presentation
@@ -85,9 +85,7 @@ def getValuesInColumn(sheet, param):
     return values
 
 
-@click.command()
-@click.option("--folder", "-f", help="Output folder to read from", required=True)
-def main(folder: str):
+def createCxPpt(folder: str):
     logging.info(f"Creating presentation from output folder: {folder}")
 
     root = Presentation()
@@ -105,27 +103,23 @@ def main(folder: str):
     """
 
     # Title Slide
-    logging.info(f"Creating Title Slide")
     slide = root.slides.add_slide(root.slide_layouts[0])
-    setBackgroundImage(root, slide, "bin/ppt-assets/background.jpg")
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background.jpg")
     setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48)
     info = json.loads(open(f"output/{folder}/info.json").read())
     slide.placeholders[1].text = f'Data As Of: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}'
 
     # Criteria Slide
-    logging.info(f"Creating Criteria Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Configuration Assessment Tool Criteria")
-    slide.shapes.add_picture("bin/ppt-assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
+    slide.shapes.add_picture("backend/output/presentations/assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
 
     # Criteria ctd... Slide
-    logging.info(f"Creating Criteria Slide ctd...")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Configuration Assessment Tool Criteria ctd...")
-    slide.shapes.add_picture("bin/ppt-assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
+    slide.shapes.add_picture("backend/output/presentations/assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
 
     # S/G/P Criteria & Scoring Slide
-    logging.info(f"Creating S/G/P Criteria & Scoring Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"B/S/G/P Criteria & Scoring")
     text = [
@@ -153,7 +147,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # App & Machine Agents
-    logging.info(f"Creating App & Machine Agents Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"App & Machine Agents")
     text = [
@@ -184,7 +177,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Business Transactions
-    logging.info(f"Creating Business Transactions Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Business Transactions")
     text = [
@@ -215,7 +207,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Backends
-    logging.info(f"Creating Backends Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Backends")
     text = [
@@ -243,7 +234,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Overhead
-    logging.info(f"Creating Overhead Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Overhead")
     text = [
@@ -275,7 +265,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Service Endpoints
-    logging.info(f"Creating Service Endpoints Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Service Endpoints")
     text = [
@@ -302,7 +291,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Error Configuration
-    logging.info(f"Creating Error Configuration Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Error Configuration")
     text = [
@@ -326,7 +314,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Health Rules and Alerting
-    logging.info(f"Creating Health Rules and Alerting Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Health Rules and Alerting")
     text = [
@@ -356,7 +343,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Data Collectors and BiQ
-    logging.info(f"Creating Data Collectors and BiQ Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Data Collectors and BiQ")
     text = [
@@ -380,7 +366,6 @@ def main(folder: str):
     addTable(slide, data)
 
     # Dashboards
-    logging.info(f"Creating Dashboards Slide")
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Dashboards")
     text = [
@@ -408,31 +393,4 @@ def main(folder: str):
     addTable(slide, data)
 
     # Saving file
-    logging.info(f"Saving presentation to output/{folder}/{folder}-cx-presentation.pptx")
     root.save(f"output/{folder}/{folder}-cx-presentation.pptx")
-
-
-if __name__ == "__main__":
-    # cd to config-assessment-tool root directory
-    path = os.path.realpath(f"{__file__}/../..")
-    os.chdir(path)
-
-    # create logs and output directories
-    if not os.path.exists("logs"):
-        os.makedirs("logs")
-    if not os.path.exists("output"):
-        os.makedirs("output")
-
-    # init logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler("logs/asd.log"),
-            logging.StreamHandler(),
-        ],
-    )
-
-    logging.info(f"Working directory is {os.getcwd()}")
-
-    main()

@@ -29,12 +29,13 @@ from extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import Overal
 from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
 from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
 from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
-from reports.reports.AgentMatrixReport import AgentMatrixReport
-from reports.reports.CustomMetricsReport import CustomMetricsReport
-from reports.reports.LicenseReport import LicenseReport
-from reports.reports.MaturityAssessmentReport import MaturityAssessmentReport
-from reports.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
-from reports.reports.SyntheticsReport import SyntheticsReport
+from output.presentations.cxPpt import createCxPpt
+from output.reports.AgentMatrixReport import AgentMatrixReport
+from output.reports.CustomMetricsReport import CustomMetricsReport
+from output.reports.LicenseReport import LicenseReport
+from output.reports.MaturityAssessmentReport import MaturityAssessmentReport
+from output.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
+from output.reports.SyntheticsReport import SyntheticsReport
 from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import jsonEncoder
 
@@ -142,36 +143,12 @@ class Engine:
             await self.validateThresholdsFile()
             await self.initControllers()
             await self.process()
-            self.finalize()
+            self.finalize(startTime)
         except Exception as e:
             # catch exceptions here, so we can terminate coroutines before program exit
             logging.error("".join(traceback.TracebackException.from_exception(e).format()))
 
         logging.info(f"----------Complete----------")
-
-        # if controllerData.json file exists, delete it
-        if Path(f"output/{self.jobFileName}/controllerData.json").exists():
-            sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
-            sizeName = ("B", "KB", "MB", "GB")
-            i = int(math.floor(math.log(sizeBytes, 1024)))
-            p = math.pow(1024, i)
-            size = round(sizeBytes / p, 2)
-
-            executionTime = time.monotonic() - startTime
-            mins, secs = divmod(executionTime, 60)
-            hours, mins = divmod(mins, 60)
-            if hours > 0:
-                executionTimeString = f"{int(hours)}h {int(mins)}m {int(secs)}s"
-            elif mins > 0:
-                executionTimeString = f"{int(mins)}m {int(secs)}s"
-            else:
-                executionTimeString = f"{int(secs)}s"
-
-            totalCalls = sum([controller.totalCallsProcessed for controller in self.controllers])
-
-            logging.info(f"Total API calls made: {totalCalls}")
-            logging.info(f"Size of data retrieved: {size} {sizeName[i]}")
-            logging.info(f"Total execution time: {executionTimeString}")
 
         await self.abortAndCleanup(
             "Exiting",
@@ -311,7 +288,7 @@ class Engine:
         for report in self.reports:
             report.createWorkbook(self.maturityAssessmentSteps, self.controllerData, self.jobFileName)
 
-    def finalize(self):
+    def finalize(self, startTime):
         now = int(time.time())
         with open(f"output/{self.jobFileName}/info.json", "w", encoding="ISO-8859-1") as f:
             json.dump(
@@ -329,6 +306,32 @@ class Engine:
                 ensure_ascii=False,
                 indent=4,
             )
+
+        createCxPpt(self.jobFileName)
+
+        # if controllerData.json file exists, delete it
+        if Path(f"output/{self.jobFileName}/controllerData.json").exists():
+            sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
+            sizeName = ("B", "KB", "MB", "GB")
+            i = int(math.floor(math.log(sizeBytes, 1024)))
+            p = math.pow(1024, i)
+            size = round(sizeBytes / p, 2)
+
+            executionTime = time.monotonic() - startTime
+            mins, secs = divmod(executionTime, 60)
+            hours, mins = divmod(mins, 60)
+            if hours > 0:
+                executionTimeString = f"{int(hours)}h {int(mins)}m {int(secs)}s"
+            elif mins > 0:
+                executionTimeString = f"{int(mins)}m {int(secs)}s"
+            else:
+                executionTimeString = f"{int(secs)}s"
+
+            totalCalls = sum([controller.totalCallsProcessed for controller in self.controllers])
+
+            logging.info(f"Total API calls made: {totalCalls}")
+            logging.info(f"Size of data retrieved: {size} {sizeName[i]}")
+            logging.info(f"Total execution time: {executionTimeString}")
 
     async def abortAndCleanup(self, msg: str, error=True):
         """Closes open controller connections"""
