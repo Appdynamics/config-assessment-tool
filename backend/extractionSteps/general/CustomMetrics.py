@@ -41,6 +41,7 @@ class CustomMetrics(JobStepBase):
 
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
+                application["tiers"] = allTiers[idx].data
                 customMetrics = set()
                 for tier in allCustomMetrics[idx]:
                     for customMetric in tier.data:

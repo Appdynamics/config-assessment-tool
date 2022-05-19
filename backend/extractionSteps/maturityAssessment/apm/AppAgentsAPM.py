@@ -233,6 +233,7 @@ class AppAgentsAPM(JobStepBase):
                     analysisDataEvaluatedMetrics["percentAgentsRunningSameVersion"] = 0
 
                 analysisDataRawMetrics["numberOfNodes"] = len(application["nodes"])
+                analysisDataRawMetrics["numberOfTiers"] = len(application["tiers"])
                 analysisDataRawMetrics["numberNodesWithAppAgentInstalled"] = numberNodesWithAppAgentInstalled
                 analysisDataRawMetrics["numberAppAgentsLessThan1YearOld"] = numberAppAgentsLessThan1YearOld
                 analysisDataRawMetrics["numberAppAgentsLessThan2YearsOld"] = numberAppAgentsLessThan2YearsOld

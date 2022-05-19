@@ -14,6 +14,27 @@ from pptx.dml.color import RGBColor
 from pptx.slide import Slide
 from pptx.util import Inches, Pt
 
+"""
+- Add in some links
+
+- KPIs
+Agent versions
+BTs
+HRs
+Errors
+Policies and Actions
+
+- Maturity Level 3
+5% Platinum
+10% Gold
+25% Silver
+
+- Maturity Level 4
+10% Platinum
+25% Gold
+50% Silver
+"""
+
 
 class Color(Enum):
     WHITE = RGBColor(255, 255, 255)
@@ -33,8 +54,10 @@ def setBackgroundImage(root: Presentation, slide: Slide, image_path: str):
     slide.shapes._spTree.insert(2, pic._element)
 
 
-def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int = 32):
+def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int = 32, top: float = 0.25, left: float = 0.5):
     title = slide.shapes.title
+    title.top = Inches(top)
+    title.left = Inches(left)
     title.text = text
     title.text_frame.paragraphs[0].font.size = Pt(fontSize)
     title.text_frame.paragraphs[0].font.color.rgb = color.value
@@ -85,6 +108,47 @@ def getValuesInColumn(sheet, param):
     return values
 
 
+def addNestedBulletedText(slide, text, color: Color = Color.BLACK, headerFontSize: int = 20, subheaderFontSize: int = 16):
+    shapes = slide.shapes
+    body_shape = shapes.placeholders[1]
+    tf = body_shape.text_frame
+
+    if len(text) == 0:
+        return
+
+    tf = body_shape.text_frame
+    tf.text = next(iter(text))
+
+    firstIter = True
+    for header in text.keys():
+        if not firstIter:
+            p = tf.add_paragraph()
+            p.text = header
+        else:
+            firstIter = False
+        for subheader in text[header]:
+            p = tf.add_paragraph()
+            p.text = subheader
+            p.level = 1
+
+    for paragraph in body_shape.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = Pt(headerFontSize)
+            run.font.color.rgb = color.value
+
+
+def getAppsWithScore(sheet, assessmentScore):
+    values = []
+    for column_cell in sheet.iter_cols(1, sheet.max_column):
+        if column_cell[0].value == "OverallAssessment":
+            j = 0
+            for idx, data in enumerate(column_cell[1:]):
+                if data.value == assessmentScore:
+                    values.append(idx + 2)  # +2 because of the header
+            break
+    return values
+
+
 def createCxPpt(folder: str):
     logging.info(f"Creating presentation from output folder: {folder}")
 
@@ -97,7 +161,7 @@ def createCxPpt(folder: str):
     3 ->  two content
     4 ->  Comparison
     5 ->  Title only 
-    6 ->  Blank
+    6 ->  Blank 
     7 ->  Content with caption
     8 ->  Pic with caption
     """
@@ -105,19 +169,13 @@ def createCxPpt(folder: str):
     # Title Slide
     slide = root.slides.add_slide(root.slide_layouts[0])
     setBackgroundImage(root, slide, "backend/output/presentations/assets/background.jpg")
-    setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48)
+    setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48, top=2)
     info = json.loads(open(f"output/{folder}/info.json").read())
     slide.placeholders[1].text = f'Data As Of: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}'
 
-    # Criteria Slide
-    slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Configuration Assessment Tool Criteria")
-    slide.shapes.add_picture("backend/output/presentations/assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
-
-    # Criteria ctd... Slide
-    slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Configuration Assessment Tool Criteria ctd...")
-    slide.shapes.add_picture("backend/output/presentations/assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
+    # Current State Transition Slide
+    slide = root.slides.add_slide(root.slide_layouts[5])
+    setTitle(slide, f"Current State", fontSize=48, top=3)
 
     # S/G/P Criteria & Scoring Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
@@ -176,62 +234,9 @@ def createCxPpt(folder: str):
     ]
     addTable(slide, data)
 
-    # Business Transactions
-    slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Business Transactions")
-    text = [
-        "The more BTs monitored, the less meaningful they become",
-        "AppD recommends limiting monitored BTs per app to fewer than 200",
-    ]
-    addBulletedText(slide, text)
-    numberOfBTs = getValuesInColumn(wb["BusinessTransactionsAPM"], "numberOfBTs")
-    percentBTsWithLoad = getValuesInColumn(wb["BusinessTransactionsAPM"], "percentBTsWithLoad")
-    btLockdownEnabled = getValuesInColumn(wb["BusinessTransactionsAPM"], "btLockdownEnabled")
-    numberCustomMatchRules = getValuesInColumn(wb["BusinessTransactionsAPM"], "numberCustomMatchRules")
-    data = [
-        [
-            "Controller",
-            "% Apps with >200 BTs",
-            "% Apps w/BTs without Any Load",
-            "% Apps without BT Lockdown Enabled",
-            "% Apps without Custom Match Rules",
-        ],
-        [
-            folder,
-            str(format(len([x for x in numberOfBTs if x >= 200]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in percentBTsWithLoad if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in btLockdownEnabled if x == "=FALSE()"]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberCustomMatchRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
-        ],
-    ]
-    addTable(slide, data)
-
-    # Backends
-    slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Backends")
-    text = [
-        "Backends represent external service calls made by an application",
-        "While the out of the box default configurations are good, it is recommended to configure them manually for maximum visibility",
-    ]
-    addBulletedText(slide, text)
-    percentBackendsWithLoad = getValuesInColumn(wb["BackendsAPM"], "percentBackendsWithLoad")
-    backendLimitNotHit = getValuesInColumn(wb["BackendsAPM"], "backendLimitNotHit")
-    numberOfCustomBackendRules = getValuesInColumn(wb["BackendsAPM"], "numberOfCustomBackendRules")
-    data = [
-        [
-            "Controller",
-            "% Apps without Backends Detected",
-            "% Apps Hitting Backend Limit",
-            "% Apps without Custom Detection Rules",
-        ],
-        [
-            folder,
-            str(format(len([x for x in percentBackendsWithLoad if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in backendLimitNotHit if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberOfCustomBackendRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
-        ],
-    ]
-    addTable(slide, data)
+    # Low Hanging Fruit Slide
+    slide = root.slides.add_slide(root.slide_layouts[5])
+    setTitle(slide, f"Low Hanging Fruit", fontSize=48, top=3)
 
     # Overhead
     slide = root.slides.add_slide(root.slide_layouts[1])
@@ -260,32 +265,6 @@ def createCxPpt(folder: str):
             str(format(len([x for x in findEntryPointsNotEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
             str(format(len([x for x in aggressiveSnapshottingNotEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
             str(format(len([x for x in developerModeNotEnabledForApplication if x == 0]) / totalApplications * 100, ".0f")) + "%",
-        ],
-    ]
-    addTable(slide, data)
-
-    # Service Endpoints
-    slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Service Endpoints")
-    text = [
-        "Service endpoints",
-    ]
-    addBulletedText(slide, text)
-    numberOfCustomServiceEndpointRules = getValuesInColumn(wb["ServiceEndpointsAPM"], "numberOfCustomServiceEndpointRules")
-    serviceEndpointLimitNotHit = getValuesInColumn(wb["ServiceEndpointsAPM"], "serviceEndpointLimitNotHit")
-    percentServiceEndpointsWithLoadOrDisabled = getValuesInColumn(wb["ServiceEndpointsAPM"], "percentServiceEndpointsWithLoadOrDisabled")
-    data = [
-        [
-            "Controller",
-            "% Apps without Custom SEP Rules",
-            "% Apps with SEP Limit Hit",
-            "% Apps not Leveraging SEPs",
-        ],
-        [
-            folder,
-            str(format(len([x for x in numberOfCustomServiceEndpointRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in serviceEndpointLimitNotHit if x == "=FALSE()"]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in percentServiceEndpointsWithLoadOrDisabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
         ],
     ]
     addTable(slide, data)
@@ -342,55 +321,47 @@ def createCxPpt(folder: str):
     ]
     addTable(slide, data)
 
-    # Data Collectors and BiQ
-    slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Data Collectors and BiQ")
-    text = [
-        "Data collectors are used to extract additional data from applications",
-    ]
-    addBulletedText(slide, text)
-    numberOfDataCollectorFieldsConfigured = getValuesInColumn(wb["DataCollectorsAPM"], "numberOfDataCollectorFieldsConfigured")
-    biqEnabled = getValuesInColumn(wb["DataCollectorsAPM"], "biqEnabled")
-    data = [
-        [
-            "Controller",
-            "% Apps without Data Collectors Configured",
-            "% Apps with BiQ Disabled",
-        ],
-        [
-            folder,
-            str(format(len([x for x in numberOfDataCollectorFieldsConfigured if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in biqEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
-        ],
-    ]
-    addTable(slide, data)
+    # Recommendations Slide
+    slide = root.slides.add_slide(root.slide_layouts[5])
+    setTitle(slide, f"Recommendations", fontSize=48, top=3)
 
-    # Dashboards
+    # Low-Hanging Fruit Slide with List
     slide = root.slides.add_slide(root.slide_layouts[1])
-    setTitle(slide, f"Dashboards")
-    text = [
-        "Apps with most associated dashboards typically have greatest activity/interest",
-        "Possible outreach efforts if these teams’ needs are being met",
-    ]
-    addBulletedText(slide, text)
-    numberOfDashboards = getValuesInColumn(wb["DashboardsAPM"], "numberOfDashboards")
-    percentageOfDashboardsModifiedLast6Months = getValuesInColumn(wb["DashboardsAPM"], "percentageOfDashboardsModifiedLast6Months")
-    numberOfDashboardsUsingBiQ = getValuesInColumn(wb["DashboardsAPM"], "numberOfDashboardsUsingBiQ")
-    data = [
-        [
-            "Controller",
-            "% Apps w/5 or More Dashboards",
-            "% Apps Dashboards Modified in Last 6 Months",
-            "% Apps Dashboards Leveraging BiQ",
+    setTitle(slide, f"Low-Hanging Fruit")
+    text = {
+        "Remove Overhead inducing settings": [
+            "Can be done on controller without app team involvement",
+            "Total time investment: 1-2 hours per controller",
         ],
-        [
-            folder,
-            str(format(len([x for x in numberOfDashboards if x >= 5]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in percentageOfDashboardsModifiedLast6Months if x != 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberOfDashboardsUsingBiQ if x != 0]) / totalApplications * 100, ".0f")) + "%",
+        "Create Error Detection rules to reduce error rates": [
+            "Requires app team involvement",
+            "Total time investment: 1-2 hours per application",
         ],
-    ]
-    addTable(slide, data)
+        "Disable Health Rules which violate too frequently": [
+            "Requires app team involvement",
+            "Total time investment: 1-2 hours per application",
+        ],
+        "Add Policies and Actions to send off events": [
+            "Requires app team involvement",
+            "Total time investment: 1-2 hours per application",
+        ],
+    }
+    addNestedBulletedText(slide, text)
+
+    # Low-Hanging Fruit Slide with List
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Raise Gold Apps to Platinum Status")
+    goldApps = getAppsWithScore(wb["Analysis"], "gold")
+
+    # Criteria Slide
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Configuration Assessment Tool Criteria")
+    slide.shapes.add_picture("backend/output/presentations/assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
+
+    # Criteria ctd... Slide
+    slide = root.slides.add_slide(root.slide_layouts[1])
+    setTitle(slide, f"Configuration Assessment Tool Criteria ctd...")
+    slide.shapes.add_picture("backend/output/presentations/assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
 
     # Saving file
     root.save(f"output/{folder}/{folder}-cx-presentation.pptx")
