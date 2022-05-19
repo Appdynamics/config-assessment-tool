@@ -11,6 +11,7 @@ from tzlocal import get_localzone
 from FileHandler import openFile, openFolder
 from utils.docker_utils import runConfigAssessmentTool, isDocker
 
+
 def jobPreviouslyExecuted(
     client: APIClient, jobName: str, debug: bool, concurrentConnections: int, username: str, password: str, platformStr: str, tag: str
 ):
@@ -84,7 +85,7 @@ def jobPreviouslyExecuted(
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
         username = newUsrName if dynamicCheck else None
         password = newPwd if dynamicCheck else None  # I changed from "None" to None, but not sure if it's a correct
-                                                   # implemenation of this tho
+        # implemenation of this tho
         runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, username, password, platformStr, tag)
 
     (

@@ -41,7 +41,7 @@ from util.stdlib_utils import jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str,  password: str):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str):
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as a bundle
@@ -88,15 +88,15 @@ class Engine:
                 host=controller["host"],
                 port=controller["port"],
                 ssl=controller["ssl"],
-                account=controller["account"],      # Attention, a user can pass multiple controllers,
-                username=controller["username"],    # i.e. multiple controller credentials in one job.file
+                account=controller["account"],  # Attention, a user can pass multiple controllers,
+                username=controller["username"],  # i.e. multiple controller credentials in one job.file
                 pwd=password_dynamically if password_dynamically != "None" else controller["pwd"],  # This line
                 verifySsl=controller.get("verifySsl", True),  # will set passwords in ALL controllers in job.file
                 useProxy=controller.get("useProxy", False),
             )
-                                        # Put an information, taht if the user puts the pwd dynamicly
-                                        # it will change pwds for all the controllers
-                                        # and add this info when there are multiple jobs in one job file (not only one)
+            # Put an information, taht if the user puts the pwd dynamicly
+            # it will change pwds for all the controllers
+            # and add this info when there are multiple jobs in one job file (not only one)
             for controller in self.job
         ]
         if password_dynamically != "None":

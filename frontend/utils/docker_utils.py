@@ -9,7 +9,15 @@ from utils.streamlit_utils import rerun
 
 
 def runConfigAssessmentTool(
-    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, username: str, password: str, platformStr: str, tag: str
+    client: APIClient,
+    jobFile: str,
+    thresholds: str,
+    debug: bool,
+    concurrentConnections: int,
+    username: str,
+    password: str,
+    platformStr: str,
+    tag: str,
 ):
     if not isDocker():
         root = os.path.abspath("..")

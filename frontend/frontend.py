@@ -27,7 +27,7 @@ def main():
     else:
         concurrentNetworkConnections = 50
 
-    '''-----The dynamic stuff-----'''
+    """-----The dynamic stuff-----"""
     username = None
     password = None
 

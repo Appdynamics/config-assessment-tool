@@ -9,7 +9,7 @@ from utils.docker_utils import isDocker, runConfigAssessmentTool
 
 
 def jobNotYetExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, username:str, password: bool, platformStr: str, tag: str
+    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, username: str, password: bool, platformStr: str, tag: str
 ):
     st.header(f"{jobName}")
     (
@@ -66,6 +66,6 @@ def jobNotYetExecuted(
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
         username = newUsrName if dynamicCheck else None
         password = newPwd if dynamicCheck else None  # I changed from "None" to None, but not sure if it's a correct
-                                                   # implemenation of this tho
+        # implemenation of this tho
 
         runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, username, password, platformStr, tag)
