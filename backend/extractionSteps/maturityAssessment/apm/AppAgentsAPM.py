@@ -110,7 +110,7 @@ class AppAgentsAPM(JobStepBase):
                 for node in nodes[idx].data:
                     try:
                         node["appAgentAvailabilityLast24Hours"] = nodeIdToAppAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
-                    except KeyError:
+                    except (KeyError, TypeError):
                         node["appAgentAvailabilityLast24Hours"] = 0
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
@@ -233,6 +233,7 @@ class AppAgentsAPM(JobStepBase):
                     analysisDataEvaluatedMetrics["percentAgentsRunningSameVersion"] = 0
 
                 analysisDataRawMetrics["numberOfNodes"] = len(application["nodes"])
+                analysisDataRawMetrics["numberOfTiers"] = len(application["tiers"])
                 analysisDataRawMetrics["numberNodesWithAppAgentInstalled"] = numberNodesWithAppAgentInstalled
                 analysisDataRawMetrics["numberAppAgentsLessThan1YearOld"] = numberAppAgentsLessThan1YearOld
                 analysisDataRawMetrics["numberAppAgentsLessThan2YearsOld"] = numberAppAgentsLessThan2YearsOld

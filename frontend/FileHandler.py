@@ -79,10 +79,7 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler("logs/config-assessment-tool-frontend.log"),
-            logging.StreamHandler()
-        ],
+        handlers=[logging.FileHandler("logs/config-assessment-tool-frontend.log"), logging.StreamHandler()],
     )
 
     hostName = "localhost"

@@ -128,8 +128,8 @@ def build(platform: str, tag: str):
 
     # Check if config-assessment-tool images exist
     if (
-            runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag}") == ""
-            or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
+        runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag}") == ""
+        or runBlockingCommand(f"docker images -q ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") == ""
     ):
         logging.info("Failed to build Docker images.")
         sys.exit(1)
@@ -203,6 +203,10 @@ def verifySoftwareVersion() -> str:
 if __name__ == "__main__":
     assert sys.version_info >= (3, 5), "Python 3.5 or higher required"
 
+    # cd to config-assessment-tool root directory
+    path = os.path.realpath(f"{__file__}/../..")
+    os.chdir(path)
+
     # create logs and output directories
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -219,9 +223,6 @@ if __name__ == "__main__":
         ],
     )
 
-    # cd to config-assessment-tool root directory
-    path = os.path.realpath(f"{__file__}/../..")
-    os.chdir(path)
     logging.info(f"Working directory is {os.getcwd()}")
 
     tag = verifySoftwareVersion()
