@@ -6,10 +6,10 @@ from urllib import parse
 import requests
 import streamlit as st
 from docker import APIClient
-from FileHandler import openFile, openFolder
 from tzlocal import get_localzone
-from utils.docker_utils import isDocker, runConfigAssessmentTool
 
+from FileHandler import openFile, openFolder
+from utils.docker_utils import runConfigAssessmentTool, isDocker
 
 def jobPreviouslyExecuted(
     client: APIClient, jobName: str, debug: bool, concurrentConnections: int, username: str, password: str, platformStr: str, tag: str
@@ -74,11 +74,11 @@ def jobPreviouslyExecuted(
     dynamicCredentials = st.expander("Use different credentials (This is optional!)")
     dynamicCredentials.write("Attention, if you use this option, it will dynamicly change credentials for ALL controllers on the job file!")
     usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
-    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff")
-    newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password")
+    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff", key=f"JobFile:{jobName}-username")
+    newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password", key=f"JobFile:{jobName}-pwd")
     dynChckCol.text("")
     dynChckCol.text("")
-    dynamicCheck = dynChckCol.checkbox("Dynamic Credentials")
+    dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-checkbox")
 
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):

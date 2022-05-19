@@ -9,7 +9,7 @@ from utils.docker_utils import isDocker, runConfigAssessmentTool
 
 
 def jobNotYetExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, password: bool, platformStr: str, tag: str
+    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, username:str, password: bool, platformStr: str, tag: str
 ):
     st.header(f"{jobName}")
     (
@@ -53,6 +53,19 @@ def jobNotYetExecuted(
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
+    dynamicCredentials = st.expander("Use different credentials (This is optional!)")
+    dynamicCredentials.write("Attention, if you use this option, it will dynamicly change credentials for ALL controllers on the job file!")
+    usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
+    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff", key=f"JobFile:{jobName}-username")
+    newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password", key=f"JobFile:{jobName}-pwd")
+    dynChckCol.text("")
+    dynChckCol.text("")
+    dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-checkbox")
+
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, platformStr, tag)
+        username = newUsrName if dynamicCheck else None
+        password = newPwd if dynamicCheck else None  # I changed from "None" to None, but not sure if it's a correct
+                                                   # implemenation of this tho
+
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, username, password, platformStr, tag)

@@ -78,9 +78,9 @@ def main():
 
         for jobName in orderedJobs:
             if Path(f"../output/{jobName}/info.json").exists():
-                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
+                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, username, password, platformStr, tag)
             else:
-                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
+                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, username, password, platformStr, tag)
             st.markdown("""---""")
 
 
