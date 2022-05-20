@@ -144,7 +144,7 @@ def getAppsWithScore(sheet, assessmentScore):
             j = 0
             for idx, data in enumerate(column_cell[1:]):
                 if data.value == assessmentScore:
-                    values.append(idx + 2)  # +2 because of the header
+                    values.append(sheet[f"C{idx + 2}"].value)  # +2 because of the header
             break
     return values
 
@@ -181,9 +181,9 @@ def createCxPpt(folder: str):
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"B/S/G/P Criteria & Scoring")
     text = [
-        "Platinum - 70% of criteria for an application must be Platinum, all remaining criteria must be at least Gold",
-        "Gold - 70% of criteria for an application must be Gold or higher, all remaining criteria must be at least Silver",
-        "Silver - 70% of criteria for an application must be Silver or higher",
+        "Platinum - 50% of criteria for an application must be Platinum, all remaining criteria must be at least Gold",
+        "Gold - 50% of criteria for an application must be Gold or higher, all remaining criteria must be at least Silver",
+        "Silver - 80% of criteria for an application must be Silver or higher",
         "Bronze - All remaining applications",
     ]
     addBulletedText(slide, text)
@@ -208,8 +208,8 @@ def createCxPpt(folder: str):
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"App & Machine Agents")
     text = [
-        "AppD Agents are supported for 1 year from release",
-        "*Machine Agents Reporting No Data includes uninstrumented apps",
+        "AppD Agents are supported for 1 year after release",
+        "*Machine Agents Reporting No Data includes nodes with an App Agent, but no Machine Agent installed",
     ]
     addBulletedText(slide, text)
     percentAgentsLessThan1YearOld = getValuesInColumn(wb["AppAgentsAPM"], "percentAgentsLessThan1YearOld")
@@ -242,8 +242,8 @@ def createCxPpt(folder: str):
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Overhead")
     text = [
-        "AppDynamics allows several different means to extract additional information from the APM data",
-        "While okay to use in lower environments, it is never recommended to use these features in a production environment",
+        "Within the AppDynamics UI, we can enable the extraction of additional data",
+        "While okay in lower environments, it is never recommended to use these features in a production environment",
         "Leaving some of these settings enabled can cause significant overhead",
     ]
     addBulletedText(slide, text)
@@ -273,7 +273,9 @@ def createCxPpt(folder: str):
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Error Configuration")
     text = [
-        "Ideally, there should be no BT with 100% error rate",
+        "It is critical to effectively configure Error detection settings ",
+        "Failure to do so will lead to an inflated application error rate",
+        "Ideally, there should be no BT with 100% error rate, and at least one custom error detection rule",
     ]
     addBulletedText(slide, text)
     successPercentageOfWorstTransaction = getValuesInColumn(wb["ErrorConfigurationAPM"], "successPercentageOfWorstTransaction")
@@ -296,7 +298,10 @@ def createCxPpt(folder: str):
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Health Rules and Alerting")
     text = [
-        "Default Health Rules can be modified (along with Custom HRs) and tied to Policies and Actions",
+        "Too many Health Rule violations can lead to a 'boy who cried wolf' scenario. Consider tuning Health rules so they do not violate too frequently and become background noise,"
+        "AppDynamics default Health Rules should always be modified to suit the needs of individual applications",
+        "It is recommend to configure alerts to be sent to external tools",
+        "Having no custom Health Rules is a telltale sign of poor application configuration health",
     ]
     addBulletedText(slide, text)
     numberOfHealthRuleViolationsLast24Hours = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolationsLast24Hours")
@@ -352,6 +357,15 @@ def createCxPpt(folder: str):
     slide = root.slides.add_slide(root.slide_layouts[1])
     setTitle(slide, f"Raise Gold Apps to Platinum Status")
     goldApps = getAppsWithScore(wb["Analysis"], "gold")
+    text = {
+        f"These apps are currently in Gold status. See {folder}-MaturityAssessment-apm.xlsx Analysis sheet for a full set of applications.": [],
+        "We recommend working with them to raise them to Platinum status:": goldApps[:10],
+    }
+    addNestedBulletedText(slide, text)
+
+    # Recommendations Slide
+    slide = root.slides.add_slide(root.slide_layouts[5])
+    setTitle(slide, f"Appendix", fontSize=48, top=3)
 
     # Criteria Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
