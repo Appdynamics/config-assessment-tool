@@ -41,7 +41,7 @@ from util.stdlib_utils import jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str,  password: str):
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as a bundle
@@ -87,13 +87,17 @@ class Engine:
                 port=controller["port"],
                 ssl=controller["ssl"],
                 account=controller["account"],
-                username=controller["username"],
-                pwd=controller["pwd"],
+                username=username if username else controller["username"],
+                pwd=password if password else controller["pwd"],
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
             )
             for controller in self.job
         ]
+        if password:  # I will let it here until it's the final version, so that we will
+            logging.info("Dynamic password change was used!")  # have confirmation, that it's working as intended
+        else:
+            logging.info("Using password from jobfile")
         self.controllerData = OrderedDict()
         self.otherSteps = [
             ControllerLevelDetails(),

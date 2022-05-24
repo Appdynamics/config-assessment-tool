@@ -8,7 +8,9 @@ from docker import APIClient
 from utils.streamlit_utils import rerun
 
 
-def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str):
+def runConfigAssessmentTool(
+    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, username: str, password: str, platformStr: str, tag: str
+):
     if not isDocker():
         root = os.path.abspath("..")
     else:
@@ -26,6 +28,10 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
     command = ["-j", jobFile, "-t", thresholds, "-c", str(concurrentConnections)]
     if debug:
         command.append("-d")
+    if username:
+        command.extend(["-u", username])
+    if password:
+        command.extend(["-p", password])
 
     container = client.create_container(
         image=f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}",
@@ -59,7 +65,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str, de
         logTextBox.text_area("", logText, height=250)
 
     # small delay to see job ended
-    time.sleep(5)
+    time.sleep(8)
     # refresh the page to see newly generated report
     rerun()
 
