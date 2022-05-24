@@ -11,9 +11,7 @@ from tzlocal import get_localzone
 from utils.docker_utils import isDocker, runConfigAssessmentTool
 
 
-def jobPreviouslyExecuted(
-    client: APIClient, jobName: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str
-):
+def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str):
     st.header(f"{jobName}")
     info = json.loads(open(f"../output/{jobName}/info.json").read())
 
