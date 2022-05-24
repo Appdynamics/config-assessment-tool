@@ -69,9 +69,20 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
+    dynamicCredentials = st.expander("Pass credentials dynamicly (optional)")
+    dynamicCredentials.write("Attention, if you use this option, it will dynamicly change credentials for ALL controllers on the job file!")
+    usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
+    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff", key=f"JobFile:{jobName}-usrCol")
+    newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password", key=f"JobFile:{jobName}-pwdCol")
+    dynChckCol.text("")
+    dynChckCol.text("")
+    dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-chckCol")
+
     runColumn.text("")  # vertical padding
     if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, platformStr, tag)
+        username = newUsrName if dynamicCheck else None
+        password = newPwd if dynamicCheck else None
+        runConfigAssessmentTool(client, jobName, thresholds, debug, concurrentConnections, username, password, platformStr, tag)
 
     (
         openReportColumn,
