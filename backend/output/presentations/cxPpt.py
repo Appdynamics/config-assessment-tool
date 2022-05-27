@@ -175,10 +175,12 @@ def createCxPpt(folder: str):
 
     # Current State Transition Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Current State", fontSize=48, top=3)
 
     # S/G/P Criteria & Scoring Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"B/S/G/P Criteria & Scoring")
     text = [
         "Platinum - 50% of criteria for an application must be Platinum, all remaining criteria must be at least Gold",
@@ -206,6 +208,7 @@ def createCxPpt(folder: str):
 
     # App & Machine Agents
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"App & Machine Agents")
     text = [
         "AppD Agents are supported for 1 year after release",
@@ -236,10 +239,12 @@ def createCxPpt(folder: str):
 
     # Low Hanging Fruit Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Low Hanging Fruit", fontSize=48, top=3)
 
     # Overhead
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Overhead")
     text = [
         "Within the AppDynamics UI, we can enable the extraction of additional data",
@@ -271,6 +276,7 @@ def createCxPpt(folder: str):
 
     # Error Configuration
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Error Configuration")
     text = [
         "It is critical to effectively configure Error detection settings ",
@@ -296,6 +302,7 @@ def createCxPpt(folder: str):
 
     # Health Rules and Alerting
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Health Rules and Alerting")
     text = [
         "Too many Health Rule violations can lead to a 'boy who cried wolf' scenario. Consider tuning Health rules so they do not violate too frequently and become background noise,"
@@ -328,10 +335,12 @@ def createCxPpt(folder: str):
 
     # Recommendations Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Recommendations", fontSize=48, top=3)
 
     # Low-Hanging Fruit Slide with List
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Low-Hanging Fruit")
     text = {
         "Remove Overhead inducing settings": [
@@ -355,6 +364,7 @@ def createCxPpt(folder: str):
 
     # Low-Hanging Fruit Slide with List
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Raise Gold Apps to Platinum Status")
     goldApps = getAppsWithScore(wb["Analysis"], "gold")
     text = {
@@ -365,15 +375,18 @@ def createCxPpt(folder: str):
 
     # Recommendations Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Appendix", fontSize=48, top=3)
 
     # Criteria Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Configuration Assessment Tool Criteria")
     slide.shapes.add_picture("backend/output/presentations/assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
 
     # Criteria ctd... Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
     setTitle(slide, f"Configuration Assessment Tool Criteria ctd...")
     slide.shapes.add_picture("backend/output/presentations/assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
 
