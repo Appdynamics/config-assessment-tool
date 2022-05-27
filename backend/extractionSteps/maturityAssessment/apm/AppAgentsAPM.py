@@ -118,7 +118,7 @@ class AppAgentsAPM(JobStepBase):
 
                     try:
                         node["nodeMetricsUploadRequestsExceedingLimit"] = nodeIdToMetricLimitMap[node["tierName"] + "|" + node["name"]]
-                    except KeyError:
+                    except (KeyError, TypeError):
                         node["nodeMetricsUploadRequestsExceedingLimit"] = 0
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Metrics Upload Requests Exceeding Limit.'
