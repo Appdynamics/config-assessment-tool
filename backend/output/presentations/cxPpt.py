@@ -54,10 +54,11 @@ def setBackgroundImage(root: Presentation, slide: Slide, image_path: str):
     slide.shapes._spTree.insert(2, pic._element)
 
 
-def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int = 32, top: float = 0.25, left: float = 0.5):
+def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int = 32, top: float = 0.75, left: float = 0.5, width: float = 9):
     title = slide.shapes.title
     title.top = Inches(top)
     title.left = Inches(left)
+    title.width = Inches(width)
     title.text = text
     title.text_frame.paragraphs[0].font.size = Pt(fontSize)
     title.text_frame.paragraphs[0].font.color.rgb = color.value
@@ -169,14 +170,14 @@ def createCxPpt(folder: str):
     # Title Slide
     slide = root.slides.add_slide(root.slide_layouts[0])
     setBackgroundImage(root, slide, "backend/output/presentations/assets/background.jpg")
-    setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48, top=2)
+    setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48, top=2.5)
     info = json.loads(open(f"output/{folder}/info.json").read())
     slide.placeholders[1].text = f'Data As Of: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}'
 
     # Current State Transition Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
     setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
-    setTitle(slide, f"Current State", fontSize=48, top=3)
+    setTitle(slide, f"Current State", fontSize=48, top=3.5)
 
     # S/G/P Criteria & Scoring Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
@@ -240,7 +241,7 @@ def createCxPpt(folder: str):
     # Low Hanging Fruit Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
     setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
-    setTitle(slide, f"Low Hanging Fruit", fontSize=48, top=3)
+    setTitle(slide, f"Low Hanging Fruit", fontSize=48, top=3.5)
 
     # Overhead
     slide = root.slides.add_slide(root.slide_layouts[1])
@@ -336,7 +337,7 @@ def createCxPpt(folder: str):
     # Recommendations Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
     setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
-    setTitle(slide, f"Recommendations", fontSize=48, top=3)
+    setTitle(slide, f"Recommendations", fontSize=48, top=3.5)
 
     # Low-Hanging Fruit Slide with List
     slide = root.slides.add_slide(root.slide_layouts[1])
@@ -376,7 +377,7 @@ def createCxPpt(folder: str):
     # Recommendations Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
     setBackgroundImage(root, slide, "backend/output/presentations/assets/background_2.jpg")
-    setTitle(slide, f"Appendix", fontSize=48, top=3)
+    setTitle(slide, f"Appendix", fontSize=48, top=3.5)
 
     # Criteria Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
