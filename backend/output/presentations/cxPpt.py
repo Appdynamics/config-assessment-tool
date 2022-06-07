@@ -54,10 +54,11 @@ def setBackgroundImage(root: Presentation, slide: Slide, image_path: str):
     slide.shapes._spTree.insert(2, pic._element)
 
 
-def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int = 32, top: float = 0.25, left: float = 0.5):
+def setTitle(slide: Slide, text: str, color: Color = Color.BLACK, fontSize: int = 32, top: float = 0.75, left: float = 0.5, width: float = 9):
     title = slide.shapes.title
     title.top = Inches(top)
     title.left = Inches(left)
+    title.width = Inches(width)
     title.text = text
     title.text_frame.paragraphs[0].font.size = Pt(fontSize)
     title.text_frame.paragraphs[0].font.color.rgb = color.value
@@ -144,7 +145,7 @@ def getAppsWithScore(sheet, assessmentScore):
             j = 0
             for idx, data in enumerate(column_cell[1:]):
                 if data.value == assessmentScore:
-                    values.append(idx + 2)  # +2 because of the header
+                    values.append(sheet[f"C{idx + 2}"].value)  # +2 because of the header
             break
     return values
 
@@ -168,22 +169,24 @@ def createCxPpt(folder: str):
 
     # Title Slide
     slide = root.slides.add_slide(root.slide_layouts[0])
-    setBackgroundImage(root, slide, "backend/output/presentations/assets/background.jpg")
-    setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48, top=2)
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background.jpg")
+    setTitle(slide, f"{folder} Configuration Assessment Highlights", Color.WHITE, fontSize=48, top=2.5)
     info = json.loads(open(f"output/{folder}/info.json").read())
     slide.placeholders[1].text = f'Data As Of: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}'
 
     # Current State Transition Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
-    setTitle(slide, f"Current State", fontSize=48, top=3)
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
+    setTitle(slide, f"Current State", fontSize=48, top=3.5)
 
     # S/G/P Criteria & Scoring Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"B/S/G/P Criteria & Scoring")
     text = [
-        "Platinum - 70% of criteria for an application must be Platinum, all remaining criteria must be at least Gold",
-        "Gold - 70% of criteria for an application must be Gold or higher, all remaining criteria must be at least Silver",
-        "Silver - 70% of criteria for an application must be Silver or higher",
+        "Platinum - 50% of criteria for an application must be Platinum, all remaining criteria must be at least Gold",
+        "Gold - 50% of criteria for an application must be Gold or higher, all remaining criteria must be at least Silver",
+        "Silver - 80% of criteria for an application must be Silver or higher",
         "Bronze - All remaining applications",
     ]
     addBulletedText(slide, text)
@@ -206,10 +209,11 @@ def createCxPpt(folder: str):
 
     # App & Machine Agents
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"App & Machine Agents")
     text = [
-        "AppD Agents are supported for 1 year from release",
-        "*Machine Agents Reporting No Data includes uninstrumented apps",
+        "AppD Agents are supported for 1 year after release",
+        "*Machine Agents Reporting No Data includes nodes with an App Agent, but no Machine Agent installed",
     ]
     addBulletedText(slide, text)
     percentAgentsLessThan1YearOld = getValuesInColumn(wb["AppAgentsAPM"], "percentAgentsLessThan1YearOld")
@@ -236,14 +240,16 @@ def createCxPpt(folder: str):
 
     # Low Hanging Fruit Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
-    setTitle(slide, f"Low Hanging Fruit", fontSize=48, top=3)
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
+    setTitle(slide, f"Low Hanging Fruit", fontSize=48, top=3.5)
 
     # Overhead
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Overhead")
     text = [
-        "AppDynamics allows several different means to extract additional information from the APM data",
-        "While okay to use in lower environments, it is never recommended to use these features in a production environment",
+        "Within the AppDynamics UI, we can enable the extraction of additional data",
+        "While okay in lower environments, it is never recommended to use these features in a production environment",
         "Leaving some of these settings enabled can cause significant overhead",
     ]
     addBulletedText(slide, text)
@@ -271,9 +277,12 @@ def createCxPpt(folder: str):
 
     # Error Configuration
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Error Configuration")
     text = [
-        "Ideally, there should be no BT with 100% error rate",
+        "It is critical to effectively configure Error detection settings ",
+        "Failure to do so will lead to an inflated application error rate",
+        "Ideally, there should be no BT with 100% error rate, and at least one custom error detection rule",
     ]
     addBulletedText(slide, text)
     successPercentageOfWorstTransaction = getValuesInColumn(wb["ErrorConfigurationAPM"], "successPercentageOfWorstTransaction")
@@ -294,9 +303,13 @@ def createCxPpt(folder: str):
 
     # Health Rules and Alerting
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Health Rules and Alerting")
     text = [
-        "Default Health Rules can be modified (along with Custom HRs) and tied to Policies and Actions",
+        "Too many Health Rule violations can lead to a 'boy who cried wolf' scenario. Consider tuning Health rules so they do not violate too frequently and become background noise,"
+        "AppDynamics default Health Rules should always be modified to suit the needs of individual applications",
+        "It is recommend to configure alerts to be sent to external tools",
+        "Having no custom Health Rules is a telltale sign of poor application configuration health",
     ]
     addBulletedText(slide, text)
     numberOfHealthRuleViolationsLast24Hours = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolationsLast24Hours")
@@ -323,10 +336,12 @@ def createCxPpt(folder: str):
 
     # Recommendations Slide
     slide = root.slides.add_slide(root.slide_layouts[5])
-    setTitle(slide, f"Recommendations", fontSize=48, top=3)
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
+    setTitle(slide, f"Recommendations", fontSize=48, top=3.5)
 
     # Low-Hanging Fruit Slide with List
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Low-Hanging Fruit")
     text = {
         "Remove Overhead inducing settings": [
@@ -350,18 +365,31 @@ def createCxPpt(folder: str):
 
     # Low-Hanging Fruit Slide with List
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Raise Gold Apps to Platinum Status")
     goldApps = getAppsWithScore(wb["Analysis"], "gold")
+    text = {
+        f"These apps are currently in Gold status. See {folder}-MaturityAssessment-apm.xlsx Analysis sheet for a full set of applications.": [],
+        "We recommend working with them to raise them to Platinum status:": goldApps[:10],
+    }
+    addNestedBulletedText(slide, text)
+
+    # Recommendations Slide
+    slide = root.slides.add_slide(root.slide_layouts[5])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
+    setTitle(slide, f"Appendix", fontSize=48, top=3.5)
 
     # Criteria Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Configuration Assessment Tool Criteria")
-    slide.shapes.add_picture("backend/output/presentations/assets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
+    slide.shapes.add_picture("backend/resources/pptAssets/criteria.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(5))
 
     # Criteria ctd... Slide
     slide = root.slides.add_slide(root.slide_layouts[1])
+    setBackgroundImage(root, slide, "backend/resources/pptAssets/background_2.jpg")
     setTitle(slide, f"Configuration Assessment Tool Criteria ctd...")
-    slide.shapes.add_picture("backend/output/presentations/assets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
+    slide.shapes.add_picture("backend/resources/pptAssets/criteria2.png", Inches(0.5), Inches(1.75), width=Inches(9), height=Inches(4))
 
     # Saving file
     root.save(f"output/{folder}/{folder}-cx-presentation.pptx")

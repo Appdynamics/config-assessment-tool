@@ -69,7 +69,7 @@ class MachineAgentsAPM(JobStepBase):
                 for node in hostInfo[self.componentType][application]["nodes"]:
                     try:
                         node["machineAgentAvailabilityLast24Hours"] = nodeIdToMachineAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
-                    except KeyError:
+                    except (KeyError, TypeError):
                         node["machineAgentAvailabilityLast24Hours"] = 0
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
