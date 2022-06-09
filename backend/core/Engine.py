@@ -8,6 +8,8 @@ import traceback
 from collections import OrderedDict
 from pathlib import Path
 
+import requests
+
 from api.appd.AppDService import AppDService
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
@@ -56,6 +58,18 @@ class Engine:
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
         self.codebaseVersion = open(f"VERSION").read()
         logging.info(f"Software Version: {self.codebaseVersion}")
+
+        response = requests.request("GET", "https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
+        latestTag = json.loads(response.text)[0]["name"]
+
+        logging.info(f"Latest release tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags is {latestTag}")
+        # get local tag from VERSION file
+
+        if latestTag != self.codebaseVersion:
+            logging.warning(f"You are using an outdated version of the software. Current {self.codebaseVersion} Target {latestTag}")
+            logging.warning("You can get the latest version from https://github.com/Appdynamics/config-assessment-tool/releases")
+        else:
+            logging.info(f"You are using the latest version of the software. Current {self.codebaseVersion}")
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
