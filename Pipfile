@@ -19,9 +19,9 @@ pytest-cov = "==2.12.1"
 coverage = "==5.5"
 requests = "==2.26.0"
 pexpect = "==4.8.0"
-pyinstaller = "*"
 isort = "==5.10.1"
 python-pptx = "==0.6.21"
+pyinstaller = "==5.1"
 
 [dev-packages]
 
