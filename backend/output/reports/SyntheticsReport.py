@@ -3,7 +3,7 @@ from datetime import datetime
 
 from openpyxl import Workbook
 from output.ReportBase import ReportBase
-from util.xcel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
+from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
 
 
 class SyntheticsReport(ReportBase):
