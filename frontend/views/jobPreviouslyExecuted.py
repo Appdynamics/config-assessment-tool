@@ -89,7 +89,8 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
         openReportButton,
     ) = st.columns([4, 1])
 
-    reportFiles = [f[: len(f) - 5] for f in os.listdir(f"../output/{jobName}") if f.endswith("xlsx") and not f.startswith("~$")]
+    reportFiles = [f for f in os.listdir(f"../output/{jobName}") if not f.startswith(".") and not f.startswith("~$")]
+    st.write(f"Report Files: {reportFiles}")
     report = openReportColumn.selectbox(
         "Specify Report to Open",
         reportFiles,
@@ -100,11 +101,11 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
     openReportButton.text("")  # vertical padding
     if openReportButton.button(f"Open Report", key=f"{jobName}-open-report-{report}"):
         if not isDocker():
-            openFile(f"../output/{jobName}/{report}.xlsx")
+            openFile(f"../output/{jobName}/{report}")
         else:
             payload = {
                 "type": "file",
-                "path": f"output/{jobName}/{report}.xlsx",
+                "path": f"output/{jobName}/{report}",
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
