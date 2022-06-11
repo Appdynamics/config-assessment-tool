@@ -12,18 +12,17 @@ docker = "==5.0.2"
 tzlocal = "==4.0b1"
 streamlit = "==1.8.1"
 deepdiff = "==5.5.0"
+requests = "==2.26.0"
+python-pptx = "==0.6.21"
+
+[dev-packages]
 black = "==21.8b0"
 pytest-asyncio = "==0.15.1"
 pytest = "==6.2.5"
 pytest-cov = "==2.12.1"
 coverage = "==5.5"
-requests = "==2.26.0"
-pexpect = "==4.8.0"
 isort = "==5.10.1"
-python-pptx = "==0.6.21"
 pyinstaller = "==5.1"
-
-[dev-packages]
 
 [requires]
 python_version = "3.9"
