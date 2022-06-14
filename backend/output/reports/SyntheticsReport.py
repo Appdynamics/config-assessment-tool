@@ -48,7 +48,10 @@ class SyntheticsReport(ReportBase):
                             "projectedMonthlyRuns": (syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"], color),
                             "averageDuration": (syntheticJob["averageDuration"], color),
                             "averageBlocksUsedPerRun": (averageBlocksUsedPerRun, color),
-                            "estimatedBlocksUsedPerMonth": (averageBlocksUsedPerRun * syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"], color),
+                            "estimatedBlocksUsedPerMonth": (
+                                averageBlocksUsedPerRun * syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"],
+                                color,
+                            ),
                             "estimatedBlocksUsedPerMonthPercentage": (estimatedBlocksUsedPerMonthPercentage, color),
                             "billableTimeAverage24Hr": (billableTimeAverage24Hr, color),
                             "currentMonthBillableTimeTotal": (currentMonthBillableTimeTotal, color),
