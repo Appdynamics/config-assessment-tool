@@ -220,6 +220,11 @@ class AppdController(Consumer):
         """Retrieves license usage summary"""
 
     @params({"output": "json"})
+    @post("/controller/restui/licenseRule/getEumLicenseUsage")
+    def getEumLicenseUsage(self, body: Body):
+        """Retrieves EUM license usage"""
+
+    @params({"output": "json"})
     @post("/controller/restui/agents/list/appserver")
     def getAppServerAgents(self, body: Body):
         """Retrieves app server agent summary list"""
@@ -318,3 +323,8 @@ class AppdController(Consumer):
     @post("/controller/restui/synthetic/schedule/{applicationId}/getJobPAUtilizations")
     def getSyntheticPrivateAgentUtilization(self, applicationId: Path, body: Body):
         """Retrieves Synthetic Private Agent Utilization"""
+
+    @params({"output": "json"})
+    @post("/controller/restui/eumSyntheticJobListUiService/getSessionData")
+    def getSyntheticSessionData(self, body: Body):
+        """Retrieves Synthetic Session Data"""

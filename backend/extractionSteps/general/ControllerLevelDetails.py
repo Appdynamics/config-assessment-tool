@@ -45,11 +45,14 @@ class ControllerLevelDetails(JobStepBase):
             hostInfo["exportedDashboards"] = (await controller.getDashboards()).data
 
             logging.info(f'{hostInfo["controller"].host} - Extracting Licenses')
+            hostInfo["accountLicenseUsage"] = (await controller.getAccountUsageSummary()).data
+            hostInfo["eumLicenseUsage"] = (await controller.getEumLicenseUsage()).data
+
+            logging.info(f'{hostInfo["controller"].host} - Extracting Agent Details')
             hostInfo["appServerAgents"] = (await controller.getAppServerAgents()).data
             hostInfo["machineAgents"] = (await controller.getMachineAgents()).data
             hostInfo["dbAgents"] = (await controller.getDBAgents()).data
             hostInfo["analyticsAgents"] = (await controller.getAnalyticsAgents()).data
-            hostInfo["licenseUsage"] = (await controller.getAccountUsageSummary()).data
 
     def analyze(self, controllerData, thresholds):
         pass

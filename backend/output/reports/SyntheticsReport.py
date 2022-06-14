@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from math import floor, ceil
 
 from openpyxl import Workbook
 from output.ReportBase import ReportBase
@@ -27,6 +28,13 @@ class SyntheticsReport(ReportBase):
                     privateAgentUtilization = (
                         syntheticJob["privateAgentUtilization"]["utilization"] if syntheticJob["privateAgentUtilization"] else None
                     )
+                    averageBlocksUsedPerRun = ceil(floor(syntheticJob["averageDuration"]) / 1000 / 5) if not syntheticJob["hasPrivateAgent"] else 0
+                    estimatedBlocksUsedPerMonthPercentage = (
+                        averageBlocksUsedPerRun
+                        * syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"]
+                        / hostInfo["eumLicenseUsage"]["allocatedSyntheticMeasurementUnits"]
+                        * 100
+                    )
                     allSyntheticJobs.append(
                         {
                             "host": host,
@@ -35,6 +43,10 @@ class SyntheticsReport(ReportBase):
                             "jobName": syntheticJob["config"]["description"],
                             "projectedDailyRuns": syntheticJob["config"]["projectedUsage"]["projectedDailyRuns"],
                             "projectedMonthlyRuns": syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"],
+                            "averageDuration": syntheticJob["averageDuration"],
+                            "averageBlocksUsedPerRun": averageBlocksUsedPerRun,
+                            "estimatedBlocksUsedPerMonth": averageBlocksUsedPerRun * syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"],
+                            "estimatedBlocksUsedPerMonthPercentage": estimatedBlocksUsedPerMonthPercentage,
                             "billableTimeAverage24Hr": billableTimeAverage24Hr,
                             "currentMonthBillableTimeTotal": currentMonthBillableTimeTotal,
                             "privateAgentUtilization": privateAgentUtilization,
