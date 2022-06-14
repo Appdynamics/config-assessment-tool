@@ -18,6 +18,7 @@ class Color(Enum):
     green = PatternFill(start_color="FF00FF00", end_color="FF00FF00", fill_type="solid")
     red = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
     yellow = PatternFill(start_color="FFFFFF00", end_color="FFFFFF00", fill_type="solid")
+    white = PatternFill(start_color="FFFFFFFF", end_color="FFFFFFFF", fill_type="solid")
 
 
 def writeRow(sheet: Worksheet, rowIdx: int, data: [Any]):

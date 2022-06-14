@@ -4,7 +4,7 @@ from math import floor, ceil
 
 from openpyxl import Workbook
 from output.ReportBase import ReportBase
-from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
+from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow, Color
 
 
 class SyntheticsReport(ReportBase):
@@ -35,25 +35,28 @@ class SyntheticsReport(ReportBase):
                         / hostInfo["eumLicenseUsage"]["allocatedSyntheticMeasurementUnits"]
                         * 100
                     )
+                    color = Color.white
+                    if estimatedBlocksUsedPerMonthPercentage > 100:
+                        color = Color.red
                     allSyntheticJobs.append(
                         {
-                            "host": host,
-                            "componentType": "brum",
-                            "application": application["name"],
-                            "jobName": syntheticJob["config"]["description"],
-                            "projectedDailyRuns": syntheticJob["config"]["projectedUsage"]["projectedDailyRuns"],
-                            "projectedMonthlyRuns": syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"],
-                            "averageDuration": syntheticJob["averageDuration"],
-                            "averageBlocksUsedPerRun": averageBlocksUsedPerRun,
-                            "estimatedBlocksUsedPerMonth": averageBlocksUsedPerRun * syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"],
-                            "estimatedBlocksUsedPerMonthPercentage": estimatedBlocksUsedPerMonthPercentage,
-                            "billableTimeAverage24Hr": billableTimeAverage24Hr,
-                            "currentMonthBillableTimeTotal": currentMonthBillableTimeTotal,
-                            "privateAgentUtilization": privateAgentUtilization,
-                            "browsers": ",".join(syntheticJob["config"]["browserCodes"]),
-                            "usesPrivateAgent": syntheticJob["hasPrivateAgent"],
-                            "created": datetime.fromtimestamp(syntheticJob["config"]["created"] / 1000.0),
-                            "updated": datetime.fromtimestamp(syntheticJob["config"]["updated"] / 1000.0),
+                            "host": (host, color),
+                            "componentType": ("brum", color),
+                            "application": (application["name"], color),
+                            "jobName": (syntheticJob["config"]["description"], color),
+                            "projectedDailyRuns": (syntheticJob["config"]["projectedUsage"]["projectedDailyRuns"], color),
+                            "projectedMonthlyRuns": (syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"], color),
+                            "averageDuration": (syntheticJob["averageDuration"], color),
+                            "averageBlocksUsedPerRun": (averageBlocksUsedPerRun, color),
+                            "estimatedBlocksUsedPerMonth": (averageBlocksUsedPerRun * syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"], color),
+                            "estimatedBlocksUsedPerMonthPercentage": (estimatedBlocksUsedPerMonthPercentage, color),
+                            "billableTimeAverage24Hr": (billableTimeAverage24Hr, color),
+                            "currentMonthBillableTimeTotal": (currentMonthBillableTimeTotal, color),
+                            "privateAgentUtilization": (privateAgentUtilization, color),
+                            "browsers": (",".join(syntheticJob["config"]["browserCodes"]), color),
+                            "usesPrivateAgent": (syntheticJob["hasPrivateAgent"], color),
+                            "created": (datetime.fromtimestamp(syntheticJob["config"]["created"] / 1000.0), color),
+                            "updated": (datetime.fromtimestamp(syntheticJob["config"]["updated"] / 1000.0), color),
                         }
                     )
 
@@ -72,7 +75,7 @@ class SyntheticsReport(ReportBase):
 
         rowIdx = 2
         for syntheticJob in allSyntheticJobs:
-            writeUncoloredRow(
+            writeColoredRow(
                 summarySheet,
                 rowIdx,
                 [*syntheticJob.values()],

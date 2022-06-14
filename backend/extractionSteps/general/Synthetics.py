@@ -75,7 +75,7 @@ class Synthetics(JobStepBase):
                         job["privateAgentUtilization"] = None
                     try:
                         job["averageDuration"] = syntheticSessionData[idx].data["AVG_DURATION"][job["config"]["id"]]
-                    except KeyError:
+                    except (KeyError, IndexError):
                         logging.debug(f"{host} - {applicationName} - {job['config']['description']} - No average duration")
                         job["averageDuration"] = 0
 
