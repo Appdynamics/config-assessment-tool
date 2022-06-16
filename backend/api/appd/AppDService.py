@@ -589,7 +589,7 @@ class AppDService:
 
         debugString = f"Gathering App Server Agents Agents List"
         allAgents = []
-        batch_size = 50
+        batch_size = 1000
         for i in range(0, len(agentIds), batch_size):
             agentFutures = []
 
@@ -651,7 +651,7 @@ class AppDService:
 
         debugString = f"Gathering Machine Agents Agents List"
         allAgents = []
-        batch_size = 50
+        batch_size = 1000
         for i in range(0, len(agentIds), batch_size):
             agentFutures = []
 
