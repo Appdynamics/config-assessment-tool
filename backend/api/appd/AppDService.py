@@ -256,7 +256,7 @@ class AppDService:
         debugString = f"Gathering Application Call Graph Settings for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getApplicationConfiguration(applicationID)
-        return await self.getResultFromResponse(response, debugString)
+        return await self.getResultFromResponse(response, debugString, isResponseList=False)
 
     async def getServiceEndpointMatchRules(self, applicationID: int) -> Result:
         debugString = f"Gathering Service Endpoint Custom Match Rules for Application:{applicationID}"
