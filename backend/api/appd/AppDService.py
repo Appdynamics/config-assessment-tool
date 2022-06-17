@@ -588,14 +588,10 @@ class AppDService:
         agentIds = [agent["applicationComponentNodeId"] for agent in result.data["data"]]
 
         debugString = f"Gathering App Server Agents Agents List"
-        allAgents = []
+        agentFutures = []
         batch_size = 1000
         for i in range(0, len(agentIds), batch_size):
-            agentFutures = []
-
-            logging.debug(f"Batch iteration {int(i / batch_size)} of {ceil(len(agentIds) / batch_size)}")
             chunk = agentIds[i : i + batch_size]
-
             body = {
                 "requestFilter": chunk,
                 "resultColumns": [
@@ -614,16 +610,14 @@ class AppDService:
                 "timeRangeStart": last24Hours,
                 "timeRangeEnd": currentTime,
             }
+            agentFutures.append(self.controller.getAppServerAgentsIds(json.dumps(body)))
 
-            response = await self.controller.getAppServerAgentsIds(json.dumps(body))
-            result = await self.getResultFromResponse(response, debugString)
-
-            if result.error is None:
-                allAgents.extend(result.data["data"])
-            else:
-                logging.warning(f"{self.host} - Failed to get App Server Agents: {result.error}")
-
-        return Result(allAgents, None)
+        response = await AsyncioUtils.gatherWithConcurrency(*agentFutures)
+        results = [(await self.getResultFromResponse(response, debugString)).data["data"] for response in response]
+        out = []
+        for result in results:
+            out.extend(result)
+        return Result(out, None)
 
     async def getMachineAgents(self) -> Result:
         debugString = f"Gathering App Server Agents Agents"
@@ -650,14 +644,10 @@ class AppDService:
         agentIds = [agent["machineId"] for agent in result.data["data"]]
 
         debugString = f"Gathering Machine Agents Agents List"
-        allAgents = []
+        agentFutures = []
         batch_size = 1000
         for i in range(0, len(agentIds), batch_size):
-            agentFutures = []
-
-            logging.debug(f"Batch iteration {int(i / batch_size)} of {ceil(len(agentIds) / batch_size)}")
             chunk = agentIds[i : i + batch_size]
-
             body = {
                 "requestFilter": chunk,
                 "resultColumns": ["AGENT_VERSION", "APPLICATION_NAMES", "ENABLED"],
@@ -669,15 +659,14 @@ class AppDService:
                 "timeRangeEnd": currentTime,
             }
 
-            response = await self.controller.getMachineAgentsIds(json.dumps(body))
-            result = await self.getResultFromResponse(response, debugString)
+            agentFutures.append(self.controller.getMachineAgentsIds(json.dumps(body)))
 
-            if result.error is None:
-                allAgents.extend(result.data["data"])
-            else:
-                logging.warning(f"{self.host} - Failed to get Machine Agents: {result.error}")
-
-        return Result(allAgents, None)
+        response = await AsyncioUtils.gatherWithConcurrency(*agentFutures)
+        results = [(await self.getResultFromResponse(response, debugString)).data["data"] for response in response]
+        out = []
+        for result in results:
+            out.extend(result)
+        return Result(out, None)
 
     async def getDBAgents(self) -> Result:
         debugString = f"Gathering DB Agents"
