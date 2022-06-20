@@ -90,7 +90,6 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
     ) = st.columns([4, 1])
 
     reportFiles = [f for f in os.listdir(f"../output/{jobName}") if not f.startswith(".") and not f.startswith("~$")]
-    st.write(f"Report Files: {reportFiles}")
     report = openReportColumn.selectbox(
         "Specify Report to Open",
         reportFiles,
