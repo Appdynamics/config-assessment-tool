@@ -65,7 +65,7 @@ def header() -> tuple[bool, bool]:
         accountCol, usernameCol, pwdCol = st.columns(3)
         account = accountCol.text_input(label="account", value="acme")
         username = usernameCol.text_input(label="username", value="foo")
-        pwd = pwdCol.text_input(label="password", value="hunter1", type="password")
+        pwd = pwdCol.text_input(label="password", value="hunter2", type="password")
 
         if st.form_submit_button("create"):
             with open(f"../input/jobs/{host[:host.index('.')]}.json", "w", encoding="ISO-8859-1") as f:

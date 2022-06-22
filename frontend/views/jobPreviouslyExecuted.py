@@ -70,10 +70,10 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
     dynamicCredentials = st.expander("Pass credentials dynamically (optional)")
-    dynamicCredentials.write("Attention, if you use this option, it will dynamically change credentials for ALL controllers on the job file!")
+    dynamicCredentials.write("Credentials will be changed for all jobs in the job file.")
     usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
-    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff", key=f"JobFile:{jobName}-usrCol")
-    newPwd = pwdCol.text_input(label="New Password", value="hunter1", type="password", key=f"JobFile:{jobName}-pwdCol")
+    newUsrName = usrNameCol.text_input(label="New Username", value="AzureDiamond", key=f"JobFile:{jobName}-usrCol")
+    newPwd = pwdCol.text_input(label="New Password", value="hunter2", type="password", key=f"JobFile:{jobName}-pwdCol")
     dynChckCol.text("")
     dynChckCol.text("")
     dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-chckCol")
