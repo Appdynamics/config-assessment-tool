@@ -74,7 +74,9 @@ class Engine:
         self.thresholds = json.loads(open(f"input/thresholds/{self.thresholdsFileName}.json").read())
 
         try:
-            response = requests.request("GET", "https://api.github.com/repos/appdynamics/config-assessment-tool/tags", verify=all(job["verifySsl"] for job in self.job))
+            response = requests.request(
+                "GET", "https://api.github.com/repos/appdynamics/config-assessment-tool/tags", verify=all(job["verifySsl"] for job in self.job)
+            )
             latestTag = None
             if not response.ok:
                 logging.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
