@@ -69,11 +69,11 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    dynamicCredentials = st.expander("Pass credentials dynamicly (optional)")
-    dynamicCredentials.write("Attention, if you use this option, it will dynamicly change credentials for ALL controllers on the job file!")
+    dynamicCredentials = st.expander("Pass credentials dynamically (optional)")
+    dynamicCredentials.write("Credentials will be changed for all jobs in the job file.")
     usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
-    newUsrName = usrNameCol.text_input(label="New Username", value="Jeff", key=f"JobFile:{jobName}-usrCol")
-    newPwd = pwdCol.text_input(label="New Password", value="examplepwd", type="password", key=f"JobFile:{jobName}-pwdCol")
+    newUsrName = usrNameCol.text_input(label="New Username", value="AzureDiamond", key=f"JobFile:{jobName}-usrCol")
+    newPwd = pwdCol.text_input(label="New Password", value="hunter2", type="password", key=f"JobFile:{jobName}-pwdCol")
     dynChckCol.text("")
     dynChckCol.text("")
     dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-chckCol")
@@ -89,7 +89,7 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
         openReportButton,
     ) = st.columns([4, 1])
 
-    reportFiles = [f[: len(f) - 5] for f in os.listdir(f"../output/{jobName}") if f.endswith("xlsx") and not f.startswith("~$")]
+    reportFiles = [f for f in os.listdir(f"../output/{jobName}") if not f.startswith(".") and not f.startswith("~$")]
     report = openReportColumn.selectbox(
         "Specify Report to Open",
         reportFiles,
@@ -100,11 +100,11 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
     openReportButton.text("")  # vertical padding
     if openReportButton.button(f"Open Report", key=f"{jobName}-open-report-{report}"):
         if not isDocker():
-            openFile(f"../output/{jobName}/{report}.xlsx")
+            openFile(f"../output/{jobName}/{report}")
         else:
             payload = {
                 "type": "file",
-                "path": f"output/{jobName}/{report}.xlsx",
+                "path": f"output/{jobName}/{report}",
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")

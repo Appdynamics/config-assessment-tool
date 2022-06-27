@@ -3,6 +3,7 @@ import json
 import logging
 import re
 import time
+from datetime import datetime, date, timedelta
 from json import JSONDecodeError
 from math import ceil
 from typing import List
@@ -255,7 +256,7 @@ class AppDService:
         debugString = f"Gathering Application Call Graph Settings for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getApplicationConfiguration(applicationID)
-        return await self.getResultFromResponse(response, debugString)
+        return await self.getResultFromResponse(response, debugString, isResponseList=False)
 
     async def getServiceEndpointMatchRules(self, applicationID: int) -> Result:
         debugString = f"Gathering Service Endpoint Custom Match Rules for Application:{applicationID}"
@@ -555,13 +556,20 @@ class AppDService:
         response = await self.controller.getAccountUsageSummary(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
+    async def getEumLicenseUsage(self) -> Result:
+        debugString = f"Gathering Account Usage Summary"
+        logging.debug(f"{self.host} - {debugString}")
+        body = {"type": "BEFORE_NOW", "durationInMinutes": 1440, "endTime": None, "startTime": None, "timeRange": None, "timeRangeAdjusted": False}
+        response = await self.controller.getEumLicenseUsage(json.dumps(body))
+        return await self.getResultFromResponse(response, debugString)
+
     async def getAppServerAgents(self) -> Result:
         debugString = f"Gathering App Server Agents Agents"
         logging.debug(f"{self.host} - {debugString}")
         # get current timestamp in milliseconds
         currentTime = int(round(time.time() * 1000))
         # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (24 * 60 * 60 * 1000)
+        last24Hours = currentTime - (24 * 60 * 60 * 24 * 1000)
         body = {
             "requestFilter": {"queryParams": {"applicationAssociationType": "ALL"}, "filters": []},
             "resultColumns": [],
@@ -580,14 +588,10 @@ class AppDService:
         agentIds = [agent["applicationComponentNodeId"] for agent in result.data["data"]]
 
         debugString = f"Gathering App Server Agents Agents List"
-        allAgents = []
-        batch_size = 50
+        agentFutures = []
+        batch_size = 1000
         for i in range(0, len(agentIds), batch_size):
-            agentFutures = []
-
-            logging.debug(f"Batch iteration {int(i / batch_size)} of {ceil(len(agentIds) / batch_size)}")
             chunk = agentIds[i : i + batch_size]
-
             body = {
                 "requestFilter": chunk,
                 "resultColumns": [
@@ -606,16 +610,14 @@ class AppDService:
                 "timeRangeStart": last24Hours,
                 "timeRangeEnd": currentTime,
             }
+            agentFutures.append(self.controller.getAppServerAgentsIds(json.dumps(body)))
 
-            response = await self.controller.getAppServerAgentsIds(json.dumps(body))
-            result = await self.getResultFromResponse(response, debugString)
-
-            if result.error is None:
-                allAgents.extend(result.data["data"])
-            else:
-                logging.warning(f"{self.host} - Failed to get App Server Agents: {result.error}")
-
-        return Result(allAgents, None)
+        response = await AsyncioUtils.gatherWithConcurrency(*agentFutures)
+        results = [(await self.getResultFromResponse(response, debugString)).data["data"] for response in response]
+        out = []
+        for result in results:
+            out.extend(result)
+        return Result(out, None)
 
     async def getMachineAgents(self) -> Result:
         debugString = f"Gathering App Server Agents Agents"
@@ -623,7 +625,7 @@ class AppDService:
         # get current timestamp in milliseconds
         currentTime = int(round(time.time() * 1000))
         # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
         body = {
             "requestFilter": {"queryParams": {"applicationAssociationType": "ALL"}, "filters": []},
             "resultColumns": [],
@@ -642,14 +644,10 @@ class AppDService:
         agentIds = [agent["machineId"] for agent in result.data["data"]]
 
         debugString = f"Gathering Machine Agents Agents List"
-        allAgents = []
-        batch_size = 50
+        agentFutures = []
+        batch_size = 1000
         for i in range(0, len(agentIds), batch_size):
-            agentFutures = []
-
-            logging.debug(f"Batch iteration {int(i / batch_size)} of {ceil(len(agentIds) / batch_size)}")
             chunk = agentIds[i : i + batch_size]
-
             body = {
                 "requestFilter": chunk,
                 "resultColumns": ["AGENT_VERSION", "APPLICATION_NAMES", "ENABLED"],
@@ -661,15 +659,14 @@ class AppDService:
                 "timeRangeEnd": currentTime,
             }
 
-            response = await self.controller.getMachineAgentsIds(json.dumps(body))
-            result = await self.getResultFromResponse(response, debugString)
+            agentFutures.append(self.controller.getMachineAgentsIds(json.dumps(body)))
 
-            if result.error is None:
-                allAgents.extend(result.data["data"])
-            else:
-                logging.warning(f"{self.host} - Failed to get Machine Agents: {result.error}")
-
-        return Result(allAgents, None)
+        response = await AsyncioUtils.gatherWithConcurrency(*agentFutures)
+        results = [(await self.getResultFromResponse(response, debugString)).data["data"] for response in response]
+        out = []
+        for result in results:
+            out.extend(result)
+        return Result(out, None)
 
     async def getDBAgents(self) -> Result:
         debugString = f"Gathering DB Agents"
@@ -703,7 +700,7 @@ class AppDService:
         # get current timestamp in milliseconds
         currentTime = int(round(time.time() * 1000))
         # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
 
         body = {
             "requestFilter": {"applicationId": applicationId, "fetchSyntheticData": False},
@@ -814,7 +811,7 @@ class AppDService:
         # get current timestamp in milliseconds
         currentTime = int(round(time.time() * 1000))
         # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 1000)
+        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
 
         body = {
             "scheduleIds": scheduleIds,
@@ -829,6 +826,33 @@ class AppDService:
         debugString = f"Gathering Synthetic Private Agent Utilization for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getSyntheticPrivateAgentUtilization(applicationId, json.dumps(jobsJson))
+        return await self.getResultFromResponse(response, debugString)
+
+    async def getSyntheticSessionData(self, applicationId: int, jobsJson: List[dict]) -> Result:
+        debugString = f"Gathering Synthetic Session Data for Application {applicationId}"
+        logging.debug(f"{self.host} - {debugString}")
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        lastMonth = currentTime - (1 * 60 * 60 * 24 * 30 * 1000)
+        monthStart = datetime.timestamp(datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
+        weekStart = datetime.timestamp(
+            datetime.today().replace(day=(date.today() - timedelta(date.today().weekday())).day, hour=0, minute=0, second=0, microsecond=0)
+        )
+        body = {
+            "appId": applicationId,
+            "scheduleIds": jobsJson,
+            "fields": ["AVG_DURATION"],
+            "timestamps": {
+                "startTime": lastMonth,
+                "endTime": currentTime,
+                "currentTime": currentTime,
+                "monthStartTime": monthStart,
+                "weekStartTime": weekStart,
+                "utcOffset": -14400000,
+            },
+        }
+        response = await self.controller.getSyntheticSessionData(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def close(self):

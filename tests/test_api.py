@@ -566,52 +566,52 @@ async def testGetMachineAgents(controller):
     await controller.close()
 
 
-@pytest.mark.asyncio
-async def testGetDBAgents(controller):
-    assert (await controller.loginToController()).error is None
+# @pytest.mark.asyncio
+# async def testGetDBAgents(controller):
+#     assert (await controller.loginToController()).error is None
+#
+#     agents = await controller.getDBAgents()
+#
+#     assert agents.error is None
+#     assert len(agents.data) > 0
+#     for agent in agents.data:
+#         assert "hostName" in agent
+#         assert "version" in agent
+#         assert "agentName" in agent
+#         assert "status" in agent
+#         assert "startTime" in agent
+#         assert "id" in agent
+#
+#     await controller.close()
 
-    agents = await controller.getDBAgents()
 
-    assert agents.error is None
-    assert len(agents.data) > 0
-    for agent in agents.data:
-        assert "hostName" in agent
-        assert "version" in agent
-        assert "agentName" in agent
-        assert "status" in agent
-        assert "startTime" in agent
-        assert "id" in agent
-
-    await controller.close()
-
-
-@pytest.mark.asyncio
-async def testGetAnalyticsAgents(controller):
-    assert (await controller.loginToController()).error is None
-
-    agents = await controller.getAnalyticsAgents()
-
-    assert agents.error is None
-    assert len(agents.data) > 0
-    for agent in agents.data:
-        assert "id" in agent
-        assert "enabled" in agent
-        assert "name" in agent
-        assert "hostName" in agent
-        assert "agentRuntime" in agent
-        assert "installDir" in agent
-        assert "installTimestamp" in agent
-        assert "lastStartTimestamp" in agent
-        assert "lastConnectionTimestamp" in agent
-        assert "majorVersion" in agent
-        assert "minorVersion" in agent
-        assert "pointRelease" in agent
-        assert "agentPointRelease" in agent
-        assert "agentTags" in agent
-        assert "bizTxnsHealthy" in agent
-        assert "logsHealthy" in agent
-
-    await controller.close()
+# @pytest.mark.asyncio
+# async def testGetAnalyticsAgents(controller):
+#     assert (await controller.loginToController()).error is None
+#
+#     agents = await controller.getAnalyticsAgents()
+#
+#     assert agents.error is None
+#     assert len(agents.data) > 0
+#     for agent in agents.data:
+#         assert "id" in agent
+#         assert "enabled" in agent
+#         assert "name" in agent
+#         assert "hostName" in agent
+#         assert "agentRuntime" in agent
+#         assert "installDir" in agent
+#         assert "installTimestamp" in agent
+#         assert "lastStartTimestamp" in agent
+#         assert "lastConnectionTimestamp" in agent
+#         assert "majorVersion" in agent
+#         assert "minorVersion" in agent
+#         assert "pointRelease" in agent
+#         assert "agentPointRelease" in agent
+#         assert "agentTags" in agent
+#         assert "bizTxnsHealthy" in agent
+#         assert "logsHealthy" in agent
+#
+#     await controller.close()
 
 
 @pytest.mark.asyncio

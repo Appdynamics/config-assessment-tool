@@ -3,7 +3,7 @@ from datetime import datetime
 
 from openpyxl import Workbook
 from output.ReportBase import ReportBase
-from util.xcel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeRow, writeUncoloredRow
+from util.excel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeRow, writeUncoloredRow
 
 
 class LicenseReport(ReportBase):
@@ -20,7 +20,7 @@ class LicenseReport(ReportBase):
         # Write Data
         rowIdx = 2
         for host, hostInfo in controllerData.items():
-            for licenseType, licenseData in hostInfo["licenseUsage"].items():
+            for licenseType, licenseData in hostInfo["accountLicenseUsage"].items():
                 color = None
                 if licenseData is not None and licenseData["isLicensed"] and float(licenseData["numOfProvisionedLicense"]) != 0:
                     if float(licenseData["peakUsage"]) / float(licenseData["numOfProvisionedLicense"]) > 0.75:

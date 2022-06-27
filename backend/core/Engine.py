@@ -8,6 +8,8 @@ import traceback
 from collections import OrderedDict
 from pathlib import Path
 
+import requests
+
 from api.appd.AppDService import AppDService
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
@@ -55,7 +57,7 @@ class Engine:
 
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
         self.codebaseVersion = open(f"VERSION").read()
-        logging.info(f"Software Version: {self.codebaseVersion}")
+        logging.info(f"Running Software Version: {self.codebaseVersion}")
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
@@ -70,6 +72,21 @@ class Engine:
             os.makedirs(f"output/{self.jobFileName}")
         self.job = json.loads(open(f"input/jobs/{self.jobFileName}.json").read())
         self.thresholds = json.loads(open(f"input/thresholds/{self.thresholdsFileName}.json").read())
+
+        try:
+            response = requests.request(
+                "GET", "https://api.github.com/repos/appdynamics/config-assessment-tool/tags", verify=all(job["verifySsl"] for job in self.job)
+            )
+            latestTag = None
+            if not response.ok:
+                logging.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
+            else:
+                latestTag = json.loads(response.text)[0]["name"]
+                if latestTag != self.codebaseVersion:
+                    logging.warning(f"You are using an outdated version of the software. Current {self.codebaseVersion} Latest {latestTag}")
+                    logging.warning("You can get the latest version from https://github.com/Appdynamics/config-assessment-tool/releases")
+        except requests.exceptions.RequestException:
+            logging.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
 
         # Default concurrent connections to 10 for On-Premise controllers
         if any(job for job in self.job if "saas.appdynamics.com" not in job["host"]):
