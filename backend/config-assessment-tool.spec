@@ -25,7 +25,7 @@ bundle_name = f"{bundle_name}{platform}-{version}"
 a = Analysis(
     ["../backend/backend.py"],
     pathex=["./backend", "."],
-    binaries=[],
+    binaries=[('/usr/local/lib/libcrypt.so.2','.')],
     datas=[
         ("../backend/resources/img/splash.txt", "backend/resources/img"),
         ("../VERSION", "."),
