@@ -1,0 +1,40 @@
+# This Dockerfile is used exclusively for github actions workflow to
+# build a linux bundle that runs on most linux distros
+
+# Use pypi blessed manuliunux project with glibc 2.17
+FROM quay.io/pypa/manylinux2014_x86_64
+
+# get toolchain necessary to build python from source
+RUN yum update -y
+RUN yum groupinstall -y 'Development Tools'
+RUN yum install -y wget zlib-devel bzip2 bzip2-devel \
+    readline-devel sqlite sqlite-devel openssl-devel \
+    tk-devel libffi-devel xz-devel openssl openssl-devel
+WORKDIR /root
+
+# build python from source with required flag as as pyinstaller needs it
+RUN wget https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tar.xz
+RUN tar -xf Python-3.9.13.tar.xz
+WORKDIR /root/Python-3.9.13
+RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared
+RUN make
+RUN make altinstall
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+# pull config tool and create bundle
+WORKDIR /root
+RUN git clone https://github.com/alexafshar/config-assessment-tool.git
+WORKDIR /root/config-assessment-tool
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.9 -m pip install --upgrade pip
+RUN pipx install pipenv
+RUN pipx install pyinstaller
+
+# install into system with pip install to avoid pipenv hanging issues in docker
+RUN pipenv lock --dev -r > requirements.txt
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pip install -r requirements.txt
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+
+# tar up the bundle as part of the image for subsequent copy to hosted runner env.
+WORKDIR dist
+RUN ls -altrh
+RUN tar -zcvf /root/config-assessment-tool/dist/$(echo appdynamics/config*).tgz $(echo appdynamics/config*)
