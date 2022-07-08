@@ -38,3 +38,5 @@ RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pyinstaller --distpa
 WORKDIR dist
 RUN ls -altrh
 RUN tar -zcvf /root/config-assessment-tool/dist/$(echo appdynamics/config*).tgz $(echo appdynamics/config*)
+RUN ls -altrh
+RUN ls -altrh /root/config-assessment-tool/dist/appdynamics

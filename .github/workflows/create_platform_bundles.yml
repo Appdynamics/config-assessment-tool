@@ -32,6 +32,13 @@ jobs:
        with:
          files: dist/appdynamics/*.tgz
          token: ${{ secrets.WORKFLOW_TOKEN }}
+     - name: Keep workflow artifact within the current workflow namespace
+       uses: actions/upload-artifact@v3
+       with:
+        name: config-assessment-tool-linux-*.tgz
+        path: ./dist/appdynamics/config-assessment-tool-linux-*.tgz
+
+
 
   build-win:
    name: build windows binary
