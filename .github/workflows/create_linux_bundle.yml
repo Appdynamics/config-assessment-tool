@@ -16,9 +16,8 @@ jobs:
          cd backend
          # build image which builds the bundle for glibc 2.15+
          docker build --file Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
-         # run image and copy the bundle to host runner
-         docker run --rm -it -v $(pwd):/app config-assessment-tool-linux
-         docker cp $(docker create --name temp_image config-linux-bundle:v0):/root/config-assessment-tool/dist/appdynamics/config-assessment-tool-linux-v1.4.20.tgz ./ && docker rm temp_image
+         # copy bundle out of built image
+         docker cp $(docker create --name temp_image config-linux-bundle:latest):/root/config-assessment-tool/dist/appdynamics/config-assessment-tool-linux-v1.4.20.tgz ./ && docker rm temp_image
      - name: Release the bundle for linux
        uses: softprops/action-gh-release@v1
        if: startsWith(github.ref, 'refs/tags/')
