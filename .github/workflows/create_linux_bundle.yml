@@ -18,15 +18,14 @@ jobs:
          docker build --file Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
          # copy bundle out of built image
          tarball_path=$(docker run --rm config-assessment-tool-linux:latest find /root/config-assessment-tool/dist/appdynamics/ -name *.tgz)
-         cd
-         docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ./ && docker rm temp_image
+         docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ./dist && docker rm temp_image
          ls -altr
          find . -name *.tgz
      - name: Release the bundle for linux
        uses: softprops/action-gh-release@v1
        if: startsWith(github.ref, 'refs/tags/')
        with:
-         files: config-assessment-tool-linux-v1.4.20.tgz
+         files: dist/*.tgz
          token: ${{ secrets.WORKFLOW_TOKEN }}
      - name: Keep workflow artifact within the current workflow namespace
        uses: actions/upload-artifact@v3
