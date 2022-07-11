@@ -22,7 +22,7 @@ jobs:
          docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ../dist && docker rm temp_image
          ls -altr
          echo "finished finding tgz"
-         find ./dist
+         find ../dist
          echo "current directory"
          pwd
      - name: Release the bundle for linux
