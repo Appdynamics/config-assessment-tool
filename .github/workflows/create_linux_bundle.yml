@@ -17,7 +17,7 @@ jobs:
          # build image which builds the bundle for glibc 2.15+
          docker build --file Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
          # copy bundle out of built image
-         tarball_path=$(docker run --rm config-assessment-tool-linux:latest  ls /root/config-assessment-tool/dist/appdynamics/config-assessment-tool-linux-*.tar.gz)
+         tarball_path=$(docker run --rm config-assessment-tool-linux:latest  ls /root/config-assessment-tool/dist/appdynamics/config-assessment-tool-linux-*.tgz)
          docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ./ && docker rm temp_image
          cd
          ls -altr
