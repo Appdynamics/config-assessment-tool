@@ -18,9 +18,12 @@ jobs:
          docker build --file Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
          # copy bundle out of built image
          tarball_path=$(docker run --rm config-assessment-tool-linux:latest find /root/config-assessment-tool/dist/appdynamics/ -name *.tgz)
+         echo "tarball_path: $tarball_path"
          docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ./dist && docker rm temp_image
          ls -altr
          find . -name *.tgz
+         echo "finished finding tgz"
+         find . -name $tarball_path
      - name: Release the bundle for linux
        uses: softprops/action-gh-release@v1
        if: startsWith(github.ref, 'refs/tags/')
