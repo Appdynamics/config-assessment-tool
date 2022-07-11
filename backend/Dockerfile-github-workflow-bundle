@@ -40,5 +40,3 @@ RUN ls -altrh
 RUN tar -zcvf /root/config-assessment-tool/dist/$(echo appdynamics/config*).tgz $(echo appdynamics/config*)
 RUN ls -altrh
 RUN ls -altrh /root/config-assessment-tool/dist/appdynamics
-RUN docker ps
-RUN docker images
