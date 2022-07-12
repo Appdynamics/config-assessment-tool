@@ -62,7 +62,7 @@ Use this method if you are not able to use Docker or Python in your target deplo
 
 This method of running the tool currently does not support using the UI. You may only use command line instructions as outlined above. You can change the settings by editing the included configuration files directly.  You may ignore any other files/libraries in the bundle. The configuration files and their directory locations for you to edit are listed below.
 
-In some installations *certificate verification failed* errors may occur when the tool attempts to connect to the controller URL. This might be due to certificate issues. Set the value of *sslVerify* option to false in the input/jobs/*.json file as the first attempt to get passed this error. 
+In some installations, specially on-prem controllers, *certificate verification failed* errors may occur when the tool attempts to connect to the controller URL. This might be due to certificate issues. Set the value of *sslVerify* option to false in the input/jobs/*.json file as the first attempt to resolve this error.
 
 ```
 
