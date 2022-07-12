@@ -13,6 +13,9 @@ jobs:
        uses: actions/checkout@v2
      - name: Install dependencies
        run: |
+         pwd
+         ls -altr
+         echo "switching to backend directory"
          cd backend
          # build image which builds the bundle for glibc 2.15+
          docker build --file Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
@@ -20,6 +23,8 @@ jobs:
          tarball_path=$(docker run --rm config-assessment-tool-linux:latest find /root/config-assessment-tool/dist/appdynamics/ -name *.tgz)
          echo "tarball_path: $tarball_path"
          docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ../dist && docker rm temp_image
+         echo "printing current directory"
+         pwd
          ls -altr
          echo "finished finding tgz"
          find ../dist
