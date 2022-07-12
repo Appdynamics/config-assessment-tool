@@ -11,8 +11,6 @@ jobs:
    steps:
      - name: Checkout repository
        uses: actions/checkout@v2
-     - name: Setup upterm session
-       uses: actions/setup-upterm@v1
      - name: Install dependencies
        run: |
          pwd
