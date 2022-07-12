@@ -8,12 +8,14 @@ block_cipher = None
 bundle_name = "config-assessment-tool"
 exec_file_name = bundle_name
 platform = ""
+platform_binaries=[]
 
 if sys.platform == "win32":
     platform = "-windows"
     exec_file_name = f"{bundle_name}.exe"
 elif sys.platform == "linux":
     platform = "-linux"
+    platform_binaries=[('/usr/local/lib/libcrypt.so.2','.')]
 elif sys.platform == "darwin":
     platform = "-macosx"
 else:
@@ -25,7 +27,7 @@ bundle_name = f"{bundle_name}{platform}-{version}"
 a = Analysis(
     ["../backend/backend.py"],
     pathex=["./backend", "."],
-    binaries=[],
+    binaries=platform_binaries,
     datas=[
         ("../backend/resources/img/splash.txt", "backend/resources/img"),
         ("../VERSION", "."),
