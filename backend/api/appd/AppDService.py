@@ -589,7 +589,7 @@ class AppDService:
 
         debugString = f"Gathering App Server Agents Agents List"
         agentFutures = []
-        batch_size = 1000
+        batch_size = 50
         for i in range(0, len(agentIds), batch_size):
             chunk = agentIds[i : i + batch_size]
             body = {
@@ -645,7 +645,7 @@ class AppDService:
 
         debugString = f"Gathering Machine Agents Agents List"
         agentFutures = []
-        batch_size = 1000
+        batch_size = 50
         for i in range(0, len(agentIds), batch_size):
             chunk = agentIds[i : i + batch_size]
             body = {
