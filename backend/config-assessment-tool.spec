@@ -8,7 +8,7 @@ block_cipher = None
 bundle_name = "config-assessment-tool"
 exec_file_name = bundle_name
 platform = ""
-platform_binaries=[()]
+platform_binaries=[]
 
 if sys.platform == "win32":
     platform = "-windows"
