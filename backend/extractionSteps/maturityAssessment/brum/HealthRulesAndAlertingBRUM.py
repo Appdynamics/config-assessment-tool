@@ -88,8 +88,11 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
                 actionsInEnabledPolicies = set()
                 for policy in application["policies"]:
                     if policy["enabled"]:
-                        for action in policy["actions"]:
-                            actionsInEnabledPolicies.add(action["actionName"])
+                        if "actions" in policy:
+                            for action in policy["actions"]:
+                                actionsInEnabledPolicies.add(action["actionName"])
+                        else:
+                            logging.warning(f"Policy {policy['name']} is enabled but has no actions bound to it.")
                 analysisDataEvaluatedMetrics["numberOfActionsBoundToEnabledPolicies"] = len(actionsInEnabledPolicies)
 
                 # numberOfCustomHealthRules
