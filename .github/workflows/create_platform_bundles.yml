@@ -74,6 +74,6 @@ jobs:
     - name: Keep workflow artifact within the current workflow namespace
       uses: actions/upload-artifact@v3
       with:
-       name: config-assessment-tool-windows.zip
-       path: ./config-assessment-tool-windows-*.zip
+       name: ${{ steps.install_it.outputs.bundle_name }}
+       path: dist/${{ steps.install_it.outputs.bundle_name }}
        if-no-files-found: ignore
