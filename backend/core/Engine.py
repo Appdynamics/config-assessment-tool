@@ -46,12 +46,14 @@ class Engine:
     def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str):
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-            # running as a bundle
+            # running as executable bundle
             path = sys._MEIPASS
+            logging.info(f"Running as executable bundle, using {path} as root directory")
         else:
-            # running live
+            # running from source/docker
             # cd to config-assessment-tool root directory
             path = os.path.realpath(f"{__file__}/../../..")
+            logging.info(f"Running from source/docker, using {path} as root directory")
 
         os.chdir(path)
 
