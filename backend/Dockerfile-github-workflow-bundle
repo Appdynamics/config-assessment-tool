@@ -23,7 +23,7 @@ RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # pull config tool and create bundle
 WORKDIR /root
-RUN git clone https://github.com/alexafshar/config-assessment-tool.git
+RUN git clone https://github.com/Appdynamics/config-assessment-tool.git
 WORKDIR /root/config-assessment-tool
 RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.9 -m pip install --upgrade pip
 RUN pipx install pipenv
