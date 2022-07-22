@@ -77,7 +77,8 @@ class Engine:
 
         try:
             response = requests.request(
-                "GET", "https://api.github.com/repos/appdynamics/config-assessment-tool/tags", verify=all(job["verifySsl"] for job in self.job)
+                "GET", "https://api.github.com/repos/appdynamics/config-assessment-tool/tags", verify=all(job["verifySsl"] for job in self.job),
+                timeout=5
             )
             latestTag = None
             if not response.ok:
