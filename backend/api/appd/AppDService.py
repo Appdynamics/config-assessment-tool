@@ -14,6 +14,7 @@ from api.Result import Result
 from uplink import AiohttpClient
 from uplink.auth import BasicAuth, MultiAuth, ProxyAuth
 from util.asyncio_utils import AsyncioUtils
+from util.stdlib_utils import get_recursively
 
 
 class AppDService:
@@ -679,6 +680,75 @@ class AppDService:
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getAnalyticsAgents()
         return await self.getResultFromResponse(response, debugString)
+
+    async def getServers(self) -> Result:
+        debugString = f"Gathering Server Keys"
+        logging.debug(f"{self.host} - {debugString}")
+
+        # get current timestamp in milliseconds
+        currentTime = int(round(time.time() * 1000))
+        # get the last 24 hours in milliseconds
+        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
+        body = {
+            "filter": {
+                "appIds": [],
+                "nodeIds": [],
+                "tierIds": [],
+                "types": ["PHYSICAL", "CONTAINER_AWARE"],
+                "timeRangeStart": last24Hours,
+                "timeRangeEnd": currentTime,
+            },
+            "sorter": {"field": "HEALTH", "direction": "ASC"},
+        }
+
+        response = await self.controller.getServersKeys(json.dumps(body))
+        serverKeys = await self.getResultFromResponse(response, debugString)
+
+        machineIds = [serverKey["machineId"] for serverKey in serverKeys.data["machineKeys"]]
+
+        serverFutures = [self.controller.getServer(serverId) for serverId in machineIds]
+        serversResponses = await AsyncioUtils.gatherWithConcurrency(*serverFutures)
+
+        serverAvailabilityFutures = []
+        for machineId in machineIds:
+            body = {
+                "timeRange": "last_1_day.BEFORE_NOW.-1.-1.1440",
+                "metricNames": ["Hardware Resources|Machine|Availability"],
+                "rollups": [1],
+                "ids": [machineId],
+                "baselineId": None,
+            }
+            serverAvailabilityFutures.append(self.controller.getServerAvailability(json.dumps(body)))
+        serversAvailabilityResponses = await AsyncioUtils.gatherWithConcurrency(*serverAvailabilityFutures)
+
+        debugString = f"Gathering Machine Agents Agents List"
+        serversResults = [(await self.getResultFromResponse(serversResponse, debugString)) for serversResponse in serversResponses]
+        serversAvailabilityResults = [
+            (await self.getResultFromResponse(serversAvailabilityResponse, debugString))
+            for serversAvailabilityResponse in serversAvailabilityResponses
+        ]
+
+        machineIdMap = {}
+        for serverResult, serverAvailabilityResult in zip(serversResults, serversAvailabilityResults):
+            machine = serverResult.data
+            value = get_recursively(serverAvailabilityResult.data["data"], "value")
+            if value:
+                availability = next(iter(value))
+                machine["availability"] = availability
+            else:
+                machine["availability"] = 0
+
+            physicalCores = 0
+            virtualCores = 0
+            for cpu in machine.get("cpus", []):
+                physicalCores += cpu.get("coreCount", 0)
+                virtualCores += cpu.get("logicalCount", 0)
+            machine["physicalCores"] = physicalCores
+            machine["virtualCores"] = virtualCores
+
+            machineIdMap[machine["hostId"]] = machine
+
+        return Result(machineIdMap, None)
 
     async def getEumApplications(self) -> Result:
         debugString = f"Gathering EUM Applications"

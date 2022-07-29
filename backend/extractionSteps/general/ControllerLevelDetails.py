@@ -36,6 +36,8 @@ class ControllerLevelDetails(JobStepBase):
                 for mrumApplication in mrumApplicationGroup["children"]:
                     mrumApplication["name"] = mrumApplication["internalName"]
                     hostInfo["mrum"][f"{mrumApplicationGroup['appKey']}-{mrumApplication['name']}"] = mrumApplication
+            logging.info(f'{hostInfo["controller"].host} - Extracting Servers')
+            hostInfo["servers"] = (await controller.getServers()).data
 
             logging.info(f'{hostInfo["controller"].host} - Extracting Controller Configurations')
             hostInfo["configurations"] = (await controller.getConfigurations()).data

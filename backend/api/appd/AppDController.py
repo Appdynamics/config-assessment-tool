@@ -254,6 +254,21 @@ class AppdController(Consumer):
     def getAnalyticsAgents(self):
         """Retrieves analytics agent summary list"""
 
+    @params({"output": "json"})
+    @post("/controller/sim/v2/user/machines/keys")
+    def getServersKeys(self, body: Body):
+        """Retrieves machine agents in bulk"""
+
+    @params({"output": "json"})
+    @get("/controller/sim/v2/user/machines/{machineId}")
+    def getServer(self, machineId: Path):
+        """Retrieves server agent info"""
+
+    @params({"output": "json"})
+    @post("/controller/sim/v2/user/metrics/query/machines")
+    def getServerAvailability(self, body: Body):
+        """Retrieves server availability info"""
+
     @params({"output": "json", "time-range": "last_1_day.BEFORE_NOW.-1.-1.1440"})
     @get("/controller/restui/eumApplications/getAllEumApplicationsData")
     def getEumApplications(self):

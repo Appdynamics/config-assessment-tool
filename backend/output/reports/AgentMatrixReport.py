@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import Counter
 from datetime import datetime
@@ -90,15 +91,33 @@ class AgentMatrixReport(ReportBase):
         for agentType in ["appServerAgents", "machineAgents", "dbAgents", "analyticsAgents"]:
             sheet = workbook.create_sheet(f"Individual - {agentType}")
 
-            cols = set()
+            cols = []
             for host, hostInfo in controllerData.items():
                 for agent in hostInfo[agentType]:
-                    cols.update(agent.keys())
+                    for key in agent.keys():
+                        if key not in cols:
+                            cols.append(key)
 
-            writeUncoloredRow(
-                sheet,
-                1,
-                ["controller", *cols],
+            machineAgentCols = cols.copy()
+            machineAgentCols.extend(
+                [
+                    "simEnabled",
+                    "historical",
+                    "reportingData",
+                    "Physical Cores",
+                    "vCPUs",
+                    "OS|Architecture",  # in properties section
+                    "Bios|Version",
+                    "AppDynamics|Agent|Install Directory",
+                    "OS|Kernel|Release",
+                    "AppDynamics|Agent|Build Number",
+                    "AppDynamics|Machine Type",
+                    "OS|Kernel|Name",
+                    "AppDynamics|Agent|Machine Info",
+                    "Total|CPU|Logical Processor Count",
+                    "AppDynamics|Agent|JVM Info",
+                    "tags",
+                ]
             )
 
             rowIdx = 2
@@ -116,6 +135,41 @@ class AgentMatrixReport(ReportBase):
                                 data.append(str(agent[field]))
                         else:
                             data.append(None)
+
+                    if agentType == "machineAgents":
+                        if agent["hostName"] in hostInfo["servers"]:
+                            server = hostInfo["servers"][agent["hostName"]]
+
+                            # use id shown in UI
+                            data[cols.index("machineId")] = server["id"]
+
+                            data.append(server["simEnabled"] if "simEnabled" in server else "")
+                            data.append(server["historical"] if "historical" in server else "")
+                            data.append(server["availability"] if "availability" in server else "")
+                            data.append(server["physicalCores"] if "physicalCores" in server else "")
+                            data.append(server["virtualCores"] if "virtualCores" in server else "")
+
+                            if "properties" in server:
+                                for additionalMachineAgentField in machineAgentCols[machineAgentCols.index("OS|Architecture") :]:
+                                    data.append(
+                                        server["properties"][additionalMachineAgentField]
+                                        if additionalMachineAgentField in server["properties"]
+                                        else ""
+                                    )
+
+                            data.append(json.dumps(server["tags"]) if "tags" in server else "")
+                        else:
+                            # simEnabled
+                            data.append(False)
+                            # historical
+                            data.append(None)
+                            # reportingData
+                            data.append(None)
+                            # Physical Cores
+                            data.append(None)
+                            # vCPUs
+                            data.append(None)
+
                     writeUncoloredRow(
                         sheet,
                         rowIdx,
@@ -125,6 +179,19 @@ class AgentMatrixReport(ReportBase):
                         ],
                     )
                     rowIdx += 1
+
+            if agentType == "machineAgents":
+                writeUncoloredRow(
+                    sheet,
+                    1,
+                    ["controller", *machineAgentCols],
+                )
+            else:
+                writeUncoloredRow(
+                    sheet,
+                    1,
+                    ["controller", *cols],
+                )
 
             addFilterAndFreeze(sheet, "B2")
             resizeColumnWidth(sheet)
