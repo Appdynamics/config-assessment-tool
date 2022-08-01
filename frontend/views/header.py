@@ -80,11 +80,7 @@ def header() -> tuple[bool, bool]:
                             "pwd": pwd,
                             "verifySsl": True,
                             "useProxy": True,
-                            "applicationFilter": {
-                                "apm": ".*",
-                                "mrum": ".*",
-                                "brum": ".*"
-                            }
+                            "applicationFilter": {"apm": ".*", "mrum": ".*", "brum": ".*"},
                         }
                     ],
                     fp=f,
