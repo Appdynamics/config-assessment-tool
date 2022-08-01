@@ -7,6 +7,11 @@
 		"username": "foo",
 		"pwd": "hunter1",
 		"verifySsl": true,
-		"useProxy": true
+		"useProxy": true,
+		"applicationFilter": {
+			"apm": ".*",
+			"mrum": ".*",
+			"brum": ".*"
+		}
 	}
 ]

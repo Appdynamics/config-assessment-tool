@@ -30,12 +30,14 @@ class AppDService:
         pwd: str,
         verifySsl: bool = True,
         useProxy: bool = False,
+        applicationFilter: dict = None,
     ):
         logging.debug(f"{host} - Initializing controller service")
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
         auth = BasicAuth(f"{username}@{account}", pwd)
         self.host = host
         self.username = username
+        self.applicationFilter = applicationFilter
 
         cookie_jar = aiohttp.CookieJar()
         try:
@@ -112,6 +114,12 @@ class AppDService:
     async def getApmApplications(self) -> Result:
         debugString = f"Gathering applications"
         logging.debug(f"{self.host} - {debugString}")
+
+        if self.applicationFilter is not None:
+            if self.applicationFilter.get("apm") is None:
+                logging.warning(f"Filtered out all APM applications from analysis by match rule {self.applicationFilter['apm']}")
+                return Result([], None)
+
         response = await self.controller.getApmApplications()
         result = await self.getResultFromResponse(response, debugString)
         # apparently it's possible to have a null application name, the controller converts the null into "null"
@@ -119,6 +127,14 @@ class AppDService:
             for application in result.data:
                 if application["name"] is None:
                     application["name"] = "null"
+
+        if self.applicationFilter is not None:
+            pattern = re.compile(self.applicationFilter["apm"])
+            for application in result.data:
+                if not pattern.search(application["name"]):
+                    logging.warning(f"Filtered out APM application {application['name']} from analysis by match rule {self.applicationFilter['apm']}")
+            result.data = [application for application in result.data if pattern.search(application["name"])]
+
         return result
 
     async def getNode(self, applicationID: int, nodeID: int) -> Result:
@@ -751,10 +767,27 @@ class AppDService:
         return Result(machineIdMap, None)
 
     async def getEumApplications(self) -> Result:
-        debugString = f"Gathering EUM Applications"
+        debugString = f"Gathering BRUM Applications"
         logging.debug(f"{self.host} - {debugString}")
+
+        if self.applicationFilter is not None:
+            if self.applicationFilter.get("brum") is None:
+                logging.warning(f"Filtered out all BRUM applications from analysis by match rule {self.applicationFilter['brum']}")
+                return Result([], None)
+
         response = await self.controller.getEumApplications()
-        return await self.getResultFromResponse(response, debugString)
+        result = await self.getResultFromResponse(response, debugString)
+
+        if self.applicationFilter is not None:
+            pattern = re.compile(self.applicationFilter["brum"])
+            for application in result.data:
+                if not pattern.search(application["name"]):
+                    logging.warning(
+                        f"Filtered out BRUM application {application['name']} from analysis by match rule {self.applicationFilter['brum']}"
+                    )
+            result.data = [application for application in result.data if pattern.search(application["name"])]
+
+        return result
 
     async def getEumPageListViewData(self, applicationId: int) -> Result:
         debugString = f"Gathering EUM Page List View Data for Application {applicationId}"
@@ -841,8 +874,33 @@ class AppDService:
     async def getMRUMApplications(self) -> Result:
         debugString = f"Gathering MRUM Applications"
         logging.debug(f"{self.host} - {debugString}")
+
+        if self.applicationFilter is not None:
+            if self.applicationFilter.get("mrum") is None:
+                logging.warning(f"Filtered out all MRUM applications from analysis by match rule {self.applicationFilter['mrum']}")
+                return Result([], None)
+
         response = await self.controller.getMRUMApplications()
-        return await self.getResultFromResponse(response, debugString)
+        result = await self.getResultFromResponse(response, debugString)
+
+        tempData = result.data.copy()
+        result.data.clear()
+        for mrumApplicationGroup in tempData:
+            for mrumApplication in mrumApplicationGroup["children"]:
+                mrumApplication["name"] = mrumApplication["internalName"]
+                mrumApplication["taggedName"] = f"{mrumApplicationGroup['appKey']}-{mrumApplication['name']}"
+                result.data.append(mrumApplication)
+
+        if self.applicationFilter is not None:
+            pattern = re.compile(self.applicationFilter["mrum"])
+            for application in result.data:
+                if not pattern.search(application["name"]):
+                    logging.warning(
+                        f"Filtered out MRUM application {application['name']} from analysis by match rule {self.applicationFilter['mrum']}"
+                    )
+            result.data = [application for application in result.data if pattern.search(application["name"])]
+
+        return result
 
     async def getMRUMNetworkRequestConfig(self, applicationId: int) -> Result:
         debugString = f"Gathering MRUM Network Request Config for Application {applicationId}"

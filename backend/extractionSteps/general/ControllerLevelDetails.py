@@ -32,10 +32,8 @@ class ControllerLevelDetails(JobStepBase):
             for brumApplication in (await controller.getEumApplications()).data:
                 hostInfo["brum"][brumApplication["name"]] = brumApplication
             logging.info(f'{hostInfo["controller"].host} - MRUM Applications')
-            for mrumApplicationGroup in (await controller.getMRUMApplications()).data:
-                for mrumApplication in mrumApplicationGroup["children"]:
-                    mrumApplication["name"] = mrumApplication["internalName"]
-                    hostInfo["mrum"][f"{mrumApplicationGroup['appKey']}-{mrumApplication['name']}"] = mrumApplication
+            for mrumApplication in (await controller.getMRUMApplications()).data:
+                hostInfo["mrum"][mrumApplication["taggedName"]] = mrumApplication
             logging.info(f'{hostInfo["controller"].host} - Extracting Servers')
             hostInfo["servers"] = (await controller.getServers()).data
 

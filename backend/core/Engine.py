@@ -113,6 +113,7 @@ class Engine:
                 pwd=password if password else controller["pwd"],
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
+                applicationFilter=controller.get("applicationFilter", None),
             )
             for controller in self.job
         ]

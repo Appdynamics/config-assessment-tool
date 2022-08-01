@@ -199,10 +199,10 @@ def createCxPpt(folder: str):
         [
             folder,
             str(totalApplications),
-            f"{format(scores.count('bronze') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('bronze')})",
-            f"{format(scores.count('silver') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('silver')})",
-            f"{format(scores.count('gold') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('gold')})",
-            f"{format(scores.count('platinum') / (wb['Analysis'].max_row - 1) * 100, '.0f')}% ({scores.count('platinum')})",
+            f"{format((scores.count('bronze') / (wb['Analysis'].max_row - 1) if wb['Analysis'].max_row - 1 > 0 else 0) * 100, '.0f')}% ({scores.count('bronze')})",
+            f"{format((scores.count('silver') / (wb['Analysis'].max_row - 1) if wb['Analysis'].max_row - 1 > 0 else 0) * 100, '.0f')}% ({scores.count('silver')})",
+            f"{format((scores.count('gold') / (wb['Analysis'].max_row - 1) if wb['Analysis'].max_row - 1 > 0 else 0) * 100, '.0f')}% ({scores.count('gold')})",
+            f"{format((scores.count('platinum') / (wb['Analysis'].max_row - 1) if wb['Analysis'].max_row - 1 > 0 else 0) * 100, '.0f')}% ({scores.count('platinum')})",
         ],
     ]
     addTable(slide, data)
@@ -230,10 +230,25 @@ def createCxPpt(folder: str):
         ],
         [
             folder,
-            str(format(len([x for x in percentAgentsLessThan1YearOld if x != 100]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in percentAgentsReportingData if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in percentMachineAgentsLessThan1YearOld if x != 100]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in percentMachineAgentsReportingData if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(
+                format((len([x for x in percentAgentsLessThan1YearOld if x != 100]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")
+            )
+            + "%",
+            str(format((len([x for x in percentAgentsReportingData if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
+            str(
+                format(
+                    (len([x for x in percentMachineAgentsLessThan1YearOld if x != 100]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in percentMachineAgentsReportingData if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
         ],
     ]
     addTable(slide, data)
@@ -267,10 +282,25 @@ def createCxPpt(folder: str):
         ],
         [
             folder,
-            str(format(len([x for x in developerModeNotEnabledForAnyBT if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in findEntryPointsNotEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in aggressiveSnapshottingNotEnabled if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in developerModeNotEnabledForApplication if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(
+                format((len([x for x in developerModeNotEnabledForAnyBT if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")
+            )
+            + "%",
+            str(format((len([x for x in findEntryPointsNotEnabled if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
+            str(
+                format(
+                    (len([x for x in aggressiveSnapshottingNotEnabled if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in developerModeNotEnabledForApplication if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
         ],
     ]
     addTable(slide, data)
@@ -295,8 +325,14 @@ def createCxPpt(folder: str):
         ],
         [
             folder,
-            str(format(len([x for x in successPercentageOfWorstTransaction if x == 100]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberOfCustomRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(
+                format(
+                    (len([x for x in successPercentageOfWorstTransaction if x == 100]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
+            str(format((len([x for x in numberOfCustomRules if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
         ],
     ]
     addTable(slide, data)
@@ -326,10 +362,28 @@ def createCxPpt(folder: str):
         ],
         [
             folder,
-            str(format(len([x for x in numberOfHealthRuleViolationsLast24Hours if x >= 50]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberOfDefaultHealthRulesModified if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberOfActionsBoundToEnabledPolicies if x == 0]) / totalApplications * 100, ".0f")) + "%",
-            str(format(len([x for x in numberOfCustomHealthRules if x == 0]) / totalApplications * 100, ".0f")) + "%",
+            str(
+                format(
+                    (len([x for x in numberOfHealthRuleViolationsLast24Hours if x >= 50]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in numberOfDefaultHealthRulesModified if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in numberOfActionsBoundToEnabledPolicies if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
+            str(format((len([x for x in numberOfCustomHealthRules if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
         ],
     ]
     addTable(slide, data)
