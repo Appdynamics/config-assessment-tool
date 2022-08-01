@@ -104,10 +104,19 @@ class AppAgentsAPM(JobStepBase):
                         nodeMetricsUploadedExceedingLimitCount = 0
                     nodeIdToMetricLimitMap[tierName + "|" + nodeName] = nodeMetricsUploadedExceedingLimitCount
 
+            nodeMetadataFutures = []
+            for nodesList, application in zip(nodes, (hostInfo[self.componentType].values())):
+                nodeIds = [node["id"] for node in nodesList.data]
+                nodeMetadataFutures.append(controller.getAppAgentMetadata(application["id"], nodeIds))
+            nodeMetadata = await AsyncioUtils.gatherWithConcurrency(*nodeMetadataFutures)
+
             # Append node level information to overall host info
+            hostInfo["nodeIdAppAgentAvailabilityMap"] = {}
+            hostInfo["nodeIdMetaInfoMap"] = {}
             for idx, application in enumerate(hostInfo[self.componentType]):
                 hostInfo[self.componentType][application]["nodes"] = nodes[idx].data
-                for node in nodes[idx].data:
+                for node, metadata in zip(nodes[idx].data, nodeMetadata[idx].data):
+                    node["metadata"] = metadata
                     try:
                         node["appAgentAvailabilityLast24Hours"] = nodeIdToAppAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
                     except (KeyError, TypeError):
@@ -115,6 +124,8 @@ class AppAgentsAPM(JobStepBase):
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
                         )
+                    hostInfo["nodeIdAppAgentAvailabilityMap"][node["id"]] = node["appAgentAvailabilityLast24Hours"] / 60 * 100
+                    hostInfo["nodeIdMetaInfoMap"][node["id"]] = node["metadata"]
 
                     try:
                         node["nodeMetricsUploadRequestsExceedingLimit"] = nodeIdToMetricLimitMap[node["tierName"] + "|" + node["name"]]

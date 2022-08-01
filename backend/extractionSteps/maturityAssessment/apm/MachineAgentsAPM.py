@@ -65,6 +65,7 @@ class MachineAgentsAPM(JobStepBase):
                     nodeIdToMachineAgentAvailabilityMap[tierName + "|" + nodeName] = machineAgentAvailabilityMetric
 
             # Append node level information to overall host info
+            hostInfo["nodeMachineIdMachineAgentAvailabilityMap"] = {}
             for application in hostInfo[self.componentType]:
                 for node in hostInfo[self.componentType][application]["nodes"]:
                     try:
@@ -74,6 +75,7 @@ class MachineAgentsAPM(JobStepBase):
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
                         )
+                    hostInfo["nodeMachineIdMachineAgentAvailabilityMap"][node["machineId"]] = node["machineAgentAvailabilityLast24Hours"] / 60 * 100
 
     def analyze(self, controllerData, thresholds):
         """

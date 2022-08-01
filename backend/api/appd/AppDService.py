@@ -580,6 +580,18 @@ class AppDService:
         response = await self.controller.getEumLicenseUsage(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
+    async def getAppAgentMetadata(self, applicationId: int, agentIDs: list[str]) -> Result:
+        debugString = f"Gathering App Agent Metadata"
+        logging.debug(f"{self.host} - {debugString}")
+
+        if len(agentIDs) == 0:
+            return Result([], None)
+
+        futures = [self.controller.getAppServerAgentsMetadata(applicationId, agentId) for agentId in agentIDs]
+        response = await AsyncioUtils.gatherWithConcurrency(*futures)
+        results = [(await self.getResultFromResponse(response, debugString)).data for response in response]
+        return Result(results, None)
+
     async def getAppServerAgents(self) -> Result:
         debugString = f"Gathering App Server Agents Agents"
         logging.debug(f"{self.host} - {debugString}")

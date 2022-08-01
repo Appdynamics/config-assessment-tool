@@ -99,6 +99,8 @@ class AgentMatrixReport(ReportBase):
                             cols.append(key)
 
             machineAgentCols = cols.copy()
+            appServerAgentCols = cols.copy()
+
             machineAgentCols.extend(
                 [
                     "simEnabled",
@@ -117,6 +119,13 @@ class AgentMatrixReport(ReportBase):
                     "Total|CPU|Logical Processor Count",
                     "AppDynamics|Agent|JVM Info",
                     "tags",
+                ]
+            )
+
+            appServerAgentCols.extend(
+                [
+                    "reportingData",
+                    "metadata",
                 ]
             )
 
@@ -164,11 +173,28 @@ class AgentMatrixReport(ReportBase):
                             # historical
                             data.append(None)
                             # reportingData
-                            data.append(None)
+                            if agent["applicationIds"]:
+                                availability = hostInfo["nodeMachineIdMachineAgentAvailabilityMap"].get(agent["machineId"], None)
+                                data.append(availability)
                             # Physical Cores
                             data.append(None)
                             # vCPUs
                             data.append(None)
+
+                    elif agentType == "appServerAgents":
+                        # reportingData
+                        availability = hostInfo["nodeIdAppAgentAvailabilityMap"].get(agent["applicationComponentNodeId"], None)
+                        data.append(availability)
+                        metadata = hostInfo["nodeIdMetaInfoMap"].get(agent["applicationComponentNodeId"], None)
+                        if metadata:
+                            metaInfo = [
+                                {
+                                    "name": info["name"],
+                                    "value": info["value"],
+                                }
+                                for info in metadata["applicationComponentNode"]["metaInfo"]
+                            ]
+                            data.append(json.dumps(metaInfo))
 
                     writeUncoloredRow(
                         sheet,
@@ -185,6 +211,12 @@ class AgentMatrixReport(ReportBase):
                     sheet,
                     1,
                     ["controller", *machineAgentCols],
+                )
+            elif agentType == "appServerAgents":
+                writeUncoloredRow(
+                    sheet,
+                    1,
+                    ["controller", *appServerAgentCols],
                 )
             else:
                 writeUncoloredRow(

@@ -240,6 +240,11 @@ class AppdController(Consumer):
         """Retrieves app server agent summary list"""
 
     @params({"output": "json"})
+    @get("/controller/restui/components/getNodeViewData/{applicationId}/{nodeId}")
+    def getAppServerAgentsMetadata(self, applicationId: Path, nodeId: Path):
+        """Retrieves app agent metadata"""
+
+    @params({"output": "json"})
     @post("/controller/restui/agents/list/machine/ids")
     def getMachineAgentsIds(self, body: Body):
         """Retrieves machine agent summary list"""
