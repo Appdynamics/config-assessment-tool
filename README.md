@@ -186,6 +186,24 @@ Support for plain HTTP proxies and HTTP proxies that can be upgraded to HTTPS vi
 the backend to use the proxy specified from environment variables: HTTP_PROXY, HTTPS_PROXY, WS_PROXY or WSS_PROXY (all are case insensitive). Proxy credentials are given from ~/.netrc file if present.
 See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/client_advanced.html#proxy-support) for more details.
 
+## JobFile Settings
+
+[DefaultJob.json](https://github.com/Appdynamics/config-assessment-tool/blob/master/input/jobs/DefaultJob.json) defines a number of optional configurations.
+
+- verifySsl
+  - enabled by default, disable it to disable SSL cert checking (equivalent to `curl -k`)
+- useProxy
+  - As defined above under [Proxy Support](https://github.com/Appdynamics/config-assessment-tool#proxy-support), enable this to use a configured proxy
+- applicationFilter
+  - Three filters are available, one for `apm`, `mrum`, and `brum`
+  - The filter value accepts any valid regex, set to `.*` by default
+  - Set the value to null to filter out all applications for the set type
+- timeRangeMins
+  - Configure the data pull time range, by default set to 1 day (1440 mins)
+- pwd
+  - Your password will be automatically encrypted to base64 when it is persisted to disk
+  - If your password is not entered as base64, it will be automatically converted
+
 ## Requirements
 
 - Python 3.5 or above if running with `bin/config-assessment-tool.py`
