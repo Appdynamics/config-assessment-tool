@@ -17,8 +17,8 @@ class AppAgentsAPM(JobStepBase):
         """
         Extract node level details.
         1. Makes one API call per application to get Node Metadata.
-        2. Makes one API call per application to get Node App Agent Availability in the last 24 hours.
-        3. Makes one API call per application to get Node Requests Exceeding Limit in the last 24 hours.
+        2. Makes one API call per application to get Node App Agent Availability.
+        3. Makes one API call per application to get Node Requests Exceeding Limit.
         """
         jobStepName = type(self).__name__
 
@@ -40,7 +40,7 @@ class AppAgentsAPM(JobStepBase):
                         metric_path="Application Infrastructure Performance|*|Individual Nodes|*|Agent|App|Availability",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="60",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
                 nodeMetricsUploadRequestsExceedingLimitFutures.append(
@@ -49,7 +49,7 @@ class AppAgentsAPM(JobStepBase):
                         metric_path="Application Infrastructure Performance|*|Individual Nodes|*|Agent|Metric Upload|Requests Exceeding Limit",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="60",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
             nodes = await AsyncioUtils.gatherWithConcurrency(*getNodesFutures)
@@ -118,13 +118,13 @@ class AppAgentsAPM(JobStepBase):
                 for node, metadata in zip(nodes[idx].data, nodeMetadata[idx].data):
                     node["metadata"] = metadata
                     try:
-                        node["appAgentAvailabilityLast24Hours"] = nodeIdToAppAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
+                        node["appAgentAvailability"] = nodeIdToAppAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
                     except (KeyError, TypeError):
-                        node["appAgentAvailabilityLast24Hours"] = 0
+                        node["appAgentAvailability"] = 0
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
                         )
-                    hostInfo["nodeIdAppAgentAvailabilityMap"][node["id"]] = node["appAgentAvailabilityLast24Hours"] / 60 * 100
+                    hostInfo["nodeIdAppAgentAvailabilityMap"][node["id"]] = node["appAgentAvailability"] / controller.timeRangeMins * 100
                     hostInfo["nodeIdMetaInfoMap"][node["id"]] = node["metadata"]
 
                     try:
@@ -211,7 +211,7 @@ class AppAgentsAPM(JobStepBase):
                             numberAppAgentsLessThan1YearOld += 1
 
                     # Determine application load
-                    if node["appAgentAvailabilityLast24Hours"] != 0:
+                    if node["appAgentAvailability"] != 0:
                         numberAppAgentsReportingData += 1
 
                     if node["nodeMetricsUploadRequestsExceedingLimit"] != 0:

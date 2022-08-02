@@ -122,14 +122,15 @@ class AppdController(Consumer):
         """Retrieves Service Endpoint Custom Match Rules for an individual Application Tier"""
 
     @params({"output": "json"})
-    @get("/controller/restui/events/eventCounts?timeRangeString=last_1_day.BEFORE_NOW.-1.-1.1440")
-    def getEventCountsLastDay(
+    @get("/controller/restui/events/eventCounts")
+    def getEventCounts(
         self,
         applicationID: Query("applicationId"),
         entityType: Query("entityType"),
         entityID: Query("entityId"),
+        timeRangeString: Query("timeRangeString"),
     ):
-        """Retrieves Event Counts from the past day"""
+        """Retrieves Event Counts"""
 
     @params({"output": "json"})
     @post("/controller/restui/metricBrowser/async/metric-tree/root")
@@ -274,9 +275,9 @@ class AppdController(Consumer):
     def getServerAvailability(self, body: Body):
         """Retrieves server availability info"""
 
-    @params({"output": "json", "time-range": "last_1_day.BEFORE_NOW.-1.-1.1440"})
+    @params({"output": "json"})
     @get("/controller/restui/eumApplications/getAllEumApplicationsData")
-    def getEumApplications(self):
+    def getEumApplications(self, timeRange: Query("time-range")):
         """Retrieves all Eum Applications"""
 
     @params({"output": "json"})
@@ -309,9 +310,9 @@ class AppdController(Consumer):
     def getBrowserSnapshots(self, body: Body):
         """Retrieves browser snapshots"""
 
-    @params({"output": "json", "time-range": "last_1_day.BEFORE_NOW.-1.-1.1440"})
+    @params({"output": "json"})
     @get("/controller/restui/eumApplications/getAllMobileApplicationsData")
-    def getMRUMApplications(self):
+    def getMRUMApplications(self, timeRange: Query("time-range")):
         """Retrieves all Mrum Applications"""
 
     @params({"output": "json"})

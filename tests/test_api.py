@@ -299,7 +299,7 @@ async def testGetMetricData(controller):
 async def testGetEventCountsLastDay(controller):
     assert (await controller.loginToController()).error is None
 
-    eventCounts = await controller.getEventCountsLastDay(
+    eventCounts = await controller.getEventCounts(
         applicationID=APPLICATION_ID,
         entityType="APPLICATION",
         entityID=APPLICATION_ID,

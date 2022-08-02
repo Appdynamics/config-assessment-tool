@@ -12,6 +12,7 @@
 			"apm": ".*",
 			"mrum": ".*",
 			"brum": ".*"
-		}
+		},
+		"timeRangeMins": 1440
 	}
 ]

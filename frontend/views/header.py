@@ -81,6 +81,7 @@ def header() -> tuple[bool, bool]:
                             "verifySsl": True,
                             "useProxy": True,
                             "applicationFilter": {"apm": ".*", "mrum": ".*", "brum": ".*"},
+                            "timeRangeMins": 1440,
                         }
                     ],
                     fp=f,

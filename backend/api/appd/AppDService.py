@@ -31,6 +31,7 @@ class AppDService:
         verifySsl: bool = True,
         useProxy: bool = False,
         applicationFilter: dict = None,
+        timeRangeMins: int = 1440,
     ):
         logging.debug(f"{host} - Initializing controller service")
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
@@ -38,6 +39,9 @@ class AppDService:
         self.host = host
         self.username = username
         self.applicationFilter = applicationFilter
+        self.timeRangeMins = timeRangeMins
+        self.endTime = int(round(time.time() * 1000))
+        self.startTime = self.endTime - (1 * 60 * self.timeRangeMins * 1000)
 
         cookie_jar = aiohttp.CookieJar()
         try:
@@ -321,7 +325,7 @@ class AppDService:
             "pathData": ["Application Infrastructure Performance", tierName, "Custom Metrics"],
             "timeRangeSpecifier": {
                 "type": "BEFORE_NOW",
-                "durationInMinutes": 60,
+                "durationInMinutes": self.timeRangeMins,
                 "endTime": None,
                 "startTime": None,
                 "timeRange": None,
@@ -337,9 +341,9 @@ class AppDService:
         metric_path: str,
         rollup: bool,
         time_range_type: str,
-        duration_in_mins: str = "",
-        start_time: str = "",
-        end_time: str = "",
+        duration_in_mins: int = "",
+        start_time: int = "",
+        end_time: int = 1440,
     ) -> Result:
         debugString = f'Gathering Metrics for:"{metric_path}" on application:{applicationID}'
         logging.debug(f"{self.host} - {debugString}")
@@ -377,10 +381,12 @@ class AppDService:
         )
         return await self.getResultFromResponse(response, debugString)
 
-    async def getEventCountsLastDay(self, applicationID: int, entityType: str, entityID: int) -> Result:
+    async def getEventCounts(self, applicationID: int, entityType: str, entityID: int) -> Result:
         debugString = f'Gathering Event Counts for:"{entityType}" {entityID} on application:{applicationID}'
         logging.debug(f"{self.host} - {debugString}")
-        response = await self.controller.getEventCountsLastDay(applicationID, entityType, entityID)
+        response = await self.controller.getEventCounts(
+            applicationID, entityType, entityID, f"Custom_Time_Range.BETWEEN_TIMES.{self.endTime}.{self.startTime}.{self.timeRangeMins}"
+        )
         return await self.getResultFromResponse(response, debugString)
 
     async def getHealthRules(self, applicationID: int) -> Result:
@@ -418,17 +424,30 @@ class AppDService:
     ) -> Result:
         debugString = f"Gathering Snapshots for Application:{applicationID}"
         logging.debug(f"{self.host} - {debugString}")
-        body = (
-            '{"firstInChain":false,"maxRows":{maximum_results},"applicationIds":[{applicationID}],"businessTransactionIds":[],"applicationComponentIds":[],"applicationComponentNodeIds":[],"errorIDs":[],"errorOccured":null,"userExperience":[],"executionTimeInMilis":null,"endToEndLatency":null,"url":null,"sessionId":null,"userPrincipalId":null,"dataCollectorFilter":{"collectorType":"{dataCollectorType}","query":{"name":"{dataCollectorName}","value":""}},"archived":null,"guids":[],"diagnosticSnapshot":null,"badRequest":null,"deepDivePolicy":[],"rangeSpecifier":{"type":"BEFORE_NOW","durationInMinutes":1440}}'.replace(
-                "{applicationID}", str(applicationID)
-            )
-            .replace("{dataCollectorType}", str(data_collector_type))
-            .replace("{dataCollectorName}", str(data_collector_name))
-            .replace("{dataCollectorValue}", str(data_collector_value))
-            .replace("{maximum_results}", str(maximum_results))
-        )
-
-        response = await self.controller.getSnapshotsWithDataCollector(body)
+        body = {
+            "firstInChain": False,
+            "maxRows": maximum_results,
+            "applicationIds": [applicationID],
+            "businessTransactionIds": [],
+            "applicationComponentIds": [],
+            "applicationComponentNodeIds": [],
+            "errorIDs": [],
+            "errorOccured": None,
+            "userExperience": [],
+            "executionTimeInMilis": None,
+            "endToEndLatency": None,
+            "url": None,
+            "sessionId": None,
+            "userPrincipalId": None,
+            "dataCollectorFilter": {"collectorType": data_collector_type, "query": {"name": data_collector_name, "value": ""}},
+            "archived": None,
+            "guids": [],
+            "diagnosticSnapshot": None,
+            "badRequest": None,
+            "deepDivePolicy": [],
+            "rangeSpecifier": {"type": "BEFORE_NOW", "durationInMinutes": self.timeRangeMins},
+        }
+        response = await self.controller.getSnapshotsWithDataCollector(json.dumps(body))
 
         return await self.getResultFromResponse(response, debugString)
 
@@ -569,14 +588,28 @@ class AppDService:
     async def getAccountUsageSummary(self) -> Result:
         debugString = f"Gathering Account Usage Summary"
         logging.debug(f"{self.host} - {debugString}")
-        body = {"type": "BEFORE_NOW", "durationInMinutes": 1440, "endTime": None, "startTime": None, "timeRange": None, "timeRangeAdjusted": False}
+        body = {
+            "type": "BEFORE_NOW",
+            "durationInMinutes": self.timeRangeMins,
+            "endTime": None,
+            "startTime": None,
+            "timeRange": None,
+            "timeRangeAdjusted": False,
+        }
         response = await self.controller.getAccountUsageSummary(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def getEumLicenseUsage(self) -> Result:
         debugString = f"Gathering Account Usage Summary"
         logging.debug(f"{self.host} - {debugString}")
-        body = {"type": "BEFORE_NOW", "durationInMinutes": 1440, "endTime": None, "startTime": None, "timeRange": None, "timeRangeAdjusted": False}
+        body = {
+            "type": "BEFORE_NOW",
+            "durationInMinutes": self.timeRangeMins,
+            "endTime": None,
+            "startTime": None,
+            "timeRange": None,
+            "timeRangeAdjusted": False,
+        }
         response = await self.controller.getEumLicenseUsage(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
@@ -595,10 +628,6 @@ class AppDService:
     async def getAppServerAgents(self) -> Result:
         debugString = f"Gathering App Server Agents Agents"
         logging.debug(f"{self.host} - {debugString}")
-        # get current timestamp in milliseconds
-        currentTime = int(round(time.time() * 1000))
-        # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (24 * 60 * 60 * 24 * 1000)
         body = {
             "requestFilter": {"queryParams": {"applicationAssociationType": "ALL"}, "filters": []},
             "resultColumns": [],
@@ -606,8 +635,8 @@ class AppDService:
             "limit": -1,
             "searchFilters": [],
             "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
-            "timeRangeStart": last24Hours,
-            "timeRangeEnd": currentTime,
+            "timeRangeStart": self.startTime,
+            "timeRangeEnd": self.endTime,
         }
         response = await self.controller.getAppServerAgents(json.dumps(body))
         result = await self.getResultFromResponse(response, debugString)
@@ -636,8 +665,8 @@ class AppDService:
                 "limit": -1,
                 "searchFilters": [],
                 "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
-                "timeRangeStart": last24Hours,
-                "timeRangeEnd": currentTime,
+                "timeRangeStart": self.startTime,
+                "timeRangeEnd": self.endTime,
             }
             agentFutures.append(self.controller.getAppServerAgentsIds(json.dumps(body)))
 
@@ -651,10 +680,6 @@ class AppDService:
     async def getMachineAgents(self) -> Result:
         debugString = f"Gathering App Server Agents Agents"
         logging.debug(f"{self.host} - {debugString}")
-        # get current timestamp in milliseconds
-        currentTime = int(round(time.time() * 1000))
-        # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
         body = {
             "requestFilter": {"queryParams": {"applicationAssociationType": "ALL"}, "filters": []},
             "resultColumns": [],
@@ -662,8 +687,8 @@ class AppDService:
             "limit": -1,
             "searchFilters": [],
             "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
-            "timeRangeStart": last24Hours,
-            "timeRangeEnd": currentTime,
+            "timeRangeStart": self.startTime,
+            "timeRangeEnd": self.endTime,
         }
         response = await self.controller.getMachineAgents(json.dumps(body))
         result = await self.getResultFromResponse(response, debugString)
@@ -684,8 +709,8 @@ class AppDService:
                 "limit": -1,
                 "searchFilters": [],
                 "columnSorts": [{"column": "HOST_NAME", "direction": "ASC"}],
-                "timeRangeStart": last24Hours,
-                "timeRangeEnd": currentTime,
+                "timeRangeStart": self.startTime,
+                "timeRangeEnd": self.endTime,
             }
 
             agentFutures.append(self.controller.getMachineAgentsIds(json.dumps(body)))
@@ -712,19 +737,14 @@ class AppDService:
     async def getServers(self) -> Result:
         debugString = f"Gathering Server Keys"
         logging.debug(f"{self.host} - {debugString}")
-
-        # get current timestamp in milliseconds
-        currentTime = int(round(time.time() * 1000))
-        # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
         body = {
             "filter": {
                 "appIds": [],
                 "nodeIds": [],
                 "tierIds": [],
                 "types": ["PHYSICAL", "CONTAINER_AWARE"],
-                "timeRangeStart": last24Hours,
-                "timeRangeEnd": currentTime,
+                "timeRangeStart": self.startTime,
+                "timeRangeEnd": self.endTime,
             },
             "sorter": {"field": "HEALTH", "direction": "ASC"},
         }
@@ -740,7 +760,7 @@ class AppDService:
         serverAvailabilityFutures = []
         for machineId in machineIds:
             body = {
-                "timeRange": "last_1_day.BEFORE_NOW.-1.-1.1440",
+                "timeRange": f"Custom_Time_Range.BETWEEN_TIMES.{self.endTime}.{self.startTime}.{self.timeRangeMins}",
                 "metricNames": ["Hardware Resources|Machine|Availability"],
                 "rollups": [1],
                 "ids": [machineId],
@@ -787,7 +807,7 @@ class AppDService:
                 logging.warning(f"Filtered out all BRUM applications from analysis by match rule {self.applicationFilter['brum']}")
                 return Result([], None)
 
-        response = await self.controller.getEumApplications()
+        response = await self.controller.getEumApplications(f"Custom_Time_Range.BETWEEN_TIMES.{self.endTime}.{self.startTime}.{self.timeRangeMins}")
         result = await self.getResultFromResponse(response, debugString)
 
         if self.applicationFilter is not None:
@@ -804,19 +824,18 @@ class AppDService:
     async def getEumPageListViewData(self, applicationId: int) -> Result:
         debugString = f"Gathering EUM Page List View Data for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
-        body = {"applicationId": applicationId, "addId": None, "timeRangeString": "last_1_hour|BEFORE_NOW|-1|-1|60", "fetchSyntheticData": False}
+        body = {
+            "applicationId": applicationId,
+            "addId": None,
+            "timeRangeString": f"Custom_Time_Range|BETWEEN_TIMES|{self.endTime}|{self.startTime}|{self.timeRangeMins}",
+            "fetchSyntheticData": False,
+        }
         response = await self.controller.getEumPageListViewData(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
     async def getEumNetworkRequestList(self, applicationId: int) -> Result:
         debugString = f"Gathering EUM Page List View Data for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
-
-        # get current timestamp in milliseconds
-        currentTime = int(round(time.time() * 1000))
-        # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
-
         body = {
             "requestFilter": {"applicationId": applicationId, "fetchSyntheticData": False},
             "resultColumns": ["PAGE_TYPE", "PAGE_NAME", "TOTAL_REQUESTS", "END_USER_RESPONSE_TIME", "VISUALLY_COMPLETE_TIME"],
@@ -824,8 +843,8 @@ class AppDService:
             "limit": -1,
             "searchFilters": [],
             "columnSorts": [{"column": "TOTAL_REQUESTS", "direction": "DESC"}],
-            "timeRangeStart": last24Hours,
-            "timeRangeEnd": currentTime,
+            "timeRangeStart": self.startTime,
+            "timeRangeEnd": self.endTime,
         }
         response = await self.controller.getEumNetworkRequestList(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
@@ -853,7 +872,7 @@ class AppDService:
         logging.debug(f"{self.host} - {debugString}")
         body = {
             "applicationId": applicationId,
-            "timeRangeString": "last_1_hour.BEFORE_NOW.-1.-1.60",
+            "timeRangeString": f"Custom_Time_Range.BETWEEN_TIMES.{self.endTime}.{self.startTime}.{self.timeRangeMins}",
             "filters": {
                 "_classType": "BrowserSnapshotFilters",
                 "serverSnapshotExists": {"type": "BOOLEAN", "name": "ms_serverSnapshotExists", "value": True},
@@ -892,7 +911,7 @@ class AppDService:
                 logging.warning(f"Filtered out all MRUM applications from analysis by match rule {self.applicationFilter['mrum']}")
                 return Result([], None)
 
-        response = await self.controller.getMRUMApplications()
+        response = await self.controller.getMRUMApplications(f"Custom_Time_Range.BETWEEN_TIMES.{self.endTime}.{self.startTime}.{self.timeRangeMins}")
         result = await self.getResultFromResponse(response, debugString)
 
         tempData = result.data.copy()
@@ -931,7 +950,7 @@ class AppDService:
         logging.debug(f"{self.host} - {debugString}")
         body = {
             "applicationId": applicationId,
-            "timeRangeString": "last_1_hour|BEFORE_NOW|-1|-1|60",
+            "timeRangeString": f"Custom_Time_Range|BETWEEN_TIMES|{self.endTime}|{self.startTime}|{self.timeRangeMins}",
             "platform": platform,
             "mobileAppId": mobileApplicationId,
             "serverSnapshotExists": True,
@@ -948,16 +967,11 @@ class AppDService:
     async def getSyntheticBillableTime(self, applicationId: int, scheduleIds: List[str]) -> Result:
         debugString = f"Gathering Synthetic Billable Time for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
-        # get current timestamp in milliseconds
-        currentTime = int(round(time.time() * 1000))
-        # get the last 24 hours in milliseconds
-        last24Hours = currentTime - (1 * 60 * 60 * 24 * 1000)
-
         body = {
             "scheduleIds": scheduleIds,
             "appId": applicationId,
-            "startTime": last24Hours,
-            "currentTime": currentTime,
+            "startTime": self.startTime,
+            "currentTime": self.endTime,
         }
         response = await self.controller.getSyntheticBillableTime(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
@@ -971,10 +985,8 @@ class AppDService:
     async def getSyntheticSessionData(self, applicationId: int, jobsJson: List[dict]) -> Result:
         debugString = f"Gathering Synthetic Session Data for Application {applicationId}"
         logging.debug(f"{self.host} - {debugString}")
-        # get current timestamp in milliseconds
-        currentTime = int(round(time.time() * 1000))
         # get the last 24 hours in milliseconds
-        lastMonth = currentTime - (1 * 60 * 60 * 24 * 30 * 1000)
+        lastMonth = self.endTime - (1 * 60 * 60 * 24 * 30 * 1000)
         monthStart = datetime.timestamp(datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
         weekStart = datetime.timestamp(
             datetime.today().replace(day=(date.today() - timedelta(date.today().weekday())).day, hour=0, minute=0, second=0, microsecond=0)
@@ -985,8 +997,8 @@ class AppDService:
             "fields": ["AVG_DURATION"],
             "timestamps": {
                 "startTime": lastMonth,
-                "endTime": currentTime,
-                "currentTime": currentTime,
+                "endTime": self.endTime,
+                "currentTime": self.endTime,
                 "monthStartTime": monthStart,
                 "weekStartTime": weekStart,
                 "utcOffset": -14400000,

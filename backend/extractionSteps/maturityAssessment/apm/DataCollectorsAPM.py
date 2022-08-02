@@ -60,12 +60,12 @@ class DataCollectorsAPM(JobStepBase):
                 analysisDataEvaluatedMetrics["numberOfDataCollectorFieldsConfigured"] = len(application["dataCollectors"]["allDataCollectors"])
 
                 # numberOfDataCollectorFieldsCollectedInSnapshots
-                analysisDataEvaluatedMetrics["numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day"] = len(
+                analysisDataEvaluatedMetrics["numberOfDataCollectorFieldsCollectedInSnapshots"] = len(
                     application["dataCollectors"]["dataCollectorsPresentInSnapshots"]
                 )
 
                 # numberOfDataCollectorFieldsCollectedInAnalytics
-                analysisDataEvaluatedMetrics["numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day"] = len(
+                analysisDataEvaluatedMetrics["numberOfDataCollectorFieldsCollectedInAnalytics"] = len(
                     application["dataCollectors"]["dataCollectorsPresentInAnalytics"]
                 )
 

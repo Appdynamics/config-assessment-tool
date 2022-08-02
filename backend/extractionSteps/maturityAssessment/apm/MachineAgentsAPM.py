@@ -16,7 +16,7 @@ class MachineAgentsAPM(JobStepBase):
     async def extract(self, controllerData):
         """
         Extract node level details.
-        1. Makes one API call per application to get node Machine Agent Availability in the last 24 hours.
+        1. Makes one API call per application to get node Machine Agent Availability.
         2. Is dependent on nodes from AppAgents.
         """
         jobStepName = type(self).__name__
@@ -35,7 +35,7 @@ class MachineAgentsAPM(JobStepBase):
                         metric_path="Application Infrastructure Performance|*|Individual Nodes|*|Agent|Machine|Availability",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="60",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
             machineAgentAvailability = await AsyncioUtils.gatherWithConcurrency(*machineAgentAvailabilityFutures)
@@ -69,13 +69,15 @@ class MachineAgentsAPM(JobStepBase):
             for application in hostInfo[self.componentType]:
                 for node in hostInfo[self.componentType][application]["nodes"]:
                     try:
-                        node["machineAgentAvailabilityLast24Hours"] = nodeIdToMachineAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
+                        node["machineAgentAvailability"] = nodeIdToMachineAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
                     except (KeyError, TypeError):
-                        node["machineAgentAvailabilityLast24Hours"] = 0
+                        node["machineAgentAvailability"] = 0
                         logging.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
                         )
-                    hostInfo["nodeMachineIdMachineAgentAvailabilityMap"][node["machineId"]] = node["machineAgentAvailabilityLast24Hours"] / 60 * 100
+                    hostInfo["nodeMachineIdMachineAgentAvailabilityMap"][node["machineId"]] = (
+                        node["machineAgentAvailability"] / controller.timeRangeMins * 100
+                    )
 
     def analyze(self, controllerData, thresholds):
         """
@@ -157,7 +159,7 @@ class MachineAgentsAPM(JobStepBase):
                             numberMachineAgentsLessThan1YearOld += 1
 
                     # Determine application load
-                    if node["machineAgentAvailabilityLast24Hours"] != 0:
+                    if node["machineAgentAvailability"] != 0:
                         numberMachineAgentsReportingData += 1
 
                 # In the case of multiple versions, will return the largest common agent count regardless of version.

@@ -33,7 +33,7 @@ class ErrorConfigurationAPM(JobStepBase):
                         metric_path="Business Transaction Performance|Business Transactions|*|*|Errors per Minute",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="1440",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
 

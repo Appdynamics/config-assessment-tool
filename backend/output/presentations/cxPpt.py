@@ -348,7 +348,7 @@ def createCxPpt(folder: str):
         "Having no custom Health Rules is a telltale sign of poor application configuration health",
     ]
     addBulletedText(slide, text)
-    numberOfHealthRuleViolationsLast24Hours = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolationsLast24Hours")
+    numberOfHealthRuleViolations = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolations")
     numberOfDefaultHealthRulesModified = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfDefaultHealthRulesModified")
     numberOfActionsBoundToEnabledPolicies = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfActionsBoundToEnabledPolicies")
     numberOfCustomHealthRules = getValuesInColumn(wb["HealthRulesAndAlertingAPM"], "numberOfCustomHealthRules")
@@ -364,7 +364,7 @@ def createCxPpt(folder: str):
             folder,
             str(
                 format(
-                    (len([x for x in numberOfHealthRuleViolationsLast24Hours if x >= 50]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    (len([x for x in numberOfHealthRuleViolations if x >= 50]) / totalApplications if totalApplications > 0 else 0) * 100,
                     ".0f",
                 )
             )

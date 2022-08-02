@@ -32,7 +32,7 @@ class ServiceEndpointsAPM(JobStepBase):
                         metric_path="Service Endpoints|*|*|Calls per Minute",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="60",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
                 getServiceEndpointMatchRulesFutures.append(controller.getServiceEndpointMatchRules(application["id"]))

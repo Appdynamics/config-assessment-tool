@@ -31,7 +31,7 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
             getPoliciesFutures = []
             for application in hostInfo[self.componentType].values():
                 getEventCountsFutures.append(
-                    controller.getEventCountsLastDay(
+                    controller.getEventCounts(
                         applicationID=application["id"],
                         entityType="APPLICATION",
                         entityID=application["id"],
@@ -58,7 +58,7 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
     def analyze(self, controllerData, thresholds):
         """
         Analysis of error configuration details.
-        1. Determines number of Health Rule violations in the last 24 hours.
+        1. Determines number of Health Rule violations.
         2. Determines number of Default Health Rules modified.
         3. Determines number of Actions currently bound to enabled policies.
         4. Determines number of Custom Health Rules.
@@ -80,9 +80,9 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
                 # This data goes into the 'JobStep - Raw' xlsx sheet.
                 analysisDataRawMetrics = analysisDataRoot["raw"] = OrderedDict()
 
-                # numberOfHealthRuleViolationsLast24Hours
+                # numberOfHealthRuleViolations
                 policyEventCounts = application["eventCounts"]["policyViolationEventCounts"]["totalPolicyViolations"]
-                analysisDataEvaluatedMetrics["numberOfHealthRuleViolationsLast24Hours"] = policyEventCounts["warning"] + policyEventCounts["critical"]
+                analysisDataEvaluatedMetrics["numberOfHealthRuleViolations"] = policyEventCounts["warning"] + policyEventCounts["critical"]
 
                 # numberOfActionsBoundToEnabledPolicies
                 actionsInEnabledPolicies = set()
@@ -98,8 +98,8 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
                 # numberOfCustomHealthRules
                 analysisDataEvaluatedMetrics["numberOfCustomHealthRules"] = len(application["healthRules"])
 
-                analysisDataRawMetrics["totalWarningPolicyViolationsLast24Hours"] = policyEventCounts["warning"]
-                analysisDataRawMetrics["totalCriticalPolicyViolationsLast24Hours"] = policyEventCounts["critical"]
+                analysisDataRawMetrics["totalWarningPolicyViolations"] = policyEventCounts["warning"]
+                analysisDataRawMetrics["totalCriticalPolicyViolations"] = policyEventCounts["critical"]
                 analysisDataRawMetrics["numberOfHealthRules"] = len(application["healthRules"])
                 analysisDataRawMetrics["numberOfPolicies"] = len(application["policies"])
 

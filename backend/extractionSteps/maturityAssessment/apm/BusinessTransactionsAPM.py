@@ -34,7 +34,7 @@ class BusinessTransactionsAPM(JobStepBase):
                         metric_path="Business Transaction Performance|Business Transactions|*|*|Calls per Minute",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="1440",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
                 getAppLevelBtConfigFutures.append(controller.getAppLevelBTConfig(application["id"]))

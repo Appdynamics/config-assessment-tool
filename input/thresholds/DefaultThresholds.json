@@ -137,19 +137,19 @@
 		},
 		"HealthRulesAndAlertingAPM": {
 			"platinum": {
-				"numberOfHealthRuleViolationsLast24Hours": 10,
+				"numberOfHealthRuleViolations": 10,
 				"numberOfActionsBoundToEnabledPolicies": 1,
 				"numberOfCustomHealthRules": 5,
 				"numberOfDefaultHealthRulesModified": 2
 			},
 			"gold": {
-				"numberOfHealthRuleViolationsLast24Hours": 20,
+				"numberOfHealthRuleViolations": 20,
 				"numberOfActionsBoundToEnabledPolicies": 1,
 				"numberOfCustomHealthRules": 2,
 				"numberOfDefaultHealthRulesModified": 1
 			},
 			"silver": {
-				"numberOfHealthRuleViolationsLast24Hours": 50,
+				"numberOfHealthRuleViolations": 50,
 				"numberOfActionsBoundToEnabledPolicies": 0,
 				"numberOfCustomHealthRules": 0,
 				"numberOfDefaultHealthRulesModified": 0
@@ -158,20 +158,20 @@
 		"DataCollectorsAPM": {
 			"platinum": {
 				"numberOfDataCollectorFieldsConfigured": 5,
-				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 5,
-				"numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 5,
+				"numberOfDataCollectorFieldsCollectedInSnapshots": 5,
+				"numberOfDataCollectorFieldsCollectedInAnalytics": 5,
 				"biqEnabled": true
 			},
 			"gold": {
 				"numberOfDataCollectorFieldsConfigured": 2,
-				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 2,
-				"numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 2,
+				"numberOfDataCollectorFieldsCollectedInSnapshots": 2,
+				"numberOfDataCollectorFieldsCollectedInAnalytics": 2,
 				"biqEnabled": false
 			},
 			"silver": {
 				"numberOfDataCollectorFieldsConfigured": 0,
-				"numberOfDataCollectorFieldsCollectedInSnapshotsLast1Day": 0,
-				"numberOfDataCollectorFieldsCollectedInAnalyticsLast1Day": 0,
+				"numberOfDataCollectorFieldsCollectedInSnapshots": 0,
+				"numberOfDataCollectorFieldsCollectedInAnalytics": 0,
 				"biqEnabled": false
 			}
 		},
@@ -236,17 +236,17 @@
 		},
 		"HealthRulesAndAlertingBRUM": {
 			"platinum": {
-				"numberOfHealthRuleViolationsLast24Hours": 10,
+				"numberOfHealthRuleViolations": 10,
 				"numberOfActionsBoundToEnabledPolicies": 1,
 				"numberOfCustomHealthRules": 5
 			},
 			"gold": {
-				"numberOfHealthRuleViolationsLast24Hours": 20,
+				"numberOfHealthRuleViolations": 20,
 				"numberOfActionsBoundToEnabledPolicies": 1,
 				"numberOfCustomHealthRules": 2
 			},
 			"silver": {
-				"numberOfHealthRuleViolationsLast24Hours": 50,
+				"numberOfHealthRuleViolations": 50,
 				"numberOfActionsBoundToEnabledPolicies": 0,
 				"numberOfCustomHealthRules": 0
 			}
@@ -295,17 +295,17 @@
 		},
 		"HealthRulesAndAlertingMRUM": {
 			"platinum": {
-				"numberOfHealthRuleViolationsLast24Hours": 10,
+				"numberOfHealthRuleViolations": 10,
 				"numberOfActionsBoundToEnabledPolicies": 1,
 				"numberOfCustomHealthRules": 5
 			},
 			"gold": {
-				"numberOfHealthRuleViolationsLast24Hours": 20,
+				"numberOfHealthRuleViolations": 20,
 				"numberOfActionsBoundToEnabledPolicies": 1,
 				"numberOfCustomHealthRules": 2
 			},
 			"silver": {
-				"numberOfHealthRuleViolationsLast24Hours": 50,
+				"numberOfHealthRuleViolations": 50,
 				"numberOfActionsBoundToEnabledPolicies": 0,
 				"numberOfCustomHealthRules": 0
 			}

@@ -17,7 +17,7 @@ class BackendsAPM(JobStepBase):
         1. Makes one API call per application to get Backend Metadata.
         2. Makes one API call per application to get Backend Custom Exit Points.
         3. Makes one API call per application to get Backend Discovery Configurations.
-        4. Makes one API call per application to get Backend Calls Per Minute in the last 60 hours.
+        4. Makes one API call per application to get Backend Calls Per Minute.
         """
         jobStepName = type(self).__name__
 
@@ -41,7 +41,7 @@ class BackendsAPM(JobStepBase):
                         metric_path="Backends|*|Calls per Minute",
                         rollup=True,
                         time_range_type="BEFORE_NOW",
-                        duration_in_mins="3600",
+                        duration_in_mins=controller.timeRangeMins,
                     )
                 )
             backends = await AsyncioUtils.gatherWithConcurrency(*getBackendsFutures)
@@ -74,9 +74,9 @@ class BackendsAPM(JobStepBase):
                 hostInfo[self.componentType][application]["backendDiscoveryConfigs"] = backendDiscoveryConfigs[idx].data
                 for backend in backends[idx].data:
                     try:
-                        backend["callsPerMinuteLast60Hours"] = backendNameToCallsPerMinuteMap[backend["name"]]
+                        backend["callsPerMinute"] = backendNameToCallsPerMinuteMap[backend["name"]]
                     except KeyError:
-                        backend["callsPerMinuteLast60Hours"] = 0
+                        backend["callsPerMinute"] = 0
                         logging.debug(f'{hostInfo["controller"].host} - Node: {backend["name"]} returned no metric data for Agent Availability.')
 
     def analyze(self, controllerData, thresholds):
@@ -103,10 +103,10 @@ class BackendsAPM(JobStepBase):
                 # This data goes into the 'JobStep - Raw' xlsx sheet.
                 analysisDataRawMetrics = analysisDataRoot["raw"] = OrderedDict()
 
-                # callsPerMinuteLast60Hours
+                # callsPerMinute
                 numberOfBackendsWithLoad = 0.0
                 for backend in application["backends"]:
-                    if backend["callsPerMinuteLast60Hours"] > 0:
+                    if backend["callsPerMinute"] > 0:
                         numberOfBackendsWithLoad += 1
 
                 # percentBackendsWithLoad
