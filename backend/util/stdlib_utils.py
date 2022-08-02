@@ -1,3 +1,5 @@
+import base64
+import binascii
 from enum import Enum
 from typing import Optional
 
@@ -45,3 +47,23 @@ def jsonEncoder(o):
         return o.__json__()
     else:
         return f"<<non-serializable: {type(o).__qualname__}>>"
+
+
+def isBase64(s: str, encoding="ISO-8859-1"):
+    try:
+        strBytes = bytes(s, encoding=encoding)
+        return base64.b64encode(base64.b64decode(strBytes)) == strBytes
+    except binascii.Error:
+        return False
+
+
+def base64Encode(s: str, encoding="ISO-8859-1"):
+    strBytes = bytes(s, encoding=encoding)
+    encodedBytes = base64.standard_b64encode(strBytes)
+    return str(encodedBytes)[2:-1]
+
+
+def base64Decode(s: str, encoding="ISO-8859-1"):
+    strBytes = bytes(s, encoding=encoding)
+    decodedBytes = base64.standard_b64decode(strBytes)
+    return str(decodedBytes)[2:-1]

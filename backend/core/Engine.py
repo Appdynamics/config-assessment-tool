@@ -39,7 +39,7 @@ from output.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from output.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
 from output.reports.SyntheticsReport import SyntheticsReport
 from util.asyncio_utils import AsyncioUtils
-from util.stdlib_utils import jsonEncoder
+from util.stdlib_utils import jsonEncoder, isBase64, base64Encode, base64Decode
 
 
 class Engine:
@@ -102,6 +102,34 @@ class Engine:
             concurrentConnections = 50 if concurrentConnections is None else concurrentConnections
         AsyncioUtils.init(concurrentConnections)
 
+        # Convert passwords to base64 if they aren't already
+        for controller in self.job:
+            if not isBase64(controller["pwd"]):
+                # not base64, so encode it
+                controller["pwd"] = base64Encode(f"CAT-ENCODED-{controller['pwd']}")
+            elif not base64Decode(controller["pwd"]).startswith("CAT-ENCODED-"):
+                # is valid base64, but doesn't contain our encoding string "CAT-ENCODED-"
+                controller["pwd"] = base64Encode(f"CAT-ENCODED-{controller['pwd']}")
+
+            # add in fields not present
+            if "verifySsl" not in controller:
+                controller["verifySsl"] = True
+            if "useProxy" not in controller:
+                controller["useProxy"] = True
+            if "applicationFilter" not in controller:
+                controller["applicationFilter"] = {"apm": ".*", "mrum": ".*", "brum": ".*"}
+            if "timeRangeMins" not in controller:
+                controller["timeRangeMins"] = 1440
+
+        # Save the job back to disk with the updated password
+        with open(f"input/jobs/{jobFileName}.json", "w", encoding="ISO-8859-1") as f:
+            json.dump(
+                self.job,
+                fp=f,
+                ensure_ascii=False,
+                indent=4,
+            )
+
         # Instantiate controllers, jobs, and report lists
         self.controllers = [
             AppDService(
@@ -110,7 +138,7 @@ class Engine:
                 ssl=controller["ssl"],
                 account=controller["account"],
                 username=username if username else controller["username"],
-                pwd=password if password else controller["pwd"],
+                pwd=password if password else base64Decode(controller["pwd"])[len("CAT-ENCODED-") :],
                 verifySsl=controller.get("verifySsl", True),
                 useProxy=controller.get("useProxy", False),
                 applicationFilter=controller.get("applicationFilter", None),

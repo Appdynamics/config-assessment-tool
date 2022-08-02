@@ -8,6 +8,7 @@ import requests
 import streamlit as st
 from FileHandler import openFolder
 from utils.docker_utils import isDocker
+from utils.stdlib_utils import base64Encode
 from utils.streamlit_utils import rerun
 
 
@@ -77,7 +78,7 @@ def header() -> tuple[bool, bool]:
                             "ssl": True,
                             "account": account,
                             "username": username,
-                            "pwd": pwd,
+                            "pwd": base64Encode(pwd),
                             "verifySsl": True,
                             "useProxy": True,
                             "applicationFilter": {"apm": ".*", "mrum": ".*", "brum": ".*"},
