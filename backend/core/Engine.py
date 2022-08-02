@@ -171,10 +171,8 @@ class Engine:
             # catch exceptions here, so we can terminate coroutines before program exit
             logging.error("".join(traceback.TracebackException.from_exception(e).format()))
 
-        logging.info(f"----------Complete----------")
-
         await self.abortAndCleanup(
-            "Exiting",
+            "",
             error=False,
         )
 
@@ -332,6 +330,7 @@ class Engine:
 
         createCxPpt(self.jobFileName)
 
+        logging.info(f"----------Complete----------")
         # if controllerData.json file exists, delete it
         if Path(f"output/{self.jobFileName}/controllerData.json").exists():
             sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
@@ -363,5 +362,6 @@ class Engine:
             logging.error(msg)
             sys.exit(1)
         else:
-            logging.info(msg)
+            if msg:
+                logging.info(msg)
             sys.exit(0)
