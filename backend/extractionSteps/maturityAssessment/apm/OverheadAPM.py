@@ -105,7 +105,7 @@ class OverheadAPM(JobStepBase):
                 # aggressiveSnapshottingNotEnabled
                 aggressiveSnapshottingNotEnabled = True
                 for config, value in application["applicationConfiguration"].items():
-                    if config.lower().endswith("callgraphconfiguration"):
+                    if config == "callGraphConfiguration":
                         if "hotspotsEnabled" in value and value["hotspotsEnabled"]:
                             aggressiveSnapshottingNotEnabled = False
                 analysisDataEvaluatedMetrics["aggressiveSnapshottingNotEnabled"] = aggressiveSnapshottingNotEnabled

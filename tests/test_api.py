@@ -203,7 +203,7 @@ async def testGetApplicationConfiguration(controller):
     assert applicationConfiguration.error is None
 
     callGraphConfigurations = {
-        config: value for config, value in applicationConfiguration.data.items() if config.lower().endswith("callgraphconfiguration")
+        config: value for config, value in applicationConfiguration.data.items() if config == "callGraphConfiguration"
     }
     assert len(callGraphConfigurations) > 0
 
