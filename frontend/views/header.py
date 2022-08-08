@@ -78,7 +78,7 @@ def header() -> tuple[bool, bool]:
                             "ssl": True,
                             "account": account,
                             "username": username,
-                            "pwd": base64Encode(base64Encode(f"CAT-ENCODED-{pwd}")),
+                            "pwd": base64Encode(f"CAT-ENCODED-{pwd}"),
                             "verifySsl": True,
                             "useProxy": True,
                             "applicationFilter": {"apm": ".*", "mrum": ".*", "brum": ".*"},
