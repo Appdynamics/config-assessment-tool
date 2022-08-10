@@ -109,7 +109,7 @@ class Engine:
                 controller["pwd"] = base64Encode(f"CAT-ENCODED-{controller['pwd']}")
             elif not base64Decode(controller["pwd"]).startswith("CAT-ENCODED-"):
                 # is valid base64, but doesn't contain our encoding string "CAT-ENCODED-"
-                controller["pwd"] = base64Encode(f"CAT-ENCODED-{base64Decode(controller['pwd'])}")
+                controller["pwd"] = base64Encode(f"CAT-ENCODED-{controller['pwd']}")
 
             # add in fields not present
             if "verifySsl" not in controller:
