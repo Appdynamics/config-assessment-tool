@@ -29,7 +29,6 @@ class DashboardReport(ReportBase):
                     [
                         (hostInfo["controller"].host, color),
                         (dashboard["name"], color),
-
                     ],
                 )
                 rowIdx += 1
