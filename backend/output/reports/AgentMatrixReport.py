@@ -125,6 +125,9 @@ class AgentMatrixReport(ReportBase):
             appServerAgentCols.extend(
                 [
                     "reportingData",
+                    "installDir",
+                    "agentVersion",
+                    "latestAgentRuntime",
                     "metadata",
                 ]
             )
@@ -194,6 +197,9 @@ class AgentMatrixReport(ReportBase):
                                 }
                                 for info in metadata["applicationComponentNode"]["metaInfo"]
                             ]
+                            data.append(metadata["applicationComponentNode"]["appAgent"]["installDir"])
+                            data.append(metadata["applicationComponentNode"]["appAgent"]["agentVersion"])
+                            data.append(metadata["applicationComponentNode"]["appAgent"]["latestAgentRuntime"])
                             data.append(json.dumps(metaInfo))
 
                     writeUncoloredRow(
