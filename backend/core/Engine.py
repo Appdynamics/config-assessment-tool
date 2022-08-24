@@ -33,6 +33,7 @@ from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import Overal
 from output.presentations.cxPpt import createCxPpt
 from output.reports.AgentMatrixReport import AgentMatrixReport
 from output.reports.CustomMetricsReport import CustomMetricsReport
+from output.reports.DashboardReport import DashboardReport
 from output.reports.LicenseReport import LicenseReport
 from output.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from output.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
@@ -184,6 +185,7 @@ class Engine:
             CustomMetricsReport(),
             LicenseReport(),
             SyntheticsReport(),
+            DashboardReport(),
         ]
 
     async def run(self):
