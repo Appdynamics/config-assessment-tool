@@ -7,12 +7,11 @@ from pathlib import Path
 from typing import List
 
 from openpyxl import load_workbook
-from tzlocal import get_localzone
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-
 from pptx.slide import Slide
 from pptx.util import Inches, Pt
+from tzlocal import get_localzone
 
 """
 - Add in some links

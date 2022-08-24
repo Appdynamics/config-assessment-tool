@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
-from math import floor, ceil
+from math import ceil, floor
 
 from openpyxl import Workbook
 from output.ReportBase import ReportBase
-from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow, Color
+from util.excel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
 
 
 class SyntheticsReport(ReportBase):

@@ -3,7 +3,7 @@ import json
 import logging
 import re
 import time
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 from json import JSONDecodeError
 from math import ceil
 from typing import List

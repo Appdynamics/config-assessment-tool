@@ -9,7 +9,6 @@ from collections import OrderedDict
 from pathlib import Path
 
 import requests
-
 from api.appd.AppDService import AppDService
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
@@ -39,7 +38,7 @@ from output.reports.MaturityAssessmentReport import MaturityAssessmentReport
 from output.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
 from output.reports.SyntheticsReport import SyntheticsReport
 from util.asyncio_utils import AsyncioUtils
-from util.stdlib_utils import jsonEncoder, isBase64, base64Encode, base64Decode
+from util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
 
 class Engine:
