@@ -1,10 +1,11 @@
 import logging
+import re
 from datetime import datetime
-from math import ceil, floor
+from math import floor, ceil
 
 from openpyxl import Workbook
 from output.ReportBase import ReportBase
-from util.excel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
+from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow, Color
 
 
 class SyntheticsReport(ReportBase):
@@ -38,12 +39,21 @@ class SyntheticsReport(ReportBase):
                     color = Color.white
                     if estimatedBlocksUsedPerMonthPercentage > 100:
                         color = Color.red
+
+                    if syntheticJob["config"]["url"] is not None:
+                        numberOfWebDriverCalls = 0
+                    else:
+                        script = syntheticJob["config"]["script"]["script"]
+                        result = re.findall("driver\..+\(.+\)", script)
+                        numberOfWebDriverCalls = len(result)
+
                     allSyntheticJobs.append(
                         {
                             "host": (host, color),
                             "componentType": ("brum", color),
                             "application": (application["name"], color),
                             "jobName": (syntheticJob["config"]["description"], color),
+                            "numberOfWebDriverCalls": (numberOfWebDriverCalls, color),
                             "projectedDailyRuns": (syntheticJob["config"]["projectedUsage"]["projectedDailyRuns"], color),
                             "projectedMonthlyRuns": (syntheticJob["config"]["projectedUsage"]["projectedMonthlyRuns"], color),
                             "averageDuration": (syntheticJob["averageDuration"], color),
