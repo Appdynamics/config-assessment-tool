@@ -35,7 +35,7 @@ a = Analysis(
         ("../backend/resources/pptAssets/background_2.jpg", "backend/resources/pptAssets"),
         ("../backend/resources/pptAssets/criteria.png", "backend/resources/pptAssets"),
         ("../backend/resources/pptAssets/criteria2.png", "backend/resources/pptAssets"),
-        (path.join(site_packages,"pptx","templates"), "pptx/templates"), # for pptx
+     	(path.join(site_packages,"pptx","templates"), "pptx/templates"), # for pptx
     ],
     hiddenimports=[],
     hookspath=[],
