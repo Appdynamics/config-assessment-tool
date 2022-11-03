@@ -988,9 +988,8 @@ class AppDService:
         # get the last 24 hours in milliseconds
         lastMonth = self.endTime - (1 * 60 * 60 * 24 * 30 * 1000)
         monthStart = datetime.timestamp(datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
-        ws = (date.today() - timedelta(date.today().weekday()))
-        weekStart = datetime.timestamp(
-            datetime.today().replace(year=ws.year, month=ws.month, day=ws.day, hour=0, minute=0, second=0, microsecond=0))
+        ws = date.today() - timedelta(date.today().weekday())
+        weekStart = datetime.timestamp(datetime.today().replace(year=ws.year, month=ws.month, day=ws.day, hour=0, minute=0, second=0, microsecond=0))
         body = {
             "appId": applicationId,
             "scheduleIds": jobsJson,
