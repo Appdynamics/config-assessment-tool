@@ -1,9 +1,12 @@
+import logging
 import string
 from enum import Enum
 from typing import Any, List
 
 from openpyxl import Workbook
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import PatternFill
+from openpyxl.utils.exceptions import IllegalCharacterError
 from openpyxl.worksheet.worksheet import Worksheet
 
 
@@ -39,7 +42,13 @@ def writeColoredRow(sheet: Worksheet, rowIdx: int, data: [(Any, Color)]):
 def writeUncoloredRow(sheet: Worksheet, rowIdx: int, data: [Any]):
     """Write row of data at given rowIdx starting from colIdx A. Typically used for writing headers."""
     for cell, colIdx in zip(data, string.ascii_uppercase[: len(data)]):
-        sheet[f"{colIdx}{rowIdx}"] = cell
+        try:
+            sheet[f"{colIdx}{rowIdx}"] = cell
+        except IllegalCharacterError:
+            logging.warning(f"illegal character detected in cell, will scrub {cell}")
+            cell = ILLEGAL_CHARACTERS_RE.sub(r'', cell)
+            logging.warning(f"scrubbed cell: {cell}")
+            sheet[f"{colIdx}{rowIdx}"] = cell
 
 
 def createSheet(workbook: Workbook, sheetName: str, headers: List[Any], rows: List[List[Any]]):

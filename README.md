@@ -172,6 +172,22 @@ This program will create the following files in the `out` directory.
 
 ## Program Architecture
 
+### General Description
+- Configuration Assessment Tool or config-assessment-tool as it is referenced on GitHub is an open-source project that was developed by AppDynamics Engineers with the purpose of evaluating the configuration and quality of the instrumentation of applications that are being monitored by the AppDynamics Application Performance Monitoring (APM) product suite.  Its intended audience are AppDynamics/Cisco customers as well as AppD/Cisco personal that assist the customers in improving the instrumentation of their applications. The tool is Python (3.9+) based and hence requires a Python installation.
+- Users run the tool directly from source, or using docker container (locally build only and not pulled from any repo) or the executable bundle (Windows and Linux bundles) that contains shared libraries or executable files for Python.  If users wish to run the code using Docker, they must build to the local image on their platform(using the provided Dockerfile), therefore a Docker engine install is also required if running from Docker containers. Refer to the GitHub repository for instructions on how to build the image and run the tool using Docker.
+- There are Python packages that are required that are pulled from Pypi package repository when config-assessment-tool is installed. These can be examined by following the build from source instructions outlined on the GitHub repo.
+When config-assessment-tool starts it reads the job file with customer provided properties and connects to the AppDynamics controller url as defined in that job file.  The controller(s) can be an AppDynamics hosted Saas controller(s) or customer's on-premises installation(s).  The tool also uses the credentials in the job file to authenticate to the controller and using the generatee temporary session token, it uses the AppDynamics Controller REST API’s to pull various metrics and generate the “output” directory that contains these metrics in the form of various Excel Worksheet files along with some other supplemental data files. These are the artifacts that are used by the customers to examine and provide various metrics around how well each of the applications that are being monitored on the respective controller.
+- There are no other communication from the tool to any other external services. We solely utilize the AppDynamics’s Controller REST API’s. See the online API documentation for the superset reference for more information.
+- Consult the below links for the aforementioned references:
+  - AppDynamics API's: https://docs.appdynamics.com/appd/22.x/latest/en/extend-appdynamics/appdynamics-apis#AppDynamicsAPIs-apiindex
+  - Job file: https://github.com/Appdynamics/config-assessment-tool/blob/master/input/jobs/DefaultJob.json
+  - Buil from source: https://github.com/Appdynamics/config-assessment-tool#from-source
+  - config-assessment-tool GitHub open source project: https://github.com/Appdynamics/config-assessment-tool
+  - AppDynamics - https://www.appdynamics.com/
+  - Docker: https://docs.docker.com/
+  - PyPi Python package repo: https://pypi.org/
+
+
 ### Backend
 
 ![Scheme](backend/resources/img/architecture.jpg)
