@@ -391,7 +391,7 @@ async def testGetDataCollectorUsage(controller):
     assert "dataCollectorsPresentInSnapshots" in dataCollectorUsage.data
     assert "allDataCollectors" in dataCollectorUsage.data
 
-    assert ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["allDataCollectors"]
+    assert ("HTTP Parameter", "bar", True) in dataCollectorUsage.data["allDataCollectors"]
     assert (
         "Business Data",
         "in_snapshot_not_analytics",
@@ -459,6 +459,15 @@ async def testGetDashboards(controller):
         assert "modifiedOn" in dashboard
 
     await controller.close()
+
+@pytest.mark.asyncio
+async def testGetReports(controller):
+    reports = await controller.getReports()
+    assert reports.error is None
+    assert len(reports.data) > 0
+    for report in reports.data:
+        assert "name" in report
+
 
 
 @pytest.mark.asyncio
@@ -616,7 +625,7 @@ async def testGetMachineAgents(controller):
 async def testGetCustomMetrics(controller):
     assert (await controller.loginToController()).error is None
 
-    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "machine-agent")
+    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "customer-services")
 
     assert customMetrics.error is None
     assert len(customMetrics.data) > 0

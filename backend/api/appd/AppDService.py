@@ -567,6 +567,14 @@ class AppDService:
 
         return Result(returnedDashboards, None)
 
+
+    async def getReports(self) -> Result:
+        debugString = f"Gathering Reports"
+        logging.debug(f"{self.host} - {debugString}")
+        response = await self.controller.getReportList()
+        reports = await self.getResultFromResponse(response, debugString)
+        return Result(reports.data, None)
+
     async def getUserPermissions(self, username: str) -> Result:
         debugString = f"Gathering Permission set for user: {username}"
         logging.debug(f"{self.host} - {debugString}")

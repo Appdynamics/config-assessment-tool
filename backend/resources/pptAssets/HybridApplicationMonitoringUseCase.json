@@ -1,0 +1,514 @@
+{
+  "version": "1.0.0",
+  "UseCase": "Hybrid Application Monitoring",
+  "pitstop": {
+    "onboard": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_ONB_1",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_ONB_2",
+          "checklist_item": "Understand Full Stack Observability Use Cases",
+          "tooltip": "Customer has attended Project Planning ATX OR  has clicked on document / link for project planning or deployment planning",
+          "high_level_exit_criteria": "Complete Project Planning",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_ONB_3",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_ONB_4",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        }
+      }
+    },
+    "implement": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_IMP_1",
+          "checklist_item": "Confirm AppDynamics Licensing",
+          "tooltip": "Premium or Enterprise license tier with APM",
+          "high_level_exit_criteria": "Confirm Premium or Enterprise license enabled in AppDynamics",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_IMP_2",
+          "checklist_item": "Onboard Application(s) in AppDynamics",
+          "tooltip": "Onboarded application(s) in AppD",
+          "high_level_exit_criteria": "Onboard at least 1 application in AppD",
+          "exit_criteria_logic": "Applications Onboarded >= 1",
+          "min_pass_threshold": "Applications Onboarded >= 1",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_IMP_3",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_IMP_4",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        }
+      }
+    },
+    "use": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_USE_1",
+          "checklist_item": "Deploy Application agents  per application ",
+          "tooltip": "Number of app server agents deployed per application",
+          "high_level_exit_criteria": "Deploy at least 5 Applications agents ",
+          "exit_criteria_logic": "Number of Application Agents Deployed > 4",
+          "min_pass_threshold": "Number of Application Agents Deployed > 4",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_USE_2",
+          "checklist_item": "Add Business Transactions to AppDynamics",
+          "tooltip": "Number of business transactions configured",
+          "high_level_exit_criteria": "Add at least 5 Business Transactions to AppD ",
+          "exit_criteria_logic": "",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_USE_3",
+          "checklist_item": "Create Health Rules",
+          "tooltip": "Number of health rules",
+          "high_level_exit_criteria": "Create at least 2 Health Checks",
+          "exit_criteria_logic": "",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_USE_4",
+          "checklist_item": "Create Data Collectors and Detection Rules",
+          "tooltip": "Number of data collectors and detection rules created",
+          "high_level_exit_criteria": "Define Data Collectors, Create Data Collection Rules",
+          "exit_criteria_logic": "",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        }
+      }
+    },
+    "engage": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_ENG_1",
+          "checklist_item": "Create Policies and corresponding Actions",
+          "tooltip": "At least 2 policies and assigned actions",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Create Actions as part of a Policy setup"
+            },
+            "2": {
+              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions"
+            },
+            "3": {
+              "remediation_item": "Short video on configuring Policies and Actions"
+            },
+            "4": {
+              "remediation_item": "Consult the AppDynamics Education Portal for available resources"
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_ENG_2",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions"
+            },
+            "2": {
+              "remediation_item": "Another link <a href='http://docs.appdynamics.com'>Online Documentation</a> for other docs"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_ENG_3",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_ENG_4",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        }
+      }
+    },
+    "adopt": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_ADO_1",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_ADO_2",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        }
+      }
+    },
+    "optimize": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_OPT_1",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Configure at least 1 automated action has been triggered"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_OPT_2",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Ensure at least 1 automated action has been triggered"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_OPT_3",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_OPT_4",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Remediation Item 1"
+            },
+            "2": {
+              "remediation_item": "Remediation Item 2"
+            },
+            "3": {
+              "remediation_item": "Remediation Item 3"
+            },
+            "4": {
+              "remediation_item": "Remediation Item 4"
+            }
+          }
+        }
+      }
+    }
+  }
+}
