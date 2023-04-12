@@ -13,10 +13,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Checkout <a href='https://community.cisco.com/t5/all-guides-for-hybrid-application-monitoring/hybrid-application-monitoring-guided-resources/ta-p/4679489'>Hybrid Application Monitoring Guided Resources</a> for a list of actions"
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>"
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -35,7 +35,7 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Attend a <a href='https://learningnetwork.cisco.com/s/article/dc-cloud-compute-ask-the-experts-sessions'>Data Center Ask the Experts (ATXs) Sessions</a> by searching for Hybrid Application Monitoring"
             },
             "2": {
               "remediation_item": "Remediation Item 2"
