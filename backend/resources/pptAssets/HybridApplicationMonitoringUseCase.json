@@ -13,10 +13,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Checkout <a href='https://community.cisco.com/t5/all-guides-for-hybrid-application-monitoring/hybrid-application-monitoring-guided-resources/ta-p/4679489'>Hybrid Application Monitoring Guided Resources</a> for a list of actions"
+              "remediation_item": "Checkout <a href='https://community.cisco.com/t5/all-guides-for-hybrid-application-monitoring/hybrid-application-monitoring-guided-resources/ta-p/4679489'>Hybrid Application Monitoring Guided Resources</a> for a list of actions."
             },
             "2": {
-              "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>"
+              "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>."
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -35,7 +35,7 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Attend a <a href='https://learningnetwork.cisco.com/s/article/dc-cloud-compute-ask-the-experts-sessions'>Data Center Ask the Experts (ATXs) Sessions</a> by searching for Hybrid Application Monitoring"
+              "remediation_item": "Attend a <a href='https://learningnetwork.cisco.com/s/article/dc-cloud-compute-ask-the-experts-sessions'>Data Center Ask the Experts (ATXs) Sessions</a> by searching for Hybrid Application Monitoring."
             },
             "2": {
               "remediation_item": "Remediation Item 2"
@@ -105,10 +105,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Login to <a href='https://accounts.appdynamics.com'>accounts.appdynamics.com</a> and check <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/account-entitlements/manage-licenses'>License Management</a> in <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/account-entitlements/'>Entitlements</a>."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "From the accounts page you will be able too lookup all <a href='https://docs.appdynamics.com/accounts/en/global-account-administration#GlobalAccountAdministration-AccessTenantAccessaTenant'>Tenants</a> (controllers) you have access too."
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -127,13 +127,13 @@
           "min_pass_threshold": "Applications Onboarded >= 1",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Go through the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/getting-started'>Getting Started</a> for all essentials."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "Following the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/deployment-planning-guide'>Deployment Planning Guide</a> will help you understanding the essentials before starting the first deployment"
             },
             "3": {
-              "remediation_item": "Remediation Item 3"
+              "remediation_item": "Start with the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents'>Install App Server Agents</a> to deploy your first agent."
             },
             "4": {
               "remediation_item": "Remediation Item 4"
