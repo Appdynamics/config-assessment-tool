@@ -1,20 +1,17 @@
+import json
 import logging
-import os
-from pptx.oxml.xmlchemy import OxmlElement
 import re
 from enum import Enum
+from typing import Dict, Optional
 
 from openpyxl import load_workbook
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT
-from pptx.slide import Slide
-from pptx.util import Inches, Pt
-from typing import List, Dict, Optional
+# from pptx.enum.dml import MSO_THEME_COLOR
+from pptx.enum.dml import MSO_THEME_COLOR
+from pptx.oxml.xmlchemy import OxmlElement
+from pptx.util import Pt, Inches
 
-
-import json
-from typing import List, Dict, Optional
 
 class UseCase(tuple):
     def __init__(self, json_file: str):
@@ -48,7 +45,6 @@ class UseCase(tuple):
         self.setSlideId("optimize",12)
         self.setSlideId("optimize_remediation",13)
         self.setSlideId("FINAL",14)
-        print("initialized the slide deck index")
         print(self.task_id_to_slide)
 
     def getAllSlideIndexes(self):
@@ -145,13 +141,6 @@ def addTable(slide, data, color: Color = Color.BLACK, fontSize: int = 16, left: 
                     run.font.size = Pt(fontSize)
                     run.font.color.rgb = color.value
 
-import re
-from pptx.util import Pt, Inches
-from pptx.action import Hyperlink
-from pptx.dml.color import ColorFormat
-# from pptx.enum.dml import MSO_THEME_COLOR
-from pptx.enum.dml import MSO_THEME_COLOR
-
 
 def addCell(cell, text, color=None, fontSize=16):
     cell.text = text
@@ -191,7 +180,6 @@ def addHyperLinkCell(run, cell_text):
     hyperlink_pattern = re.compile(r'<a href=[\'"](.*?)[\'"]>(.*?)<\/a>')
     parts = hyperlink_pattern.split(cell_text)
     for idx, part in enumerate(parts):
-        print(idx, part)
         if idx % 3 == 0:
             run.text += part
         elif idx % 3 == 1:
@@ -200,7 +188,6 @@ def addHyperLinkCell(run, cell_text):
             run.text += part
             hlink = run.hyperlink
             hlink.address = hyperlink_url
-            run.font.color.theme_color = MSO_THEME_COLOR.HYPERLINK
 
 def addRemediationTable(slide, data, color=None, fontSize=16, left=1.5, top=3.5, width=9.5, height=1.5):
     shape = slide.shapes.add_table(len(data), len(data[0]), Inches(left), Inches(top), Inches(width), Inches(height))
@@ -212,7 +199,6 @@ def addRemediationTable(slide, data, color=None, fontSize=16, left=1.5, top=3.5,
 
     for i, row in enumerate(data):
         for j, cell in enumerate(row):
-            print("row {}, col {}, cell: {}".format(i, j, cell))
             cell_text = str(cell)
             text_frame = table.cell(i, j).text_frame
             # Clear any existing paragraphs
@@ -221,21 +207,27 @@ def addRemediationTable(slide, data, color=None, fontSize=16, left=1.5, top=3.5,
                 addCell(table.cell(i, j), cell_text, color, fontSize)
                 continue
 
-            for line in cell_text.split("\n"):
-                if hyperlink_pattern.search(line):
-                    print("Matched hyperlink pattern")
-                    p = text_frame.add_paragraph()
-                    run = p.add_run()
-                    addHyperLinkCell(run, line)
-                    makeParaBulletPointed(p)
-                    p.font.size = Pt(12)
-                else:
-                    print(f"Adding regular text line: {line}")
-                    p = text_frame.add_paragraph()
-                    p.text = line
-                    makeParaBulletPointed(p)
-                    p.font.size = Pt(12)
+            for idx, line in enumerate(cell_text.split("\n")):
+                segments = re.split(hyperlink_pattern, line)
 
+                if idx == 0:
+                    paragraph = text_frame.paragraphs[0]
+                else:
+                    paragraph = text_frame.add_paragraph()
+
+                # paragraph = text_frame.add_paragraph()
+                for i, segment in enumerate(segments):
+                    if i % 3 == 0:
+                        paragraph.add_run().text = segment
+                    elif i % 3 == 1:  # url
+                        url = segment
+                    elif i % 3 == 2:  # hyperlink text
+                        hyperlink_run = paragraph.add_run()
+                        hyperlink_run.hyperlink.address = url
+                        hyperlink_run.text = segment
+
+                makeParaBulletPointed(paragraph)
+                paragraph.font.size = Pt(8)
 
 def getValuesInColumn(sheet, param):
     values = []
@@ -266,18 +258,6 @@ def createCxHamUseCasePpt(folder: str):
     uc = UseCase('backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json')
     metrics = calculate_kpis(wb, uc);
     root = Presentation("backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx")
-
-    # Example usage
-    print("------------------------------------")
-    print(uc.getChecklistItem('FSO_HAM_ONB_1'))
-    print(uc.getToolTip('FSO_HAM_ONB_1'))
-    print(uc.getExitCriteriaLogic('FSO_HAM_ONB_1'))
-    print("------------------------------------")
-    print("------------------------------------")
-    print(uc.getChecklistItem('FSO_HAM_ONB_2'))
-    print(uc.getToolTip('FSO_HAM_ONB_2'))
-    print(uc.getExitCriteriaLogic('FSO_HAM_ONB_2'))
-    print("------------------------------------")
 
     ############################# Onboard ###########################
     generatePitstopHealthCheckTable(folder, root, uc, "onboard")
@@ -390,13 +370,14 @@ def calculate_kpis(wb: str, uc: UseCase):
     FSO_HAM_ONB_1 = f'Manual'
     FSO_HAM_ONB_2 = f'Manual'
     FSO_HAM_ONB_3 = f'Manual'
-    FSO_HAM_ONB_4 = f'Manual'
+    FSO_HAM_ONB_4 = f'Success'
     FSO_HAM_USE_1 = f'Pass ({countOfpercentAgentsReportingData})' if countOfpercentAgentsReportingData>= 1 else 'Fail'
     FSO_HAM_USE_2 = f'Pass ({countOfNumberOfBTs})' if countOfNumberOfBTs >=1 else 'Fail'
     FSO_HAM_USE_3 = f'Pass ({countOfNumberOfCustomHealthRules})' if countOfNumberOfCustomHealthRules>=5 else 'Fail'
     FSO_HAM_USE_4 = f'Pass ({countOfNumberOfCustomHealthRules})' if countOfNumberOfCustomHealthRules>=5 else 'Fail'
     FSO_HAM_IMP_1 = f'TBI'
-    FSO_HAM_IMP_2 = f'Pass ({totalApplications})' if totalApplications >= 1 else 'Fail'
+    # FSO_HAM_IMP_2 = f'Pass ({totalApplications})' if totalApplications >= 1 else 'Fail'
+    FSO_HAM_IMP_2 = f'Fail'
     FSO_HAM_IMP_3 = f'TBI'
     FSO_HAM_IMP_4 = f'TBI'
     FSO_HAM_ENG_1 = f'Pass({countOfActionsBoundToEnabledPolicies})' if totalApplications == countOfActionsBoundToEnabledPolicies else 'Fail'

@@ -15,14 +15,18 @@ def testCxPptFsoUseCases(uc):
     uc.setHealthCheckStatus("FSO_HAM_ENG_2", "Fail (xxx hc failed)")
     uc.setHealthCheckStatus("FSO_HAM_ENG_3", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ENG_4", "pass (xxx hc )")
-
     uc.setHealthCheckStatus("FSO_HAM_ONB_1", "Fail (xxx hc failed)")
-
     uc.setHealthCheckStatus("FSO_HAM_IMP_2", "Fail (xxx hc failed)")
+    uc.setHealthCheckStatus("FSO_HAM_IMP_1", "Fail (xxx hc failed)")
 
 
 
+    generateRemediationSlides("folder_xxx", root, uc, "onboard", "onboard_remediation")
+    generateRemediationSlides("folder_xxx", root, uc, "implement", "implement_remediation")
+    generateRemediationSlides("folder_xxx", root, uc, "use", "use_remediation")
     generateRemediationSlides("folder_xxx", root, uc, "engage", "engage_remediation")
+    generateRemediationSlides("folder_xxx", root, uc, "adopt", "adopt_remediation")
+    generateRemediationSlides("folder_xxx", root, uc, "optimize", "optimize_remediation")
     cleanup_slides(root, uc)
     root.save(f"cx-ham-usecase-test-presentation.pptx")
 

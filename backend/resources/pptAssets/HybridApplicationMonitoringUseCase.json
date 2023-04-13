@@ -134,9 +134,6 @@
             },
             "3": {
               "remediation_item": "Start with the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents'>Install App Server Agents</a> to deploy your first agent."
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
             }
           }
         },
