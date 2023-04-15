@@ -161,14 +161,14 @@
         },
         "4": {
           "task_id": "FSO_HAM_IMP_4",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Create BT detection Rules. ",
+          "tooltip": "Number of BT detection rules created per application",
+          "high_level_exit_criteria": "Create at least 2 BT Detection Rules per application",
+          "exit_criteria_logic": "Number of Business Transaction Rules > 1",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules'>Custom Match Rules</a> on a per application basis"
             },
             "2": {
               "remediation_item": "Remediation Item 2"
@@ -187,17 +187,17 @@
       "checklist_sequence": {
         "1": {
           "task_id": "FSO_HAM_USE_1",
-          "checklist_item": "Deploy Application agents  per application ",
-          "tooltip": "Number of app server agents deployed per application",
-          "high_level_exit_criteria": "Deploy at least 5 Applications agents ",
-          "exit_criteria_logic": "Number of Application Agents Deployed > 4",
-          "min_pass_threshold": "Number of Application Agents Deployed > 4",
+          "checklist_item": "Application agents configured per application and reporting data",
+          "tooltip": "At least one application agent must be deployed per application and must be reporting data",
+          "high_level_exit_criteria": "Deploy at least 1 Applications agents per application ",
+          "exit_criteria_logic": "Number of Application Agents Deployed >= 1 ",
+          "min_pass_threshold": "Number of Application Agents Deployed > 0",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "At least one agent per application must be reporting data. If agent is installed and not reporting any data, please validate your installation"
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "If an application is no longer being monitored, ensure the agent is uninstalled and the application is removed from the Controller. Uninstalling an agent will also ensure that the license is returned to the pool"
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -210,16 +210,16 @@
         "2": {
           "task_id": "FSO_HAM_USE_2",
           "checklist_item": "Add Business Transactions to AppDynamics",
-          "tooltip": "Number of business transactions configured",
-          "high_level_exit_criteria": "Add at least 5 Business Transactions to AppD ",
-          "exit_criteria_logic": "",
+          "tooltip": "Number of business transactions configured per application (through either Auto Discovery or Custom match rules)",
+          "high_level_exit_criteria": "Add at least 5 Business Transactions to AppD",
+          "exit_criteria_logic": "Number of Business Transactions >= 5",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Ensure each monitored application has at least 5 business transactions in Business Transactions showing under <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/view-business-transactions'>Business Transactions tab</a>"
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Business Transactions</a> on a per application basis"
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -232,9 +232,9 @@
         "3": {
           "task_id": "FSO_HAM_USE_3",
           "checklist_item": "Create Health Rules",
-          "tooltip": "Number of health rules",
-          "high_level_exit_criteria": "Create at least 2 Health Checks",
-          "exit_criteria_logic": "",
+          "tooltip": "Number of health rules configured per application",
+          "high_level_exit_criteria": "Create at least 2 Health Checks on per application basis",
+          "exit_criteria_logic": "Number of Health Rules > 2 per application",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -292,10 +292,10 @@
               "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions"
             },
             "3": {
-              "remediation_item": "Short video on configuring Policies and Actions"
+              "remediation_item": "<a href='https://view-su2.highspot.com/viewer/62e05b34fb23db7a529904df'>Short video</a> on configuring Policies and Actions"
             },
             "4": {
-              "remediation_item": "Consult the AppDynamics Education Portal for available resources"
+              "remediation_item": "Consult the AppDynamics <a href='https://education.appdynamics.com'>Education Portal</a> for available resources. For access please reach out to your Cisco/AppDynamics Account Manager"
             }
           }
         },
