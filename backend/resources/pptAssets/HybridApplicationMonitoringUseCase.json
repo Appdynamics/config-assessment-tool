@@ -111,7 +111,7 @@
               "remediation_item": "From the accounts page you will be able too lookup all <a href='https://docs.appdynamics.com/accounts/en/global-account-administration#GlobalAccountAdministration-AccessTenantAccessaTenant'>Tenants</a> (controllers) you have access too."
             },
             "3": {
-              "remediation_item": "Remediation Item 3"
+              "remediation_item": "Or checkout the on-demand course <a href='https://education.appdynamics.com/learn/course/internal/view/elearning/297/account-management-portal-license-management'>Account Management Portal - License Management</a>."
             },
             "4": {
               "remediation_item": "Remediation Item 4"
@@ -168,16 +168,16 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules'>Custom Match Rules</a> on a per application basis"
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules'>Custom Match Rules</a> on a per application basis."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "Make sure the application is having load on all the relevant functions. And follow other <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/best-practices-to-create-business-transactions'>Best Practices to create Business Transactions</a>."
             },
             "3": {
-              "remediation_item": "Remediation Item 3"
+              "remediation_item": "If no Business Transaction gets discovered check if the technologies used is available in Supported Environments e.g. for the Java Agent: <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents/java-agent/java-supported-environments'>Java Supported Environments</a>."
             },
             "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "<a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules/custom-match-rule-live-preview'>Live Preview</a> can be a helpful tool to create Custom Match rules if nothing gets discovered."
             }
           }
         }
