@@ -130,7 +130,7 @@
               "remediation_item": "Go through the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/getting-started'>Getting Started</a> for all essentials."
             },
             "2": {
-              "remediation_item": "Following the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/deployment-planning-guide'>Deployment Planning Guide</a> will help you understanding the essentials before starting the first deployment"
+              "remediation_item": "Following the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/deployment-planning-guide'>Deployment Planning Guide</a> will help you understanding the essentials before starting the first deployment."
             },
             "3": {
               "remediation_item": "Start with the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents'>Install App Server Agents</a> to deploy your first agent."
@@ -194,10 +194,10 @@
           "min_pass_threshold": "Number of Application Agents Deployed > 0",
           "remediation_steps": {
             "1": {
-              "remediation_item": "At least one agent per application must be reporting data. If agent is installed and not reporting any data, please validate your installation"
+              "remediation_item": "At least one agent per application must be reporting data. If agent is installed and not reporting any data, please validate your installation."
             },
             "2": {
-              "remediation_item": "If an application is no longer being monitored, ensure the agent is uninstalled and the application is removed from the Controller. Uninstalling an agent will also ensure that the license is returned to the pool"
+              "remediation_item": "If an application is no longer being monitored, ensure the agent is uninstalled and the application is removed from the Controller. Uninstalling an agent will also ensure that the license is returned to the pool."
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -216,10 +216,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Ensure each monitored application has at least 5 business transactions in Business Transactions showing under <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/view-business-transactions'>Business Transactions tab</a>"
+              "remediation_item": "Ensure each monitored application has at least 5 business transactions in Business Transactions showing under <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/view-business-transactions'>Business Transactions tab</a>."
             },
             "2": {
-              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Business Transactions</a> on a per application basis"
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Business Transactions</a> on a per application basis."
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -238,7 +238,7 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Check out the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/health-rules'>Health Rules</a> documentation."
             },
             "2": {
               "remediation_item": "Remediation Item 2"
@@ -286,16 +286,16 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Create Actions as part of a Policy setup"
+              "remediation_item": "Create Actions as part of a Policy setup."
             },
             "2": {
-              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions"
+              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions."
             },
             "3": {
-              "remediation_item": "<a href='https://view-su2.highspot.com/viewer/62e05b34fb23db7a529904df'>Short video</a> on configuring Policies and Actions"
+              "remediation_item": "<a href='https://view-su2.highspot.com/viewer/62e05b34fb23db7a529904df'>Short video</a> on configuring Policies and Actions."
             },
             "4": {
-              "remediation_item": "Consult the AppDynamics <a href='https://education.appdynamics.com'>Education Portal</a> for available resources. For access please reach out to your Cisco/AppDynamics Account Manager"
+              "remediation_item": "Consult the AppDynamics <a href='https://education.appdynamics.com'>Education Portal</a> for available resources. For access please reach out to your Cisco/AppDynamics Account Manager."
             }
           }
         },
@@ -308,10 +308,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions"
+              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions."
             },
             "2": {
-              "remediation_item": "Another link <a href='http://docs.appdynamics.com'>Online Documentation</a> for other docs"
+              "remediation_item": "Another link <a href='http://docs.appdynamics.com'>Online Documentation</a> for other docs."
             },
             "3": {
               "remediation_item": "Remediation Item 3"
