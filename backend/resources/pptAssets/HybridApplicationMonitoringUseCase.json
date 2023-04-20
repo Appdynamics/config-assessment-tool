@@ -50,9 +50,9 @@
         },
         "3": {
           "task_id": "FSO_HAM_ONB_3",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "checklist_item": "AppDynamics Getting Started ",
+          "tooltip": "Become familiar with the AppDynamics and Application Performance Monitoring product overview",
+          "high_level_exit_criteria": "Consume the ATX/ACC for best practices of AppDynamics",
           "exit_criteria_logic": "Manual",
           "min_pass_threshold": "",
           "remediation_steps": {
@@ -72,9 +72,9 @@
         },
         "4": {
           "task_id": "FSO_HAM_ONB_4",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "checklist_item": "Create AppDynamics Account",
+          "tooltip": "AppDynamics account created",
+          "high_level_exit_criteria": "Successfully complete AppDynamics Account Creation",
           "exit_criteria_logic": "Manual",
           "min_pass_threshold": "",
           "remediation_steps": {
@@ -139,10 +139,10 @@
         },
         "3": {
           "task_id": "FSO_HAM_IMP_3",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
+          "checklist_item": "Create AppD users, groups and roles",
+          "tooltip": "Number of AppD users, groups and roles created in AppD",
           "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "exit_criteria_logic": "TBI",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -161,37 +161,11 @@
         },
         "4": {
           "task_id": "FSO_HAM_IMP_4",
-          "checklist_item": "Create BT detection Rules. ",
-          "tooltip": "Number of BT detection rules created per application",
-          "high_level_exit_criteria": "Create at least 2 BT Detection Rules per application",
-          "exit_criteria_logic": "Number of Business Transaction Rules > 1",
-          "min_pass_threshold": "",
-          "remediation_steps": {
-            "1": {
-              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules'>Custom Match Rules</a> on a per application basis."
-            },
-            "2": {
-              "remediation_item": "Make sure the application is having load on all the relevant functions. And follow other <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/best-practices-to-create-business-transactions'>Best Practices to create Business Transactions</a>."
-            },
-            "3": {
-              "remediation_item": "If no Business Transaction gets discovered check if the technologies used is available in Supported Environments e.g. for the Java Agent: <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents/java-agent/java-supported-environments'>Java Supported Environments</a>."
-            },
-            "4": {
-              "remediation_item": "<a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules/custom-match-rule-live-preview'>Live Preview</a> can be a helpful tool to create Custom Match rules if nothing gets discovered."
-            }
-          }
-        }
-      }
-    },
-    "use": {
-      "checklist_sequence": {
-        "1": {
-          "task_id": "FSO_HAM_USE_1",
           "checklist_item": "Application agents configured per application and reporting data",
-          "tooltip": "At least one application agent must be deployed per application and must be reporting data",
-          "high_level_exit_criteria": "Deploy at least 1 Applications agents per application ",
-          "exit_criteria_logic": "Number of Application Agents Deployed >= 1 ",
-          "min_pass_threshold": "Number of Application Agents Deployed > 0",
+          "tooltip": "Number of app server agents deployed per application",
+          "high_level_exit_criteria": "Deploy at least 1 app server agent per application",
+          "exit_criteria_logic": "Number of Application Agents >= 1",
+          "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
               "remediation_item": "At least one agent per application must be reporting data. If agent is installed and not reporting any data, please validate your installation."
@@ -206,13 +180,39 @@
               "remediation_item": "Remediation Item 4"
             }
           }
+        }
+      }
+    },
+    "use": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_USE_1",
+          "checklist_item": "Create Business Transactions detection rules",
+          "tooltip": "Number of business transactions configured",
+          "high_level_exit_criteria": "At least 1 business transaction rule configured per application using a custom match rules",
+          "exit_criteria_logic": "Number of Business Transactions discovered using custom match rule >= 1",
+          "min_pass_threshold": "Number of Business Transactions discovered using customer match rule >= 1",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules'>Custom Match Rules</a> on a per application basis."
+            },
+            "2": {
+              "remediation_item": "Make sure the application is having load on all the relevant functions. And follow other <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/best-practices-to-create-business-transactions'>Best Practices to create Business Transactions</a>."
+            },
+            "3": {
+              "remediation_item": "If no Business Transaction gets discovered check if the technologies used is available in Supported Environments e.g. for the Java Agent: <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents/java-agent/java-supported-environments'>Java Supported Environments</a>."
+            },
+            "4": {
+              "remediation_item": "<a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules/custom-match-rule-live-preview'>Live Preview</a> can be a helpful tool to create Custom Match rules if nothing gets discovered."
+            }
+          }
         },
         "2": {
           "task_id": "FSO_HAM_USE_2",
           "checklist_item": "Add Business Transactions to AppDynamics",
-          "tooltip": "Number of business transactions configured per application (through either Auto Discovery or Custom match rules)",
-          "high_level_exit_criteria": "Add at least 5 Business Transactions to AppD",
-          "exit_criteria_logic": "Number of Business Transactions >= 5",
+          "tooltip": "Number of business transactions discovered per application (through either Auto Discovery or Custom match rules)",
+          "high_level_exit_criteria": "Add at least 5 Business Transactions per application ",
+          "exit_criteria_logic": "Number of Business Transactions discovered >= 5",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -233,8 +233,8 @@
           "task_id": "FSO_HAM_USE_3",
           "checklist_item": "Create Health Rules",
           "tooltip": "Number of health rules configured per application",
-          "high_level_exit_criteria": "Create at least 2 Health Checks on per application basis",
-          "exit_criteria_logic": "Number of Health Rules > 2 per application",
+          "high_level_exit_criteria": "Create at least 2 Health rules on per application basis",
+          "exit_criteria_logic": "Number of Health Rules >= 2 per application",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -254,9 +254,9 @@
         "4": {
           "task_id": "FSO_HAM_USE_4",
           "checklist_item": "Create Data Collectors and Detection Rules",
-          "tooltip": "Number of data collectors and detection rules created",
+          "tooltip": "Number of data collectors and detection rules created across all applications",
           "high_level_exit_criteria": "Define Data Collectors, Create Data Collection Rules",
-          "exit_criteria_logic": "",
+          "exit_criteria_logic": "Number of Data Collectors >= 1 across all applications(i.e. not per application)",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -280,16 +280,16 @@
         "1": {
           "task_id": "FSO_HAM_ENG_1",
           "checklist_item": "Create Policies and corresponding Actions",
-          "tooltip": "At least 2 policies and assigned actions",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "tooltip": "At least 2 policies and assigned actions per application",
+          "high_level_exit_criteria": "Create at least 2 Policies and corresponding Actions per application",
+          "exit_criteria_logic": "Number of polices with assigned actions >= 2 per application",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
               "remediation_item": "Create Actions as part of a Policy setup."
             },
             "2": {
-              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions."
+              "remediation_item": "Consult <a href='https://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions."
             },
             "3": {
               "remediation_item": "<a href='https://view-su2.highspot.com/viewer/62e05b34fb23db7a529904df'>Short video</a> on configuring Policies and Actions."
@@ -301,17 +301,17 @@
         },
         "2": {
           "task_id": "FSO_HAM_ENG_2",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Create and Use Dashboards",
+          "tooltip": "Number of dashboards created",
+          "high_level_exit_criteria": "Create at least 2 Dashboards across all applications",
+          "exit_criteria_logic": "Number of Dashboards created >=2",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Consult <a href='http://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions."
+              "remediation_item": "Create <a href='https://docs.appdynamics.com/appd/22.x/latest/en/appdynamics-essentials/dashboards-and-reports/custom-dashboards'>Custom Dashboards</a>"
             },
             "2": {
-              "remediation_item": "Another link <a href='http://docs.appdynamics.com'>Online Documentation</a> for other docs."
+              "remediation_item": "Utilize the new <a href='https://docs.appdynamics.com/appd/22.x/latest/en/appdynamics-essentials/dashboards-and-reports/dash-studio'>Dash Studio</a> designed to make building dashboards easier."
             },
             "3": {
               "remediation_item": "Remediation Item 3"
@@ -323,10 +323,10 @@
         },
         "3": {
           "task_id": "FSO_HAM_ENG_3",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Create Reports from Dashboards",
+          "tooltip": "Number of reports scheduled to be sent periodically",
+          "high_level_exit_criteria": "Create at least 2 Reports",
+          "exit_criteria_logic": "TBI",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -345,10 +345,10 @@
         },
         "4": {
           "task_id": "FSO_HAM_ENG_4",
-          "checklist_item": "Understand Full Stack Observability",
+          "checklist_item": "Number of AppD users",
           "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "high_level_exit_criteria": "Create at least 5 AppD Users, and has user groups and roles assigned",
+          "exit_criteria_logic": "TBI",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -371,10 +371,10 @@
       "checklist_sequence": {
         "1": {
           "task_id": "FSO_HAM_ADO_1",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Integrate Third party Add-Ons in AppD",
+          "tooltip": "Number of third-party integrations enabled in AppD",
+          "high_level_exit_criteria": "Have at least 1 Third party Integration",
+          "exit_criteria_logic": "TBI",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -393,10 +393,10 @@
         },
         "2": {
           "task_id": "FSO_HAM_ADO_2",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Deploy Database and Machine Agents",
+          "tooltip": "Number of database agent deployed",
+          "high_level_exit_criteria": "Deploy at least 1 Database Agent",
+          "exit_criteria_logic": "Number of Database Agents deployed >= 1",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -419,14 +419,14 @@
       "checklist_sequence": {
         "1": {
           "task_id": "FSO_HAM_OPT_1",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "checklist_item": "Update Business Transaction Thresholds",
+          "tooltip": "Optimize the BT threshold values",
+          "high_level_exit_criteria": "Confirm Business Transaction thresholds are enabled",
           "exit_criteria_logic": "Manual",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Configure at least 1 automated action has been triggered"
+              "remediation_item": "Remediation Item 1"
             },
             "2": {
               "remediation_item": "Remediation Item 2"
@@ -441,9 +441,9 @@
         },
         "2": {
           "task_id": "FSO_HAM_OPT_2",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "checklist_item": "Automate Remediation actions based on findings",
+          "tooltip": "Actions triggered for remediation, make http request or custom action",
+          "high_level_exit_criteria": "Confirm at least 1 automated action has been triggered",
           "exit_criteria_logic": "Manual",
           "min_pass_threshold": "",
           "remediation_steps": {
@@ -463,10 +463,10 @@
         },
         "3": {
           "task_id": "FSO_HAM_OPT_3",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Create at least 5 Customer Health Rules per application",
+          "tooltip": "Number of Health Rules",
+          "high_level_exit_criteria": "Create at least 6 Health Checks",
+          "exit_criteria_logic": "Number of Custom Health Rules(per application) Configured >= 5",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
@@ -485,10 +485,10 @@
         },
         "4": {
           "task_id": "FSO_HAM_OPT_4",
-          "checklist_item": "Understand Full Stack Observability",
-          "tooltip": "Customer has engaged with Cisco Content",
-          "high_level_exit_criteria": "consume the ATX/ACC Listed",
-          "exit_criteria_logic": "Manual",
+          "checklist_item": "Observe at least 10 Business Transactions per application (observed through auto-discovery or custom rule)",
+          "tooltip": "Number of business transactions configured",
+          "high_level_exit_criteria": "Add at least 10 Business Transactions per application",
+          "exit_criteria_logic": "Business Transaction count >= 10 (per application)",
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {

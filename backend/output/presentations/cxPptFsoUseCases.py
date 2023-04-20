@@ -50,11 +50,14 @@ class UseCase(tuple):
     def getAllHealthCheckValues(self):
         return list(self.task_id_to_health_check_status.values())
 
-    def pitStopContainsFailure(self, pitstop: str) -> bool:
+    def pitStopContainsFailureOrManualCheck(self, pitstop: str) -> bool:
         tasks = self.getPitstopTasks(pitstop)
         for task in tasks:
             if task in self.task_id_to_health_check_status \
-                    and 'fail' in self.task_id_to_health_check_status[task].lower():
+                    and \
+                    'fail' in self.task_id_to_health_check_status[task].lower() \
+                    or \
+                    'manual check' in self.task_id_to_health_check_status[task].lower():
                 return True
 
         return False
@@ -263,7 +266,10 @@ def getValuesInColumnForController(sheet, col1_value, controller):
 
     return values
 
-
+def getRowCountForController(sheet, controller: str) -> int:
+    CONTROLLER_NAME_COLUMN_INDEX = 1
+    matching_rows = sum(row[0] == controller for row in sheet.iter_rows(min_row=1, max_row=sheet.max_row, min_col=CONTROLLER_NAME_COLUMN_INDEX, max_col=CONTROLLER_NAME_COLUMN_INDEX, values_only=True))
+    return matching_rows
 
 def getAppsWithScore(sheet, assessmentScore):
     values = []
@@ -279,9 +285,10 @@ def getAppsWithScore(sheet, assessmentScore):
 
 def createCxHamUseCasePpt(folder: str):
     logging.info(f"Creating CX HAM Use Case PPT for {folder}")
-    wb = load_workbook(f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
+    apm_wb = load_workbook(f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
+    db_wb = load_workbook(f"output/{folder}/{folder}-AgentMatrix.xlsx")
     uc = UseCase('backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json')
-    _ = calculate_kpis(wb, uc)
+    _ = calculate_kpis(apm_wb, db_wb, uc)
     root = Presentation("backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx")
 
     ############################# Onboard ###########################
@@ -318,7 +325,7 @@ def generatePitstopHealthCheckTable(folder, root, uc, pitstop):
 
 
 def generateRemediationSlides(folder: str, root: Presentation, uc : UseCase, pitstop: str, remediation_slide: str):
-    if uc.pitStopContainsFailure(pitstop):
+    if uc.pitStopContainsFailureOrManualCheck(pitstop):
         slide = root.slides[uc.getSlideId(remediation_slide)]
         data = [ ["Controller", "Checklist Item", "Recommendation"] ]
         for task in uc.getPitstopTasks(pitstop):
@@ -345,69 +352,80 @@ def filter_slides(keep_slide_indexes, prs: Presentation):
 
 def cleanup_slides(root: Presentation, uc: UseCase):
     slides_to_keep = uc.getAllSlideIndexes()
-    if not uc.pitStopContainsFailure("onboard"):
+    if not uc.pitStopContainsFailureOrManualCheck("onboard"):
         slides_to_keep.remove(uc.getSlideId("onboard_remediation"))
-    if not uc.pitStopContainsFailure("implement"):
+    if not uc.pitStopContainsFailureOrManualCheck("implement"):
         slides_to_keep.remove(uc.getSlideId("implement_remediation"))
-    if not uc.pitStopContainsFailure("use"):
+    if not uc.pitStopContainsFailureOrManualCheck("use"):
         slides_to_keep.remove(uc.getSlideId("use_remediation"))
-    if not uc.pitStopContainsFailure("engage"):
+    if not uc.pitStopContainsFailureOrManualCheck("engage"):
         slides_to_keep.remove(uc.getSlideId("engage_remediation"))
-    if not uc.pitStopContainsFailure("adopt"):
+    if not uc.pitStopContainsFailureOrManualCheck("adopt"):
         slides_to_keep.remove(uc.getSlideId("adopt_remediation"))
-    if not uc.pitStopContainsFailure("optimize"):
+    if not uc.pitStopContainsFailureOrManualCheck("optimize"):
         slides_to_keep.remove(uc.getSlideId("optimize_remediation"))
 
     filter_slides(slides_to_keep, root)
 
-def calculate_kpis(wb, uc: UseCase):
+def calculate_kpis(apm_wb, agent_wb, uc: UseCase):
 
     # currently only supports one controller report out of the workbook
-    controller = getValuesInColumn(wb["Analysis"], "controller")[0]
+    controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
     logging.info(f"processing report for 1st controller only as multiple controllers are not supported yet: {controller}")
 
-    totalApplications = wb["Analysis"].max_row - 1
-    percentAgentsReportingData = getValuesInColumnForController(wb["AppAgentsAPM"], "percentAgentsReportingData", controller)
+    totalApplications = getRowCountForController(apm_wb["Analysis"], controller)
+    percentAgentsReportingData = getValuesInColumnForController(apm_wb["AppAgentsAPM"], "percentAgentsReportingData", controller)
     countOfpercentAgentsReportingData = len([x for x in percentAgentsReportingData if x >= 1])
-    numberOfBTsList= getValuesInColumnForController(wb["BusinessTransactionsAPM"], "numberOfBTs", controller)
-    customMatchRulesList = getValuesInColumnForController(wb["BusinessTransactionsAPM"], "numberCustomMatchRules", controller)
-    numberOfDataCollectorsConfigured= getValuesInColumnForController(wb["DataCollectorsAPM"], "numberOfDataCollectorFieldsConfigured", controller)
+    numberOfBTsList= getValuesInColumnForController(apm_wb["BusinessTransactionsAPM"], "numberOfBTs", controller)
+    customMatchRulesList = getValuesInColumnForController(apm_wb["BusinessTransactionsAPM"], "numberCustomMatchRules", controller)
+    numberOfDataCollectorsConfigured= getValuesInColumnForController(apm_wb["DataCollectorsAPM"], "numberOfDataCollectorFieldsConfigured", controller)
     countOfNumberOfDataCollectorsConfigured = len([x for x in numberOfDataCollectorsConfigured if x >= 1])
-    numberOfCustomHealthRules= getValuesInColumnForController(wb["HealthRulesAndAlertingAPM"], "numberOfCustomHealthRules", controller)
-    numberOfHealthRuleViolations = getValuesInColumnForController(wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolations", controller)
-    numberOfDefaultHealthRulesModified = getValuesInColumnForController(wb["HealthRulesAndAlertingAPM"], "numberOfDefaultHealthRulesModified", controller)
-    numberOfActionsBoundToEnabledPoliciesList = getValuesInColumnForController(wb["HealthRulesAndAlertingAPM"], "numberOfActionsBoundToEnabledPolicies", controller)
-    dashboardsList = getValuesInColumnForController(wb["DashboardsAPM"], "numberOfDashboards", controller)
+    numberOfCustomHealthRules= getValuesInColumnForController(apm_wb["HealthRulesAndAlertingAPM"], "numberOfCustomHealthRules", controller)
+    numberOfHealthRuleViolations = getValuesInColumnForController(apm_wb["HealthRulesAndAlertingAPM"], "numberOfHealthRuleViolations", controller)
+    numberOfDefaultHealthRulesModified = getValuesInColumnForController(apm_wb["HealthRulesAndAlertingAPM"], "numberOfDefaultHealthRulesModified", controller)
+    numberOfActionsBoundToEnabledPoliciesList = getValuesInColumnForController(apm_wb["HealthRulesAndAlertingAPM"], "numberOfActionsBoundToEnabledPolicies", controller)
+    dashboardsList = getValuesInColumnForController(apm_wb["DashboardsAPM"], "numberOfDashboards", controller)
 
+
+    dbAgentList = getValuesInColumnForController(agent_wb["Individual - dbAgents"], "status", controller)
+    dbAgentsActiveCount= len([x for x in dbAgentList if x == "ACTIVE"])
 
 
     ### ONB
     FSO_HAM_ONB_1 = f'manual check'
     FSO_HAM_ONB_2 = f'manual check'
     FSO_HAM_ONB_3 = f'manual check'
-    FSO_HAM_ONB_4 = f'Success'
+    FSO_HAM_ONB_4 = f'manual check'
 
     ### IMP
-    FSO_HAM_IMP_1 = f'TBI'
-    FSO_HAM_IMP_2 = f'Pass ({totalApplications})' if totalApplications >= 1 else 'Fail'
+    FSO_HAM_IMP_1 = f'manual check'
+    FSO_HAM_IMP_2 = f'Pass ({totalApplications})' if totalApplications >= 1 else f'Fail. At least one application needs to be instrumented and reporting metric data into AppDynamics controller'
     FSO_HAM_IMP_3 = f'TBI'
-    FSO_HAM_IMP_4 = f'Pass ({customMatchRulesList})' if all(countOfCustomRule >= 2 for countOfCustomRule in customMatchRulesList) else f'Fail (Not all applications have at least 2 custom BT match rules). Only {len([x for x in customMatchRulesList if x >= 2])} have at least 2 custom match rules out of {totalApplications}.'
+
+    # FSO_HAM_IMP_4 = f'Pass ({customMatchRulesList})' if all(countOfCustomRule >= 2 for countOfCustomRule in customMatchRulesList) else f'Fail (Not all applications have at least 2 custom BT match rules). Only {len([x for x in customMatchRulesList if x >= 2])} have at least 2 custom match rules out of {totalApplications}.'
+    FSO_HAM_IMP_4 = f'Pass' if countOfpercentAgentsReportingData == totalApplications else f'Fail (Not all application agents are reporting data). Only  {countOfpercentAgentsReportingData} reporting data out of {totalApplications}.'
 
     ### USE
-    FSO_HAM_USE_1 = f'Pass' if countOfpercentAgentsReportingData == totalApplications else f'Fail (Not all application agents are reporting data). Only  {countOfpercentAgentsReportingData} reporting data out of {totalApplications}.'
+    # FSO_HAM_USE_1 = f'Pass' if countOfpercentAgentsReportingData == totalApplications else f'Fail (Not all application agents are reporting data). Only  {countOfpercentAgentsReportingData} reporting data out of {totalApplications}.'
+    FSO_HAM_USE_1 = f'Pass ({customMatchRulesList})' if all(countOfCustomRule >= 2 for countOfCustomRule in customMatchRulesList) else f'Fail (Not all applications have at least 2 custom BT match rules). Only {len([x for x in customMatchRulesList if x >= 2])} have at least 2 custom match rules out of {totalApplications}.'
+
+
     FSO_HAM_USE_2 = f'Pass' if all(count >= 5 for count in numberOfBTsList) else f'Fail (Not all applications have at least 5 Business Transactions). Only {len([x for x in numberOfBTsList if x >= 5])} have at least 5 Business Transactions out of {totalApplications}.'
+
+
     FSO_HAM_USE_3 = f'Pass' if all(count >= 2 for count in numberOfCustomHealthRules) else f'Fail (At least 2 custom health rules must be configured per application). Only {len([count for count in numberOfCustomHealthRules if count >= 2])} applications have at least 2 custom health rules configured out of {totalApplications}.'
     FSO_HAM_USE_4 = f'Pass ({countOfNumberOfDataCollectorsConfigured})' if countOfNumberOfDataCollectorsConfigured>=2 else 'Fail'
 
     ### ENG
     FSO_HAM_ENG_1 = f'Pass' if all(count >= 5 for count in numberOfActionsBoundToEnabledPoliciesList) else f'Fail (Not all applications have at least 2 policies with actionable alerts). Only {len([x for x in numberOfActionsBoundToEnabledPoliciesList if x >= 2])} applications have at least 2 actionable alerts out of {totalApplications} applications.'
+
     FSO_HAM_ENG_2 = f'Pass' if all(count >= 2 for count in dashboardsList) else f'Fail (there should be at least two dashboards configured). Only {len([x for x in dashboardsList if x >= 2])} dashboards are configured'
     FSO_HAM_ENG_3 = f'TBI'
     FSO_HAM_ENG_4 = f'TBI'
 
     ### ADO
     FSO_HAM_ADO_1 = f'TBI'
-    FSO_HAM_ADO_2 = f'FAIL xxxx'
+    FSO_HAM_ADO_2 = f'Pass' if dbAgentsActiveCount > 0 else f'Fail (there should be at least one Active Database Agent configured). Currently {dbAgentsActiveCount} Active Database agents are configured.'
 
     ### OPT
     FSO_HAM_OPT_1 = f'TBI'
