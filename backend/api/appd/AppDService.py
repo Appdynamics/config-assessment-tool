@@ -760,18 +760,8 @@ class AppDService:
         response = await self.controller.getServersKeys(json.dumps(body))
         serverKeys = await self.getResultFromResponse(response, debugString)
 
-        machineIds = []
-        for serverKey in serverKeys.data["machineKeys"]:
-            try:
-                machineId = serverKey["machineId"]
-            except TypeError as e:
-                logging.error(f"Error processing serverKey: {serverKey}. Error: {e}")
-                logging.error(f"This might be due to a deleted entity no longer available for API processing. Skipping this serverKey")
-                continue
+        machineIds = [serverKey["machineId"] for serverKey in serverKeys.data["machineKeys"]]
 
-            machineIds.append(machineId)
-
-        logging.info(f"Here is list of machineIds: {machineIds}");
         serverFutures = [self.controller.getServer(serverId) for serverId in machineIds]
         serversResponses = await AsyncioUtils.gatherWithConcurrency(*serverFutures)
 

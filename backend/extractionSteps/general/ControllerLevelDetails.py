@@ -41,9 +41,9 @@ class ControllerLevelDetails(JobStepBase):
             hostInfo["configurations"] = (await controller.getConfigurations()).data
             hostInfo["analyticsEnabledStatus"] = (await controller.getAnalyticsEnabledStatusForAllApplications()).data
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting Dashboards & Reports')
+            logging.info(f'{hostInfo["controller"].host} - Extracting Dashboards')
             hostInfo["exportedDashboards"] = (await controller.getDashboards()).data
-            hostInfo["exportedReports"] = (await controller.getReports()).data
+            # hostInfo["exportedReports"] = (await controller.getReports()).data
 
             logging.info(f'{hostInfo["controller"].host} - Extracting Licenses')
             hostInfo["accountLicenseUsage"] = (await controller.getAccountUsageSummary()).data

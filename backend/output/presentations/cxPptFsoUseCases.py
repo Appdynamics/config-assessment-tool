@@ -136,6 +136,8 @@ def addTable(slide, data, color: Color = Color.BLACK, fontSize: int = 16, left: 
     for i, row in enumerate(data):
         for j, cell in enumerate(row):
             table.cell(i, j).text = str(cell)
+            image_left = Inches(left) + Inches(width) * j
+            image_top = Inches(top) + Inches(height) * i
             for paragraph in table.cell(i, j).text_frame.paragraphs:
                 for run in paragraph.runs:
                     run.font.size = Pt(fontSize)
@@ -399,8 +401,8 @@ def calculate_kpis(apm_wb, agent_wb, uc: UseCase):
 
     ### IMP
     FSO_HAM_IMP_1 = f'manual check'
-    FSO_HAM_IMP_2 = f'Pass ({totalApplications})' if totalApplications >= 1 else f'Fail. At least one application needs to be instrumented and reporting metric data into AppDynamics controller'
-    FSO_HAM_IMP_3 = f'TBI'
+    FSO_HAM_IMP_2 = f'Pass ({totalApplications} applications on-boarded)' if totalApplications >= 1 else f'Fail. At least one application needs to be instrumented and reporting metric data into AppDynamics controller'
+    FSO_HAM_IMP_3 = f'manual check'
 
     # FSO_HAM_IMP_4 = f'Pass ({customMatchRulesList})' if all(countOfCustomRule >= 2 for countOfCustomRule in customMatchRulesList) else f'Fail (Not all applications have at least 2 custom BT match rules). Only {len([x for x in customMatchRulesList if x >= 2])} have at least 2 custom match rules out of {totalApplications}.'
     FSO_HAM_IMP_4 = f'Pass' if countOfpercentAgentsReportingData == totalApplications else f'Fail (Not all application agents are reporting data). Only  {countOfpercentAgentsReportingData} reporting data out of {totalApplications}.'
@@ -414,22 +416,22 @@ def calculate_kpis(apm_wb, agent_wb, uc: UseCase):
 
 
     FSO_HAM_USE_3 = f'Pass' if all(count >= 2 for count in numberOfCustomHealthRules) else f'Fail (At least 2 custom health rules must be configured per application). Only {len([count for count in numberOfCustomHealthRules if count >= 2])} applications have at least 2 custom health rules configured out of {totalApplications}.'
-    FSO_HAM_USE_4 = f'Pass ({countOfNumberOfDataCollectorsConfigured})' if countOfNumberOfDataCollectorsConfigured>=2 else 'Fail'
+    FSO_HAM_USE_4 = f'Pass ({countOfNumberOfDataCollectorsConfigured} data collectors found)' if countOfNumberOfDataCollectorsConfigured>=2 else 'Fail'
 
     ### ENG
     FSO_HAM_ENG_1 = f'Pass' if all(count >= 5 for count in numberOfActionsBoundToEnabledPoliciesList) else f'Fail (Not all applications have at least 2 policies with actionable alerts). Only {len([x for x in numberOfActionsBoundToEnabledPoliciesList if x >= 2])} applications have at least 2 actionable alerts out of {totalApplications} applications.'
 
     FSO_HAM_ENG_2 = f'Pass' if all(count >= 2 for count in dashboardsList) else f'Fail (there should be at least two dashboards configured). Only {len([x for x in dashboardsList if x >= 2])} dashboards are configured'
-    FSO_HAM_ENG_3 = f'TBI'
-    FSO_HAM_ENG_4 = f'TBI'
+    FSO_HAM_ENG_3 = f'manual check'
+    FSO_HAM_ENG_4 = f'manual check'
 
     ### ADO
-    FSO_HAM_ADO_1 = f'TBI'
+    FSO_HAM_ADO_1 = f'manual check'
     FSO_HAM_ADO_2 = f'Pass' if dbAgentsActiveCount > 0 else f'Fail (there should be at least one Active Database Agent configured). Currently {dbAgentsActiveCount} Active Database agents are configured.'
 
     ### OPT
-    FSO_HAM_OPT_1 = f'TBI'
-    FSO_HAM_OPT_2 = f'TBI'
+    FSO_HAM_OPT_1 = f'manual check'
+    FSO_HAM_OPT_2 = f'manual check'
     FSO_HAM_OPT_3 = f'Pass' if all(count >= 6 for count in numberOfCustomHealthRules) else f'Fail (At least 6 custom health rules must be configured per applications). Only {len([count for count in numberOfCustomHealthRules if count >= 6])} application has 6 custom health rules configured.'
     FSO_HAM_OPT_4 = f'Pass' if all(count >= 10 for count in numberOfBTsList) else f'Fail (there should be at least 10 Business Translations detected per application). Only {len([count for count in numberOfBTsList if count >= 10])} applications have at least 10 Business Transaction'
 

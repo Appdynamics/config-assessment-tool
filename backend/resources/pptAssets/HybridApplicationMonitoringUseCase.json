@@ -17,12 +17,6 @@
             },
             "2": {
               "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>."
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
             }
           }
         },
@@ -35,16 +29,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Attend a <a href='https://learningnetwork.cisco.com/s/article/dc-cloud-compute-ask-the-experts-sessions'>Data Center Ask the Experts (ATXs) Sessions</a> by searching for Hybrid Application Monitoring."
+              "remediation_item": "Attend <a href='https://learningnetwork.cisco.com/s/article/dc-cloud-compute-ask-the-experts-sessions'>Data Center Ask the Experts (ATXs) Sessions</a> by searching for Hybrid Application Monitoring."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>."
             }
           }
         },
@@ -57,16 +45,16 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "AppDynamics online documentation is available at <a href='https://docs.appdynamics.com/'>docs.appdynamics.com</a>."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
+              "remediation_item": "Check out on-demand and <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
             },
             "3": {
-              "remediation_item": "Remediation Item 3"
+              "remediation_item": "View <a href='https://community.appdynamics.com/'>community web site for articles and help</a>"
             },
             "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Check out <a href='https://education.appdynamics.com/'>education portal</a>"
             }
           }
         },
@@ -79,16 +67,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Check out <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/getting-started'>Getting started page</a> and access the Account Management Portal."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Users may also <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/rbac-api'>use AppDynamics API</a> to create users and groups."
             }
           }
         }
@@ -112,9 +94,6 @@
             },
             "3": {
               "remediation_item": "Or checkout the on-demand course <a href='https://education.appdynamics.com/learn/course/internal/view/elearning/297/account-management-portal-license-management'>Account Management Portal - License Management</a>."
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
             }
           }
         },
@@ -146,16 +125,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Find online documentation for <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/access-management/manage-user-accounts'>Managing Users and Groups</a>."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Users may also <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/rbac-api'>use AppDynamics API</a> to create users and groups."
             }
           }
         },
@@ -172,12 +145,6 @@
             },
             "2": {
               "remediation_item": "If an application is no longer being monitored, ensure the agent is uninstalled and the application is removed from the Controller. Uninstalling an agent will also ensure that the license is returned to the pool."
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
             }
           }
         }
@@ -220,12 +187,6 @@
             },
             "2": {
               "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Business Transactions</a> on a per application basis."
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
             }
           }
         },
@@ -241,13 +202,7 @@
               "remediation_item": "Check out the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/health-rules'>Health Rules</a> documentation."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Make sure you <a href='https://docs.appdynamics.com/appd/21.x/latest/en/appdynamics-essentials/alert-and-respond/configure-health-rules/create-a-health-rule-and-fine-tune-metric-evaluation'>fine-tune Metric evaluation</a> to avoid false positives and alert spams."
             }
           }
         },
@@ -260,16 +215,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "See online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/data-collectors'>Data Collection Rules</a> on a per application basis."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Checkout this helpful online <a href='https://community.appdynamics.com/t5/Business-iQ-Analytics/Troubleshooting-manual-data-collectors/m-p/47285'>community post</a> on how to trouble-shoot using data collectors."
             }
           }
         }
@@ -308,16 +257,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Create <a href='https://docs.appdynamics.com/appd/22.x/latest/en/appdynamics-essentials/dashboards-and-reports/custom-dashboards'>Custom Dashboards</a>"
+              "remediation_item": "Create <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports/custom-dashboards'>Custom Dashboards</a>"
             },
             "2": {
-              "remediation_item": "Utilize the new <a href='https://docs.appdynamics.com/appd/22.x/latest/en/appdynamics-essentials/dashboards-and-reports/dash-studio'>Dash Studio</a> designed to make building dashboards easier."
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Utilize the new <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports/dash-studio'>Dash Studio</a> designed to make building dashboards easier."
             }
           }
         },
@@ -330,16 +273,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Consult <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports'>Online Documentation</a> on how to create dashboards and reports."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Checkout report types that <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/appdynamics-essentials/dashboards-and-reports/reports'>are available</a>"
             }
           }
         },
@@ -352,16 +289,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Find online documents for <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/access-management/manage-user-accounts'>Managing Users and Groups</a>."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "See also the <a href='https://accounts.appdynamics.com/'>Account Management Portal</a> for central management of user accounts."
             }
           }
         }
@@ -378,16 +309,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "Consult <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/integration-modules'>Online Documentation</a> on how to integrate third party tools with AppDynamics."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/extend-appdynamics'>Online Documentation</a> on ways to extend AppDynamics."
             }
           }
         },
@@ -400,16 +325,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/infrastructure-visibility/machine-agent/install-the-machine-agent'>Online Documentation</a> on how to deploy Machine agents."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/database-visibility/administer-the-database-agent/install-the-database-agent'>Online Documentation</a> on how to deploy Database agents."
             }
           }
         }
@@ -426,16 +345,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/monitor-the-performance-of-business-transactions/transaction-thresholds#id-.TransactionThresholdsv23.1-ConfigureThresholds'>Online Documentation</a> on how to configure Business Transaction thresholds."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "General understanding of <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/application-monitoring/business-transactions'>Business Transactions</a> is also crucial."
             }
           }
         },
@@ -451,13 +364,7 @@
               "remediation_item": "Ensure at least 1 automated action has been triggered"
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/actions/remediation-actions'>Online Documentation</a> on how to configure automated remediation actions."
             }
           }
         },
@@ -470,16 +377,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/configure-health-rules'>Online Documentation</a> on how to create Health Rules."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/alert-and-respond-api'>AppDynamics APIs</a> for managing Health Rules programmatically."
             }
           }
         },
@@ -492,16 +393,10 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "Remediation Item 1"
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Online Documentation</a> on how to configure Business Transactions."
             },
             "2": {
-              "remediation_item": "Remediation Item 2"
-            },
-            "3": {
-              "remediation_item": "Remediation Item 3"
-            },
-            "4": {
-              "remediation_item": "Remediation Item 4"
+              "remediation_item": "Monitoring <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/monitor-the-performance-of-business-transactions'>Business Transactions</a> is crucial in identifying performance issues."
             }
           }
         }
