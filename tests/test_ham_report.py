@@ -1,6 +1,6 @@
 import pytest
 from pptx import Presentation
-from output.presentations.cxPptFsoUseCases import UseCase, generateRemediationSlides, cleanup_slides
+from output.presentations.cxPptFsoUseCases import UseCase, generateRemediationSlides, cleanup_slides, generatePitstopHealthCheckTable, createCxHamUseCasePpt, markRaceTrackFailures
 from output.presentations.cxPptFsoUseCases import UseCase
 
 
@@ -11,22 +11,41 @@ def uc():
 def testCxPptFsoUseCases(uc):
     root = Presentation("../backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx")
     data = uc.pitstop_data
-    uc.setHealthCheckStatus("FSO_HAM_ENG_1", "Fail (xxx hc failed)")
-    uc.setHealthCheckStatus("FSO_HAM_ENG_2", "Fail (xxx hc failed)")
+    uc.setHealthCheckStatus("FSO_HAM_ONB_1", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ONB_2", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ONB_3", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ONB_4", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_IMP_1", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_IMP_2", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_IMP_3", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_IMP_4", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ADO_1", "Fail (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ADO_2", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_OPT_1", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_OPT_2", "Fail (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_USE_1", "Fail (xxx hc failed)")
+    uc.setHealthCheckStatus("FSO_HAM_USE_2", "pass (xxx hc )")
+
+    uc.setHealthCheckStatus("FSO_HAM_ENG_1", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ENG_2", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ENG_3", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ENG_4", "pass (xxx hc )")
-    uc.setHealthCheckStatus("FSO_HAM_ONB_1", "Fail (xxx hc failed)")
-    uc.setHealthCheckStatus("FSO_HAM_IMP_2", "Fail (xxx hc failed)")
-    uc.setHealthCheckStatus("FSO_HAM_IMP_1", "Fail (xxx hc failed)")
 
+    markRaceTrackFailures(root,uc)
 
+    generatePitstopHealthCheckTable("folder_xxx", root, uc, "onboard")
+    generatePitstopHealthCheckTable("folder_xxx", root, uc, "implement")
+    generatePitstopHealthCheckTable("folder_xxx", root, uc, "use")
+    generatePitstopHealthCheckTable("folder_xxx", root, uc, "engage")
+    generatePitstopHealthCheckTable("folder_xxx", root, uc, "adopt")
+    generatePitstopHealthCheckTable("folder_xxx", root, uc, "optimize")
 
     generateRemediationSlides("folder_xxx", root, uc, "onboard", "onboard_remediation")
     generateRemediationSlides("folder_xxx", root, uc, "implement", "implement_remediation")
-    generateRemediationSlides("folder_xxx", root, uc, "use", "use_remediation")
     generateRemediationSlides("folder_xxx", root, uc, "engage", "engage_remediation")
     generateRemediationSlides("folder_xxx", root, uc, "adopt", "adopt_remediation")
     generateRemediationSlides("folder_xxx", root, uc, "optimize", "optimize_remediation")
+    generateRemediationSlides("folder_xxx", root, uc, "use", "use_remediation")
     cleanup_slides(root, uc)
     root.save(f"cx-ham-usecase-test-presentation.pptx")
 
@@ -79,3 +98,6 @@ def test_getPitstopTasks(uc):
     assert uc.getPitstopTasks("optimize")[2] == "FSO_HAM_OPT_3"
     assert uc.getPitstopTasks("optimize")[3] == "FSO_HAM_OPT_4"
 
+@pytest.mark.skip(reason="need to refactor to work")
+def test_ReportUsingDemoControllerOuput():
+    createCxHamUseCasePpt("appd-cse")
