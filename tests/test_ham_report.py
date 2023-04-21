@@ -13,8 +13,8 @@ def testCxPptFsoUseCases(uc):
     data = uc.pitstop_data
     uc.setHealthCheckStatus("FSO_HAM_ONB_1", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ONB_2", "pass (xxx hc )")
-    uc.setHealthCheckStatus("FSO_HAM_ONB_3", "pass (xxx hc )")
-    uc.setHealthCheckStatus("FSO_HAM_ONB_4", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ONB_3", "fail (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ONB_4", "fail (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_IMP_1", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_IMP_2", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_IMP_3", "pass (xxx hc )")
@@ -23,13 +23,15 @@ def testCxPptFsoUseCases(uc):
     uc.setHealthCheckStatus("FSO_HAM_ADO_2", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_OPT_1", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_OPT_2", "Fail (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_OPT_3", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_OPT_4", "Fail (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_USE_1", "Fail (xxx hc failed)")
     uc.setHealthCheckStatus("FSO_HAM_USE_2", "pass (xxx hc )")
 
-    uc.setHealthCheckStatus("FSO_HAM_ENG_1", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ENG_1", "fail (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ENG_2", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ENG_3", "pass (xxx hc )")
-    uc.setHealthCheckStatus("FSO_HAM_ENG_4", "pass (xxx hc )")
+    uc.setHealthCheckStatus("FSO_HAM_ENG_4", "fail (xxx hc )")
 
     markRaceTrackFailures(root,uc)
 

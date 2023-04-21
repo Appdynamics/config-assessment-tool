@@ -142,16 +142,31 @@ def addTable(slide, data, color: Color = Color.BLACK, fontSize: int = 16, left: 
     shape = slide.shapes.add_table(len(data), len(data[0]), Inches(left), Inches(top), Inches(width), Inches(height))
     table = shape.table
 
+    # Set fixed row height
+    for row_index, row in enumerate(table.rows):
+        if row_index != 0:  # Skip the title row
+            row.height = Inches(1)
+
+    pass_mark = find_image("checkmark.png", "../")
+    fail_mark = find_image("xmark.png", "../")
+
     for i, row in enumerate(data):
         for j, cell in enumerate(row):
-            table.cell(i, j).text = str(cell)
-            image_left = Inches(left) + Inches(width) * j
-            image_top = Inches(top) + Inches(height) * i
-            for paragraph in table.cell(i, j).text_frame.paragraphs:
+            cell_obj = table.cell(i, j)
+            cell_obj.text = str(cell)
+
+            image_left = Inches(left+2) + table.columns[j].width  * j
+            image_top = Inches(top) + table.rows[i].height * i
+            # add marker image
+            if "pass" in str(cell).lower() or "manual check" in str(cell).lower():
+                slide.shapes.add_picture(pass_mark, image_left, image_top, width=Inches(0.2), height=Inches(0.2))
+            if "fail" in str(cell).lower():
+                slide.shapes.add_picture(fail_mark, image_left, image_top, width=Inches(0.2), height=Inches(0.2))
+
+            for paragraph in cell_obj.text_frame.paragraphs:
                 for run in paragraph.runs:
                     run.font.size = Pt(fontSize)
                     run.font.color.rgb = color.value
-
 
 def addCell(cell, text, color=None, fontSize=16):
     cell.text = text
