@@ -354,6 +354,9 @@ def createCxHamUseCasePpt(folder: str):
     apm_wb = load_workbook(f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
     db_wb = load_workbook(f"output/{folder}/{folder}-AgentMatrix.xlsx")
 
+    # currently only 1st controller in the job file is examined.
+    controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
+
     json_file = search("HybridApplicationMonitoringUseCase.json", "../")
     uc = UseCase(json_file)
     _ = calculate_kpis(apm_wb, db_wb, uc)
@@ -362,23 +365,23 @@ def createCxHamUseCasePpt(folder: str):
     root = Presentation(template_file)
 
     ############################# Onboard ###########################
-    generatePitstopHealthCheckTable(folder, root, uc, "onboard")
-    generateRemediationSlides(folder, root, uc, "onboard", "onboard_remediation")
+    generatePitstopHealthCheckTable(controller, root, uc, "onboard")
+    generateRemediationSlides(controller, root, uc, "onboard", "onboard_remediation")
     ############################# Implement ###########################
-    generatePitstopHealthCheckTable(folder, root, uc, "implement")
-    generateRemediationSlides(folder, root, uc, "implement", "implement_remediation")
+    generatePitstopHealthCheckTable(controller, root, uc, "implement")
+    generateRemediationSlides(controller, root, uc, "implement", "implement_remediation")
     ############################ Use ##################################
-    generatePitstopHealthCheckTable(folder, root, uc, "use")
-    generateRemediationSlides(folder, root, uc, "use", "use_remediation")
+    generatePitstopHealthCheckTable(controller, root, uc, "use")
+    generateRemediationSlides(controller, root, uc, "use", "use_remediation")
     ############################ Engage ###############################
-    generatePitstopHealthCheckTable(folder, root, uc, "engage")
-    generateRemediationSlides(folder, root, uc, "engage", "engage_remediation")
+    generatePitstopHealthCheckTable(controller, root, uc, "engage")
+    generateRemediationSlides(controller, root, uc, "engage", "engage_remediation")
     ############################ Adopt ###############################
-    generatePitstopHealthCheckTable(folder, root, uc, "adopt")
-    generateRemediationSlides(folder, root, uc, "adopt", "adopt_remediation")
+    generatePitstopHealthCheckTable(controller, root, uc, "adopt")
+    generateRemediationSlides(controller, root, uc, "adopt", "adopt_remediation")
     ########################### Optimize ##############################
-    generatePitstopHealthCheckTable(folder, root, uc, "optimize")
-    generateRemediationSlides(folder, root, uc, "optimize", "optimize_remediation")
+    generatePitstopHealthCheckTable(controller, root, uc, "optimize")
+    generateRemediationSlides(controller, root, uc, "optimize", "optimize_remediation")
 
     cleanup_slides(root, uc)
     markRaceTrackFailures(root,uc)
