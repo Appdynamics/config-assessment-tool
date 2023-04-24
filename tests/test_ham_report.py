@@ -18,7 +18,8 @@ def search(filename, search_path="."):
 
 @pytest.fixture
 def uc():
-    return UseCase('HybridApplicationMonitoringUseCase.json')
+    json_file = search("HybridApplicationMonitoringUseCase.json", "../")
+    return UseCase(json_file)
 
 def testCxPptFsoUseCases(uc):
     template = search("HybridApplicationMonitoringUseCase_template.pptx", "../")

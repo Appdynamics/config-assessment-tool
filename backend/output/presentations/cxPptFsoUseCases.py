@@ -18,9 +18,7 @@ class UseCase(tuple):
         self.task_id_to_slide = {}
         self.task_id_to_health_check_status = {}
 
-        ham_data_file = search(file, "../")
-
-        with open(ham_data_file, 'r') as file:
+        with open(file, 'r') as file:
             data = json.load(file)
             self.pitstop_data = data['pitstop']
         self._initSlideMapping()
@@ -355,9 +353,13 @@ def createCxHamUseCasePpt(folder: str):
     logging.info(f"Creating CX HAM Use Case PPT for {folder}")
     apm_wb = load_workbook(f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
     db_wb = load_workbook(f"output/{folder}/{folder}-AgentMatrix.xlsx")
-    uc = UseCase('backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json')
+
+    json_file = search("HybridApplicationMonitoringUseCase.json", "../")
+    uc = UseCase(json_file)
     _ = calculate_kpis(apm_wb, db_wb, uc)
-    root = Presentation("backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx")
+
+    template_file = search("HybridApplicationMonitoringUseCase_template.pptx", "../")
+    root = Presentation(template_file)
 
     ############################# Onboard ###########################
     generatePitstopHealthCheckTable(folder, root, uc, "onboard")
