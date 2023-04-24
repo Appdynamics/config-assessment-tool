@@ -1,15 +1,28 @@
+import os
+
 import pytest
 from pptx import Presentation
 from output.presentations.cxPptFsoUseCases import UseCase, generateRemediationSlides, cleanup_slides, generatePitstopHealthCheckTable, createCxHamUseCasePpt, markRaceTrackFailures
 from output.presentations.cxPptFsoUseCases import UseCase
 
 
+
+
+
+def search(filename, search_path="."):
+    for root, _, files in os.walk(search_path):
+        if filename in files:
+            return os.path.join(root, filename)
+    return None
+
+
 @pytest.fixture
 def uc():
-    return UseCase('../backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json')
+    return UseCase('HybridApplicationMonitoringUseCase.json')
 
 def testCxPptFsoUseCases(uc):
-    root = Presentation("../backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx")
+    template = search("HybridApplicationMonitoringUseCase_template.pptx", "../")
+    root = Presentation(template)
     data = uc.pitstop_data
     uc.setHealthCheckStatus("FSO_HAM_ONB_1", "pass (xxx hc )")
     uc.setHealthCheckStatus("FSO_HAM_ONB_2", "pass (xxx hc )")

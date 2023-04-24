@@ -13,12 +13,14 @@ from pptx.util import Pt, Inches
 
 
 class UseCase(tuple):
-    def __init__(self, json_file: str):
+    def __init__(self, file: str):
 
         self.task_id_to_slide = {}
         self.task_id_to_health_check_status = {}
 
-        with open(json_file, 'r') as file:
+        ham_data_file = search(file, "../")
+
+        with open(ham_data_file, 'r') as file:
             data = json.load(file)
             self.pitstop_data = data['pitstop']
         self._initSlideMapping()
@@ -147,8 +149,8 @@ def addTable(slide, data, color: Color = Color.BLACK, fontSize: int = 16, left: 
         if row_index != 0:  # Skip the title row
             row.height = Inches(1)
 
-    pass_mark = find_image("checkmark.png", "../")
-    fail_mark = find_image("xmark.png", "../")
+    pass_mark = search("checkmark.png", "../")
+    fail_mark = search("xmark.png", "../")
 
     for i, row in enumerate(data):
         for j, cell in enumerate(row):
@@ -320,7 +322,7 @@ def add_image(slide, image_path, left, top, width, height):
     return slide.shapes.add_picture(image_path, left, top, width, height)
 
 
-def find_image(filename, search_path):
+def search(filename, search_path="."):
     for root, _, files in os.walk(search_path):
         if filename in files:
             return os.path.join(root, filename)
@@ -329,8 +331,8 @@ def find_image(filename, search_path):
 def markRaceTrackFailures(root, uc: UseCase):
     # racetrack slide is the second slide
     slide = root.slides[1]
-    pass_mark = find_image("checkmark.png", "../")
-    fail_mark = find_image("xmark.png", "../")
+    pass_mark = search("checkmark.png", "../")
+    fail_mark = search("xmark.png", "../")
     image_width = Inches(0.3)
     image_height = Inches(0.3)
 
