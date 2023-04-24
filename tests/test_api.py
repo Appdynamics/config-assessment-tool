@@ -460,15 +460,6 @@ async def testGetDashboards(controller):
 
     await controller.close()
 
-@pytest.mark.skip(reason="The API behind this test behaves inconsistently so will implement later")
-async def testGetReports(controller):
-    reports = await controller.getReports()
-    assert reports.error is None
-    assert len(reports.data) > 0
-    for report in reports.data:
-        assert "name" in report
-
-
 
 @pytest.mark.asyncio
 async def testGetUserPermissions(controller):
