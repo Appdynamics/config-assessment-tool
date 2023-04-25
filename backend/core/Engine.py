@@ -31,6 +31,7 @@ from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import H
 from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
 from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
 from output.presentations.cxPpt import createCxPpt
+from output.presentations.cxPptFsoUseCases import createCxHamUseCasePpt
 from output.reports.AgentMatrixReport import AgentMatrixReport
 from output.reports.CustomMetricsReport import CustomMetricsReport
 from output.reports.DashboardReport import DashboardReport
@@ -358,6 +359,7 @@ class Engine:
             )
 
         createCxPpt(self.jobFileName)
+        createCxHamUseCasePpt(self.jobFileName)
 
         logging.info(f"----------Complete----------")
         # if controllerData.json file exists, delete it

@@ -35,6 +35,10 @@ a = Analysis(
         ("../backend/resources/pptAssets/background_2.jpg", "backend/resources/pptAssets"),
         ("../backend/resources/pptAssets/criteria.png", "backend/resources/pptAssets"),
         ("../backend/resources/pptAssets/criteria2.png", "backend/resources/pptAssets"),
+        ("../backend/resources/pptAssets/checkmark.png", "backend/resources/pptAssets"),
+        ("../backend/resources/pptAssets/xmark.png", "backend/resources/pptAssets"),
+        ("../backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json", "backend/resources/pptAssets"),
+        ("../backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx", "backend/resources/pptAssets"),
      	(path.join(site_packages,"pptx","templates"), "pptx/templates"), # for pptx
     ],
     hiddenimports=[],
@@ -80,3 +84,7 @@ shutil.copyfile("backend/resources/pptAssets/background.jpg", f"{DISTPATH}/{bund
 shutil.copyfile("backend/resources/pptAssets/background_2.jpg", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/background_2.jpg")
 shutil.copyfile("backend/resources/pptAssets/criteria.png", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/criteria.png")
 shutil.copyfile("backend/resources/pptAssets/criteria2.png", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/criteria2.png")
+shutil.copyfile("backend/resources/pptAssets/checkmark.png", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/checkmark.png")
+shutil.copyfile("backend/resources/pptAssets/xmark.png", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/xmark.png")
+shutil.copyfile("backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json")
+shutil.copyfile("backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx", f"{DISTPATH}/{bundle_name}/backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx")

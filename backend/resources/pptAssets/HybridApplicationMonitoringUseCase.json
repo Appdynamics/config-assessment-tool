@@ -1,0 +1,406 @@
+{
+  "version": "1.0.0",
+  "UseCase": "Hybrid Application Monitoring",
+  "pitstop": {
+    "onboard": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_ONB_1",
+          "checklist_item": "Understand Full Stack Observability",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Checkout <a href='https://community.cisco.com/t5/all-guides-for-hybrid-application-monitoring/hybrid-application-monitoring-guided-resources/ta-p/4679489'>Hybrid Application Monitoring Guided Resources</a> for a list of actions."
+            },
+            "2": {
+              "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>."
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_ONB_2",
+          "checklist_item": "Understand Full Stack Observability Use Cases",
+          "tooltip": "Customer has attended Project Planning ATX OR  has clicked on document / link for project planning or deployment planning",
+          "high_level_exit_criteria": "Complete Project Planning",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Attend <a href='https://learningnetwork.cisco.com/s/article/dc-cloud-compute-ask-the-experts-sessions'>Data Center Ask the Experts (ATXs) Sessions</a> by searching for Hybrid Application Monitoring."
+            },
+            "2": {
+              "remediation_item": "Read <a href='https://www.cisco.com/c/en/us/solutions/collateral/full-stack-observability-aag.html'>Full-Stack Observability from Cisco At-a-Glance</a>."
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_ONB_3",
+          "checklist_item": "AppDynamics Getting Started ",
+          "tooltip": "Become familiar with the AppDynamics and Application Performance Monitoring product overview",
+          "high_level_exit_criteria": "Consume the ATX/ACC for best practices of AppDynamics",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "AppDynamics online documentation is available at <a href='https://docs.appdynamics.com/'>docs.appdynamics.com</a>."
+            },
+            "2": {
+              "remediation_item": "Check out on-demand and <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
+            },
+            "3": {
+              "remediation_item": "View <a href='https://community.appdynamics.com/'>community web site for articles and help</a>"
+            },
+            "4": {
+              "remediation_item": "Check out <a href='https://education.appdynamics.com/'>education portal</a>"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_ONB_4",
+          "checklist_item": "Create AppDynamics Account",
+          "tooltip": "AppDynamics account created",
+          "high_level_exit_criteria": "Successfully complete AppDynamics Account Creation",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Check out <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/getting-started'>Getting started page</a> and access the Account Management Portal."
+            },
+            "2": {
+              "remediation_item": "Users may also <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/rbac-api'>use AppDynamics API</a> to create users and groups."
+            }
+          }
+        }
+      }
+    },
+    "implement": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_IMP_1",
+          "checklist_item": "Confirm AppDynamics Licensing",
+          "tooltip": "Premium or Enterprise license tier with APM",
+          "high_level_exit_criteria": "Confirm Premium or Enterprise license enabled in AppDynamics",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Login to <a href='https://accounts.appdynamics.com'>accounts.appdynamics.com</a> and check <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/account-entitlements/manage-licenses'>License Management</a> in <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/account-entitlements/'>Entitlements</a>."
+            },
+            "2": {
+              "remediation_item": "From the accounts page you will be able too lookup all <a href='https://docs.appdynamics.com/accounts/en/global-account-administration#GlobalAccountAdministration-AccessTenantAccessaTenant'>Tenants</a> (controllers) you have access too."
+            },
+            "3": {
+              "remediation_item": "Or checkout the on-demand course <a href='https://education.appdynamics.com/learn/course/internal/view/elearning/297/account-management-portal-license-management'>Account Management Portal - License Management</a>."
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_IMP_2",
+          "checklist_item": "Onboard Application(s) in AppDynamics",
+          "tooltip": "Onboarded application(s) in AppD",
+          "high_level_exit_criteria": "Onboard at least 1 application in AppD",
+          "exit_criteria_logic": "Applications Onboarded >= 1",
+          "min_pass_threshold": "Applications Onboarded >= 1",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Go through the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/getting-started'>Getting Started</a> for all essentials."
+            },
+            "2": {
+              "remediation_item": "Following the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/deployment-planning-guide'>Deployment Planning Guide</a> will help you understanding the essentials before starting the first deployment."
+            },
+            "3": {
+              "remediation_item": "Start with the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents'>Install App Server Agents</a> to deploy your first agent."
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_IMP_3",
+          "checklist_item": "Create AppD users, groups and roles",
+          "tooltip": "Number of AppD users, groups and roles created in AppD",
+          "high_level_exit_criteria": "consume the ATX/ACC Listed",
+          "exit_criteria_logic": "TBI",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Find online documentation for <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/access-management/manage-user-accounts'>Managing Users and Groups</a>."
+            },
+            "2": {
+              "remediation_item": "Users may also <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/rbac-api'>use AppDynamics API</a> to create users and groups."
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_IMP_4",
+          "checklist_item": "Application agents configured per application and reporting data",
+          "tooltip": "Number of app server agents deployed per application",
+          "high_level_exit_criteria": "Deploy at least 1 app server agent per application",
+          "exit_criteria_logic": "Number of Application Agents >= 1",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "At least one agent per application must be reporting data. If agent is installed and not reporting any data, please validate your installation."
+            },
+            "2": {
+              "remediation_item": "If an application is no longer being monitored, ensure the agent is uninstalled and the application is removed from the Controller. Uninstalling an agent will also ensure that the license is returned to the pool."
+            }
+          }
+        }
+      }
+    },
+    "use": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_USE_1",
+          "checklist_item": "Create Business Transactions detection rules",
+          "tooltip": "Number of business transactions configured",
+          "high_level_exit_criteria": "At least 1 business transaction rule configured per application using a custom match rules",
+          "exit_criteria_logic": "Number of Business Transactions discovered using custom match rule >= 1",
+          "min_pass_threshold": "Number of Business Transactions discovered using customer match rule >= 1",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules'>Custom Match Rules</a> on a per application basis."
+            },
+            "2": {
+              "remediation_item": "Make sure the application is having load on all the relevant functions. And follow other <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/best-practices-to-create-business-transactions'>Best Practices to create Business Transactions</a>."
+            },
+            "3": {
+              "remediation_item": "If no Business Transaction gets discovered check if the technologies used is available in Supported Environments e.g. for the Java Agent: <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents/java-agent/java-supported-environments'>Java Supported Environments</a>."
+            },
+            "4": {
+              "remediation_item": "<a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules/custom-match-rule-live-preview'>Live Preview</a> can be a helpful tool to create Custom Match rules if nothing gets discovered."
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_USE_2",
+          "checklist_item": "Add Business Transactions to AppDynamics",
+          "tooltip": "Number of business transactions discovered per application (through either Auto Discovery or Custom match rules)",
+          "high_level_exit_criteria": "Add at least 5 Business Transactions per application ",
+          "exit_criteria_logic": "Number of Business Transactions discovered >= 5",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Ensure each monitored application has at least 5 business transactions in Business Transactions showing under <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/view-business-transactions'>Business Transactions tab</a>."
+            },
+            "2": {
+              "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Business Transactions</a> on a per application basis."
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_USE_3",
+          "checklist_item": "Create Health Rules",
+          "tooltip": "Number of health rules configured per application",
+          "high_level_exit_criteria": "Create at least 2 Health rules on per application basis",
+          "exit_criteria_logic": "Number of Health Rules >= 2 per application",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Check out the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/health-rules'>Health Rules</a> documentation."
+            },
+            "2": {
+              "remediation_item": "Make sure you <a href='https://docs.appdynamics.com/appd/21.x/latest/en/appdynamics-essentials/alert-and-respond/configure-health-rules/create-a-health-rule-and-fine-tune-metric-evaluation'>fine-tune Metric evaluation</a> to avoid false positives and alert spams."
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_USE_4",
+          "checklist_item": "Create Data Collectors and Detection Rules",
+          "tooltip": "Number of data collectors and detection rules created across all applications",
+          "high_level_exit_criteria": "Define Data Collectors, Create Data Collection Rules",
+          "exit_criteria_logic": "Number of Data Collectors >= 1 across all applications(i.e. not per application)",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "See online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/data-collectors'>Data Collection Rules</a> on a per application basis."
+            },
+            "2": {
+              "remediation_item": "Checkout this helpful online <a href='https://community.appdynamics.com/t5/Business-iQ-Analytics/Troubleshooting-manual-data-collectors/m-p/47285'>community post</a> on how to trouble-shoot using data collectors."
+            }
+          }
+        }
+      }
+    },
+    "engage": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_ENG_1",
+          "checklist_item": "Create Policies and corresponding Actions",
+          "tooltip": "At least 2 policies and assigned actions per application",
+          "high_level_exit_criteria": "Create at least 2 Policies and corresponding Actions per application",
+          "exit_criteria_logic": "Number of polices with assigned actions >= 2 per application",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Create Actions as part of a Policy setup."
+            },
+            "2": {
+              "remediation_item": "Consult <a href='https://docs.appdynamics.com'>Online Documentation</a> for configuring Policies and Actions."
+            },
+            "3": {
+              "remediation_item": "<a href='https://view-su2.highspot.com/viewer/62e05b34fb23db7a529904df'>Short video</a> on configuring Policies and Actions."
+            },
+            "4": {
+              "remediation_item": "Consult the AppDynamics <a href='https://education.appdynamics.com'>Education Portal</a> for available resources. For access please reach out to your Cisco/AppDynamics Account Manager."
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_ENG_2",
+          "checklist_item": "Create and Use Dashboards",
+          "tooltip": "Number of dashboards created",
+          "high_level_exit_criteria": "Create at least 2 Dashboards across all applications",
+          "exit_criteria_logic": "Number of Dashboards created >=2",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Create <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports/custom-dashboards'>Custom Dashboards</a>"
+            },
+            "2": {
+              "remediation_item": "Utilize the new <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports/dash-studio'>Dash Studio</a> designed to make building dashboards easier."
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_ENG_3",
+          "checklist_item": "Create Reports from Dashboards",
+          "tooltip": "Number of reports scheduled to be sent periodically",
+          "high_level_exit_criteria": "Create at least 2 Reports",
+          "exit_criteria_logic": "TBI",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Consult <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports'>Online Documentation</a> on how to create dashboards and reports."
+            },
+            "2": {
+              "remediation_item": "Checkout report types that <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/appdynamics-essentials/dashboards-and-reports/reports'>are available</a>"
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_ENG_4",
+          "checklist_item": "Number of AppD users",
+          "tooltip": "Customer has engaged with Cisco Content",
+          "high_level_exit_criteria": "Create at least 5 AppD Users, and has user groups and roles assigned",
+          "exit_criteria_logic": "TBI",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Find online documents for <a href='https://docs.appdynamics.com/accounts/en/global-account-administration/access-management/manage-user-accounts'>Managing Users and Groups</a>."
+            },
+            "2": {
+              "remediation_item": "See also the <a href='https://accounts.appdynamics.com/'>Account Management Portal</a> for central management of user accounts."
+            }
+          }
+        }
+      }
+    },
+    "adopt": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_ADO_1",
+          "checklist_item": "Integrate Third party Add-Ons in AppD",
+          "tooltip": "Number of third-party integrations enabled in AppD",
+          "high_level_exit_criteria": "Have at least 1 Third party Integration",
+          "exit_criteria_logic": "TBI",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Consult <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/integration-modules'>Online Documentation</a> on how to integrate third party tools with AppDynamics."
+            },
+            "2": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/extend-appdynamics'>Online Documentation</a> on ways to extend AppDynamics."
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_ADO_2",
+          "checklist_item": "Deploy Database and Machine Agents",
+          "tooltip": "Number of database agent deployed",
+          "high_level_exit_criteria": "Deploy at least 1 Database Agent",
+          "exit_criteria_logic": "Number of Database Agents deployed >= 1",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/infrastructure-visibility/machine-agent/install-the-machine-agent'>Online Documentation</a> on how to deploy Machine agents."
+            },
+            "2": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/database-visibility/administer-the-database-agent/install-the-database-agent'>Online Documentation</a> on how to deploy Database agents."
+            }
+          }
+        }
+      }
+    },
+    "optimize": {
+      "checklist_sequence": {
+        "1": {
+          "task_id": "FSO_HAM_OPT_1",
+          "checklist_item": "Update Business Transaction Thresholds",
+          "tooltip": "Optimize the BT threshold values",
+          "high_level_exit_criteria": "Confirm Business Transaction thresholds are enabled",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/monitor-the-performance-of-business-transactions/transaction-thresholds#id-.TransactionThresholdsv23.1-ConfigureThresholds'>Online Documentation</a> on how to configure Business Transaction thresholds."
+            },
+            "2": {
+              "remediation_item": "General understanding of <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/application-monitoring/business-transactions'>Business Transactions</a> is also crucial."
+            }
+          }
+        },
+        "2": {
+          "task_id": "FSO_HAM_OPT_2",
+          "checklist_item": "Automate Remediation actions based on findings",
+          "tooltip": "Actions triggered for remediation, make http request or custom action",
+          "high_level_exit_criteria": "Confirm at least 1 automated action has been triggered",
+          "exit_criteria_logic": "Manual",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "Ensure at least 1 automated action has been triggered"
+            },
+            "2": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/actions/remediation-actions'>Online Documentation</a> on how to configure automated remediation actions."
+            }
+          }
+        },
+        "3": {
+          "task_id": "FSO_HAM_OPT_3",
+          "checklist_item": "Create at least 5 Customer Health Rules per application",
+          "tooltip": "Number of Health Rules",
+          "high_level_exit_criteria": "Create at least 6 Health Checks",
+          "exit_criteria_logic": "Number of Custom Health Rules(per application) Configured >= 5",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/configure-health-rules'>Online Documentation</a> on how to create Health Rules."
+            },
+            "2": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/alert-and-respond-api'>AppDynamics APIs</a> for managing Health Rules programmatically."
+            }
+          }
+        },
+        "4": {
+          "task_id": "FSO_HAM_OPT_4",
+          "checklist_item": "Observe at least 10 Business Transactions per application (observed through auto-discovery or custom rule)",
+          "tooltip": "Number of business transactions configured",
+          "high_level_exit_criteria": "Add at least 10 Business Transactions per application",
+          "exit_criteria_logic": "Business Transaction count >= 10 (per application)",
+          "min_pass_threshold": "",
+          "remediation_steps": {
+            "1": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Online Documentation</a> on how to configure Business Transactions."
+            },
+            "2": {
+              "remediation_item": "Monitoring <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/monitor-the-performance-of-business-transactions'>Business Transactions</a> is crucial in identifying performance issues."
+            }
+          }
+        }
+      }
+    }
+  }
+}

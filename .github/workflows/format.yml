@@ -1,5 +1,9 @@
 name: format with black
-on: [ push, pull_request ]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
 jobs:
   linter_name:
     name: runner / black
@@ -7,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Validate with Black
-        uses: rickstaa/action-black@v1
+        uses: psf/black@stable
         id: action_black
         with:
           black_args: ". --line-length=150"

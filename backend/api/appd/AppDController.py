@@ -349,3 +349,8 @@ class AppdController(Consumer):
     @post("/controller/restui/eumSyntheticJobListUiService/getSessionData")
     def getSyntheticSessionData(self, body: Body):
         """Retrieves Synthetic Session Data"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/report/list")
+    def getReportList(self):
+        """Retrieves Report Data"""

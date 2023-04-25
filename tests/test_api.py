@@ -403,7 +403,7 @@ async def testGetDataCollectorUsage(controller):
         True,
     ) in dataCollectorUsage.data["allDataCollectors"]
 
-    assert not ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
+    assert not ("HTTP Parameter", "bar", True) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
     assert (
         "Business Data",
         "in_snapshot_not_analytics",
@@ -616,7 +616,7 @@ async def testGetMachineAgents(controller):
 async def testGetCustomMetrics(controller):
     assert (await controller.loginToController()).error is None
 
-    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "machine-agent")
+    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "customer-services")
 
     assert customMetrics.error is None
     assert len(customMetrics.data) > 0
