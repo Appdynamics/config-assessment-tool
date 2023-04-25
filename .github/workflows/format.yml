@@ -1,5 +1,6 @@
 name: format with black
 on: [ push, pull_request ]
+workflow_dispatch:
 jobs:
   linter_name:
     name: runner / black

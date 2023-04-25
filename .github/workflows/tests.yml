@@ -10,12 +10,6 @@ on:
     # run tests every night at midnight
     - cron: "0 0 * * *"
   workflow_dispatch:
-    # run tests manually
-    inputs:
-      run_tests:
-        description: 'Run tests'
-        required: true
-        default: 'true'
 
 jobs:
   build:
