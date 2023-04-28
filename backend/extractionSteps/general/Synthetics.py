@@ -75,8 +75,8 @@ class Synthetics(JobStepBase):
                         job["privateAgentUtilization"] = None
                     try:
                         job["averageDuration"] = syntheticSessionData[idx].data["AVG_DURATION"][job["config"]["id"]]
-                    except (KeyError, IndexError):
-                        logging.debug(f"{host} - {applicationName} - {job['config']['description']} - No average duration")
+                    except (KeyError, IndexError, TypeError):
+                        logging.warning(f"{host} - {applicationName} - {job['config']['description']} - No average duration")
                         job["averageDuration"] = 0
 
     def analyze(self, controllerData, thresholds):
