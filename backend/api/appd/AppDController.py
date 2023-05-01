@@ -354,3 +354,9 @@ class AppdController(Consumer):
     @get("/controller/restui/report/list")
     def getReportList(self):
         """Retrieves Report Data"""
+
+
+    @params({"output": "json"})
+    @get("/controller/restui/integrationsUiService/accountConfigurationProperties")
+    def get3rdPartyIntegrations(self):
+        """Retrieves 3rd Party Integrations"""
