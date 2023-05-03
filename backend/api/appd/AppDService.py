@@ -1007,19 +1007,6 @@ class AppDService:
         response = await self.controller.getSyntheticSessionData(json.dumps(body))
         return await self.getResultFromResponse(response, debugString)
 
-    async def get3rdPartyIntegrations(self) -> Result:
-        debugString = f"Gathering 3rd Party Integrations"
-        logging.debug(f"{self.host} - {debugString}")
-        response = await self.controller.get3rdPartyIntegrations()
-        return await self.getResultFromResponse(response, debugString)
-
-    # async def getMRUMApplications(self) -> Result:
-    #     debugString = f"Gathering MRUM Applications"
-    #     logging.debug(f"{self.host} - {debugString}")
-    #
-    #     if self.applicationFilter is not None:
-
-
     async def close(self):
         logging.debug(f"{self.host} - Closing connection")
         await self.session.close()

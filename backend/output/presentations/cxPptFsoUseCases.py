@@ -392,7 +392,7 @@ def createCxHamUseCasePpt(folder: str):
 
 def generatePitstopHealthCheckTable(folder, root, uc, pitstop):
     slide = root.slides[uc.getSlideId(pitstop)]
-    data = [["Controller", "Checklist Item", "Tooltips", "Exit Criteria Logic"]]
+    data = [["Controller", "Checklist Item", "Tooltips ***", "Exit Criteria Logic"]]
     for task in uc.getPitstopTasks(pitstop):
         data.append([folder, f"{uc.getChecklistItem(task)}", f"{uc.getToolTip(task)}", uc.getHealthCheckStatus(task)])
     addTable(slide, data, fontSize=10, top=2, left=1.5)

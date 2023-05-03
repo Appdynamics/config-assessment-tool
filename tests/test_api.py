@@ -5,6 +5,9 @@ from distutils.util import strtobool
 import pytest
 from api.appd.AppDService import AppDService
 
+APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_APPLICATION_ID"))
+EUM_APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_EUM_APPLICATION_ID"))
+USERNAME = os.getenv("TEST_CONTROLLER_USERNAME")
 
 
 @pytest.fixture
@@ -16,29 +19,15 @@ def event_loop():
     yield loop
     loop.close()
 
-@pytest.fixture()
-async def test_config_variables():
-    APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_APPLICATION_ID"))
-    EUM_APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_EUM_APPLICATION_ID"))
-    USERNAME = os.getenv("TEST_CONTROLLER_USERNAME")
 
-    return {
-        "APPLICATION_ID": APPLICATION_ID,
-        "EUM_APPLICATION_ID": EUM_APPLICATION_ID,
-        "USERNAME": USERNAME,
-    }
-
-
-
-
-@pytest.fixture()
+@pytest.fixture
 async def controller():
     if os.name == "nt":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     host = os.getenv("TEST_CONTROLLER_HOST")
-    port = os.getenv("TEST_CONTROLLER_PORT")
-    ssl = os.getenv("TEST_CONTROLLER_SSL")
+    port = int(os.getenv("TEST_CONTROLLER_PORT"))
+    ssl = strtobool(os.getenv("TEST_CONTROLLER_SSL"))
     account = os.getenv("TEST_CONTROLLER_ACCOUNT")
     username = os.getenv("TEST_CONTROLLER_USERNAME")
     pwd = os.getenv("TEST_CONTROLLER_PASSWORD")
@@ -61,12 +50,12 @@ async def testLogin(controller):
 
 
 @pytest.mark.asyncio
-async def testGetApmApplications(controller, test_config_variables):
+async def testGetApmApplications(controller):
     applications = await controller.getApmApplications()
     assert applications.error is None
 
     application = next(
-        (application for application in applications.data if application["id"] == test_config_variables["APPLICATION_ID"]),
+        (application for application in applications.data if application["id"] == APPLICATION_ID),
         None,
     )
     assert application is not None
@@ -75,9 +64,9 @@ async def testGetApmApplications(controller, test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetBtMatchRules(controller, test_config_variables):
+async def testGetBtMatchRules(controller):
     assert (await controller.loginToController()).error is None
-    btMatchRules = await controller.getBtMatchRules(test_config_variables["APPLICATION_ID"])
+    btMatchRules = await controller.getBtMatchRules(APPLICATION_ID)
 
     assert btMatchRules.error is None
     assert "ruleScopeSummaryMappings" in btMatchRules.data
@@ -124,9 +113,9 @@ async def testGetConfigurations(controller):
 
 
 @pytest.mark.asyncio
-async def testGetAllCustomExitPoints(controller,test_config_variables):
+async def testGetAllCustomExitPoints(controller):
     assert (await controller.loginToController()).error is None
-    customExitPoints = await controller.getAllCustomExitPoints(test_config_variables["APPLICATION_ID"])
+    customExitPoints = await controller.getAllCustomExitPoints(APPLICATION_ID)
 
     assert customExitPoints.error is None
 
@@ -147,9 +136,9 @@ async def testGetAllCustomExitPoints(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetBackendDiscoveryConfigs(controller,test_config_variables):
+async def testGetBackendDiscoveryConfigs(controller):
     assert (await controller.loginToController()).error is None
-    backendDiscoveryConfigs = await controller.getBackendDiscoveryConfigs(test_config_variables["APPLICATION_ID"])
+    backendDiscoveryConfigs = await controller.getBackendDiscoveryConfigs(APPLICATION_ID)
 
     assert backendDiscoveryConfigs.error is None
 
@@ -163,9 +152,9 @@ async def testGetBackendDiscoveryConfigs(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetDevModeConfig(controller,test_config_variables):
+async def testGetDevModeConfig(controller):
     assert (await controller.loginToController()).error is None
-    devModeConfig = await controller.getDevModeConfig(test_config_variables["APPLICATION_ID"])
+    devModeConfig = await controller.getDevModeConfig(APPLICATION_ID)
 
     assert devModeConfig.error is None
 
@@ -178,9 +167,9 @@ async def testGetDevModeConfig(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetInstrumentationLevel(controller,test_config_variables):
+async def testGetInstrumentationLevel(controller):
     assert (await controller.loginToController()).error is None
-    instrumentationLevel = await controller.getInstrumentationLevel(test_config_variables["APPLICATION_ID"])
+    instrumentationLevel = await controller.getInstrumentationLevel(APPLICATION_ID)
 
     assert instrumentationLevel.error is None
     assert instrumentationLevel.data == "DEVELOPMENT" or instrumentationLevel.data == "PRODUCTION"
@@ -189,9 +178,9 @@ async def testGetInstrumentationLevel(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetAllNodePropertiesForCustomizedComponents(controller,test_config_variables):
+async def testGetAllNodePropertiesForCustomizedComponents(controller):
     assert (await controller.loginToController()).error is None
-    allNodeProperties = await controller.getAllNodePropertiesForCustomizedComponents(test_config_variables["APPLICATION_ID"])
+    allNodeProperties = await controller.getAllNodePropertiesForCustomizedComponents(APPLICATION_ID)
 
     assert allNodeProperties.error is None
 
@@ -207,9 +196,9 @@ async def testGetAllNodePropertiesForCustomizedComponents(controller,test_config
 
 
 @pytest.mark.asyncio
-async def testGetApplicationConfiguration(controller,test_config_variables):
+async def testGetApplicationConfiguration(controller):
     assert (await controller.loginToController()).error is None
-    applicationConfiguration = await controller.getApplicationConfiguration(test_config_variables["APPLICATION_ID"])
+    applicationConfiguration = await controller.getApplicationConfiguration(APPLICATION_ID)
 
     assert applicationConfiguration.error is None
 
@@ -226,9 +215,9 @@ async def testGetApplicationConfiguration(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetServiceEndpointCustomMatchRules(controller,test_config_variables):
+async def testGetServiceEndpointCustomMatchRules(controller):
     assert (await controller.loginToController()).error is None
-    serviceEndpointMatchRules = await controller.getServiceEndpointMatchRules(test_config_variables["APPLICATION_ID"])
+    serviceEndpointMatchRules = await controller.getServiceEndpointMatchRules(APPLICATION_ID)
 
     assert serviceEndpointMatchRules.error is None
 
@@ -254,9 +243,9 @@ async def testGetServiceEndpointCustomMatchRules(controller,test_config_variable
 
 
 @pytest.mark.asyncio
-async def testGetAppLevelBTConfig(controller,test_config_variables):
+async def testGetAppLevelBTConfig(controller):
     assert (await controller.loginToController()).error is None
-    appLevelBTConfig = await controller.getAppLevelBTConfig(test_config_variables["APPLICATION_ID"])
+    appLevelBTConfig = await controller.getAppLevelBTConfig(APPLICATION_ID)
 
     assert appLevelBTConfig.error is None
 
@@ -269,11 +258,11 @@ async def testGetAppLevelBTConfig(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetMetricData(controller,test_config_variables):
+async def testGetMetricData(controller):
     assert (await controller.loginToController()).error is None
 
     metricData = await controller.getMetricData(
-        applicationID=test_config_variables["APPLICATION_ID"],
+        applicationID=APPLICATION_ID,
         metric_path="Business Transaction Performance|Business Transactions|*|*|Calls per Minute",
         rollup=True,
         time_range_type="BEFORE_NOW",
@@ -305,13 +294,13 @@ async def testGetMetricData(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetEventCountsLastDay(controller,test_config_variables):
+async def testGetEventCountsLastDay(controller):
     assert (await controller.loginToController()).error is None
 
     eventCounts = await controller.getEventCounts(
-        applicationID=test_config_variables["APPLICATION_ID"],
+        applicationID=APPLICATION_ID,
         entityType="APPLICATION",
-        entityID=test_config_variables["APPLICATION_ID"],
+        entityID=APPLICATION_ID,
     )
 
     assert eventCounts.error is None
@@ -328,10 +317,10 @@ async def testGetEventCountsLastDay(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetHealthRules(controller,test_config_variables):
+async def testGetHealthRules(controller):
     assert (await controller.loginToController()).error is None
 
-    healthRules = await controller.getHealthRules(test_config_variables["APPLICATION_ID"])
+    healthRules = await controller.getHealthRules(APPLICATION_ID)
 
     assert healthRules.error is None
 
@@ -351,10 +340,10 @@ async def testGetHealthRules(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetPolicies(controller,test_config_variables):
+async def testGetPolicies(controller):
     assert (await controller.loginToController()).error is None
 
-    policies = await controller.getPolicies(test_config_variables["APPLICATION_ID"])
+    policies = await controller.getPolicies(APPLICATION_ID)
 
     assert policies.error is None
     assert len(policies.data) > 0
@@ -371,10 +360,10 @@ async def testGetPolicies(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetPolicies(controller,test_config_variables):
+async def testGetPolicies(controller):
     assert (await controller.loginToController()).error is None
 
-    policies = await controller.getPolicies(test_config_variables["APPLICATION_ID"])
+    policies = await controller.getPolicies(APPLICATION_ID)
 
     assert policies.error is None
     assert len(policies.data) > 0
@@ -391,10 +380,10 @@ async def testGetPolicies(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetDataCollectorUsage(controller,test_config_variables):
+async def testGetDataCollectorUsage(controller):
     assert (await controller.loginToController()).error is None
 
-    dataCollectorUsage = await controller.getDataCollectorUsage(test_config_variables["APPLICATION_ID"])
+    dataCollectorUsage = await controller.getDataCollectorUsage(APPLICATION_ID)
 
     assert dataCollectorUsage.error is None
 
@@ -473,10 +462,10 @@ async def testGetDashboards(controller):
 
 
 @pytest.mark.asyncio
-async def testGetUserPermissions(controller,test_config_variables):
+async def testGetUserPermissions(controller):
     assert (await controller.loginToController()).error is None
 
-    userPermissions = await controller.getUserPermissions(test_config_variables["USERNAME"])
+    userPermissions = await controller.getUserPermissions(USERNAME)
 
     assert userPermissions.error is None
     assert len(userPermissions.data) > 0
@@ -501,10 +490,10 @@ async def testGetUserPermissions(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetCustomMetrics(controller,test_config_variables):
+async def testGetCustomMetrics(controller):
     assert (await controller.loginToController()).error is None
 
-    customMetrics = await controller.getCustomMetrics(test_config_variables["APPLICATION_ID"], "api-services")
+    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "api-services")
 
     assert customMetrics.error is None
 
@@ -624,10 +613,10 @@ async def testGetMachineAgents(controller):
 
 
 @pytest.mark.asyncio
-async def testGetCustomMetrics(controller,test_config_variables):
+async def testGetCustomMetrics(controller):
     assert (await controller.loginToController()).error is None
 
-    customMetrics = await controller.getCustomMetrics(test_config_variables["APPLICATION_ID"], "customer-services")
+    customMetrics = await controller.getCustomMetrics(APPLICATION_ID, "customer-services")
 
     assert customMetrics.error is None
     assert len(customMetrics.data) > 0
@@ -681,10 +670,10 @@ async def testGetEumApplications(controller):
 
 
 @pytest.mark.asyncio
-async def testGetEumPageListViewData(controller,test_config_variables):
+async def testGetEumPageListViewData(controller):
     assert (await controller.loginToController()).error is None
 
-    eumPageListViewData = await controller.getEumPageListViewData(test_config_variables["EUM_APPLICATION_ID"])
+    eumPageListViewData = await controller.getEumPageListViewData(EUM_APPLICATION_ID)
 
     assert eumPageListViewData.error is None
     assert len(eumPageListViewData.data) > 0
@@ -698,10 +687,10 @@ async def testGetEumPageListViewData(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetPagesAndFramesConfig(controller,test_config_variables):
+async def testGetPagesAndFramesConfig(controller):
     assert (await controller.loginToController()).error is None
 
-    pagesAndFramesConfig = await controller.getPagesAndFramesConfig(test_config_variables["EUM_APPLICATION_ID"])
+    pagesAndFramesConfig = await controller.getPagesAndFramesConfig(EUM_APPLICATION_ID)
 
     assert pagesAndFramesConfig.error is None
 
@@ -732,10 +721,10 @@ async def testGetPagesAndFramesConfig(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetAJAXConfig(controller,test_config_variables):
+async def testGetAJAXConfig(controller):
     assert (await controller.loginToController()).error is None
 
-    ajaxConfig = await controller.getAJAXConfig(test_config_variables["EUM_APPLICATION_ID"])
+    ajaxConfig = await controller.getAJAXConfig(EUM_APPLICATION_ID)
 
     assert ajaxConfig.error is None
 
@@ -787,10 +776,10 @@ async def testGetAJAXConfig(controller,test_config_variables):
 
 
 @pytest.mark.asyncio
-async def testGetVirtualPagesConfig(controller,test_config_variables):
+async def testGetVirtualPagesConfig(controller):
     assert (await controller.loginToController()).error is None
 
-    virtualPagesConfig = await controller.getVirtualPagesConfig(test_config_variables["EUM_APPLICATION_ID"])
+    virtualPagesConfig = await controller.getVirtualPagesConfig(EUM_APPLICATION_ID)
 
     assert virtualPagesConfig.error is None
 
@@ -818,14 +807,3 @@ async def testGetVirtualPagesConfig(controller,test_config_variables):
         assert "matchOnUserAgent" in config
 
     await controller.close()
-
-@pytest.mark.asyncio
-async def test3rdPartyIntegrations(controller):
-    assert (await controller.loginToController()).error is None
-    integrations = await controller.get3rdPartyIntegrations()
-    assert integrations.error is None
-    assert len(integrations.data) >= 0
-
-
-
-
