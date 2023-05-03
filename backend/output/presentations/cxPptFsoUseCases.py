@@ -392,7 +392,7 @@ def createCxHamUseCasePpt(folder: str):
 
 def generatePitstopHealthCheckTable(folder, root, uc, pitstop):
     slide = root.slides[uc.getSlideId(pitstop)]
-    data = [["Controller", "Checklist Item", "Tooltips", "Exit Criteria Logic"]]
+    data = [["Controller", "Checklist Item", "Tooltips ***", "Exit Criteria Logic"]]
     for task in uc.getPitstopTasks(pitstop):
         data.append([folder, f"{uc.getChecklistItem(task)}", f"{uc.getToolTip(task)}", uc.getHealthCheckStatus(task)])
     addTable(slide, data, fontSize=10, top=2, left=1.5)
@@ -490,7 +490,7 @@ def calculate_kpis(apm_wb, agent_wb, uc: UseCase):
     ### ENG
     FSO_HAM_ENG_1 = f'Pass' if all(count >= 5 for count in numberOfActionsBoundToEnabledPoliciesList) else f'Fail (Not all applications have at least 2 policies with actionable alerts). Only {len([x for x in numberOfActionsBoundToEnabledPoliciesList if x >= 2])} applications have at least 2 actionable alerts out of {totalApplications} applications.'
 
-    FSO_HAM_ENG_2 = f'Pass' if all(count >= 2 for count in dashboardsList) else f'Fail (there should be at least two dashboards configured). Only {len([x for x in dashboardsList if x >= 2])} dashboards are configured'
+    FSO_HAM_ENG_2 = f'Pass' if all(count >= 2 for count in dashboardsList) else f'Fail (there should be at least two dashboards configured per application). Only {len([x for x in dashboardsList if x >= 2])} applications have at least two dashboards configured out of {totalApplications} applications. '
     FSO_HAM_ENG_3 = f'manual check'
     FSO_HAM_ENG_4 = f'manual check'
 
