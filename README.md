@@ -12,10 +12,10 @@ There are four options to run the tool:
 
 1. [UI Method](https://github.com/Appdynamics/config-assessment-tool#ui-method)
    - Run jobs from a convenient web based UI
-   - Recommended for most users
+   - Easier way to configure jobs but requires Python and Docker installation
 2. [Platform executable](https://github.com/Appdynamics/config-assessment-tool#platform-executable)
-   - An OS specific bundle if you are not using Docker and Python
-   - Recommended for users unable to use Docker
+   - A self contained OS specific bundle if you are not using Docker and Python. Bundles available for Linux and Windows
+   - Recommended for users that do not wish to install Python and Docker and/or can not access external repositories
 3. [Directly via Docker](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
    - The backend container can be run manually from the command line
    - Recommended for users with Docker who do not want to use the UI
@@ -52,7 +52,7 @@ Refresh the page to see the Jobs and Thresholds appear.
 
 ### Platform executable
 
-Use this method if you are not able to use Docker or Python in your target deployment environment. Currently, platform bundles are available for Windows and Linux only.
+Use this method if you are not able to use Docker or Python in your target deployment environment. Currently, platform bundles are available for x86 Windows and Linux only. Currently arm architectures are not supported.
 
 1. Download and unzip (or untar in case of linux) the latest `config-assessment-tool-<OS>-<version>.<zip|tgz>` from [here](https://github.com/Appdynamics/config-assessment-tool/releases) where OS is one of windows/linux depending on your target host and version is the config tool release version
 2. cd into the expanded directory and edit `input/jobs/DefaultJobs.json` to match your target controller. You may also create a job file of your own. e.g. `input/jobs/<job-file-name>.json`
@@ -173,7 +173,7 @@ This program will create the following files in the `out` directory.
 ## Program Architecture
 
 ### General Description
-The Configuration Assessment Tool, also known as config-assessment-tool on GitHub, is an open-source project developed by AppDynamics engineers. Its purpose is to evaluate the configuration and quality of instrumentation in applications that are monitored by the AppDynamics Application Performance Monitoring (APM) product suite. The intended audience for this tool is AppDynamics/Cisco customers and AppD/Cisco personnel who assist customers in improving the instrumentation of their applications. The tool is Python-based (3.9+) and therefore requires a Python installation unless using the self-contained  platform specific executable bundles(Linux,Windows).
+The Configuration Assessment Tool, also known as config-assessment-tool on GitHub, is an open-source project developed by AppDynamics engineers. Its purpose is to evaluate the configuration and quality of instrumentation in applications that are monitored by the AppDynamics Application Performance Monitoring (APM) product suite. The intended audience for this tool is AppDynamics/Cisco customers and AppD/Cisco personnel who assist customers in improving the quality of instrumentation of their applications. The tool is Python-based (3.9) and therefore requires a Python installation unless using the self-contained  platform specific executable bundles(Linux,Windows).
 
 Users can run the tool directly from the source or use the docker container (locally built only and not pulled from any repo), or the executable bundle (Windows and Linux bundles) that contain shared libraries or executable files for Python. If users wish to run the code using Docker, they must build the local image on their platform (using the provided Dockerfile) as we do not currently publish platform specific Docker images of the tool into any repositories. Therefore, a Docker engine install is also required for container-based install/build and execution.
 
@@ -210,6 +210,9 @@ Support for plain HTTP proxies and HTTP proxies that can be upgraded to HTTPS vi
 the backend to use the proxy specified from environment variables: HTTP_PROXY, HTTPS_PROXY, WS_PROXY or WSS_PROXY (all are case insensitive). Proxy credentials are given from ~/.netrc file if present.
 See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/client_advanced.html#proxy-support) for more details.
 
+For example: Use HTTPS_PROXY environment variable if your controller is accessible using https. Use HTTP_PROXY environment variable if your controller is accessible using http. If using a port other than 80, ensure you provide the port number in the URL.
+
+
 ## JobFile Settings
 
 [DefaultJob.json](https://github.com/Appdynamics/config-assessment-tool/blob/master/input/jobs/DefaultJob.json) defines a number of optional configurations.
@@ -230,10 +233,8 @@ See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/cli
 
 ## Requirements
 
-- Python 3.5 or above if running with `bin/config-assessment-tool.py`
-- Python 3.9 or above if running from source
-- [Docker](https://www.docker.com/products/docker-desktop)
-- None if running using Platform executable method. Tested on most Linux distributions and Windows 10/11
+- Python 3.9 if running from source method. In addition, Docker engine is required if running using either th UI or Docker methods 
+- No Python/Docker needed if using Platform executable bundles. Linux and Windows(10/11/Server), x86 architectures are supported only. No ARM architecture support currenlty provided.
 
 ## Limitations
 
@@ -246,7 +247,9 @@ See aiohttp.ClientSession [documentation](https://docs.aiohttp.org/en/stable/cli
 
 ## Support
 
-Please email Bryan Nagallo at bnagallo@cisco.com for any issues and attach debug logs.
+For general feature requests or questions/feedback please create an issue in this Github repository.
+
+If you are having difficulty running the tool email Alex Afshar at aleafsha@cisco.com and attach debug logs.
 
 Debug logs can be taken by either:
 
