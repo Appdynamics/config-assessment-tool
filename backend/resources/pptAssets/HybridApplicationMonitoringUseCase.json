@@ -114,6 +114,11 @@
             "3": {
               "remediation_item": "Start with the <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents'>Install App Server Agents</a> to deploy your first agent."
             }
+          },
+          "remediation_steps_secondary" : {
+            "1": {
+              "remediation_item": "Ensure all applications are onboarded and all agents for each application are reporting data. Currently <eval>count(percentAgentsReportingData == 100)</eval> of your applications show all their agents are reporting data."
+            }
           }
         },
         "3": {
@@ -146,6 +151,13 @@
             "2": {
               "remediation_item": "If an application is no longer being monitored, ensure the agent is uninstalled and the application is removed from the Controller. Uninstalling an agent will also ensure that the license is returned to the pool."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Most applications have more than one agent attached to their process/vms. Currently you have <eval>count(numberOfAgentsReportingData > 1)</eval> applications with more than one agent reporting data."
+            },
+            "2": {
+              "remediation_item": "Be mindful of your Machine Agent installs. Typically each node has a machine agent running on it that collect node specific metrics for correlation. Currently there are <eval>count(numberNodesWithMachineAgentInstalled != 0)</eval> applications showing machine agents installed." }
           }
         }
       }
@@ -172,6 +184,14 @@
             "4": {
               "remediation_item": "<a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/configure-instrumentation/transaction-detection-rules/custom-match-rules/custom-match-rule-live-preview'>Live Preview</a> can be a helpful tool to create Custom Match rules if nothing gets discovered."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Ensure the BT Lockdown flag is enabled. This flag ensures that newly discovered BT's are only added to the All Other transactions logical bucket. Currently <eval>count(btLockdownEnabled == False)</eval> of your applications have this flag disabled."
+            },
+            "2": {
+              "remediation_item": "See <a href='https://www.youtube.com/watch?v=Vlsz44M344g'>this video</a> on why and how of locking down your Business Transactions."
+            }
           }
         },
         "2": {
@@ -187,6 +207,14 @@
             },
             "2": {
               "remediation_item": "Consult online documentation on how to configure <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/configure-business-transactions'>Business Transactions</a> on a per application basis."
+            }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Adding custom BT detection rules can further surface important business critical transactions that might not normally be captured using auto discovery.  Currently there are <eval>count(numberCustomMatchRules > 0)</eval> applications with more than 1 custom BT detection rule. Consider adding a custom rule to every application."
+            },
+            "2": {
+              "remediation_item": "Too many BT's discovered, whether through auto discovery or a misconfigured custom rule, can wreak havoc on your instrumentation and you can potentially miss out on important BTs. The rule is that less is more. Currently <eval>count(numberOfBTs >= 50)</eval> application(s) have more than 50 BTs. Consider evaluating the need for that many BTs in your applications. "
             }
           }
         },
@@ -204,6 +232,14 @@
             "2": {
               "remediation_item": "Make sure you <a href='https://docs.appdynamics.com/appd/21.x/latest/en/appdynamics-essentials/alert-and-respond/configure-health-rules/create-a-health-rule-and-fine-tune-metric-evaluation'>fine-tune Metric evaluation</a> to avoid false positives and alert spams."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Tuned Health Rules are important in keep noise at minimum. There are some generic out of box health rules. To further improve your the health rules consider creating at lease one custom health rule per application. Currently there are <eval>count(numberOfCustomHealthRules > 0)</eval> applications with more than one or more custom health rule."
+            },
+            "2": {
+              "remediation_item": "Check out on-demand and <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
+            }
           }
         },
         "4": {
@@ -219,6 +255,17 @@
             },
             "2": {
               "remediation_item": "Checkout this helpful online <a href='https://community.appdynamics.com/t5/Business-iQ-Analytics/Troubleshooting-manual-data-collectors/m-p/47285'>community post</a> on how to trouble-shoot using data collectors."
+            }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Data Collectors can help get to MTTR faster by supplementing your troubleshooting workflow with application level data. Make sure the data fields configured in a collector are properly capturing the desired application data."
+            },
+            "2": {
+              "remediation_item": "Currently there are <eval>count(numberOfDataCollectorFieldsConfigured > 0)</eval> have data collectors configured."
+            },
+            "3": {
+              "remediation_item": "Misconfigured data collectors will not property collect the data items desired. Currently <eval>count(numberOfDataCollectorFieldsCollectedInSnapshots > 0)</eval> data items have been collected during a snapshot capture over the last few hours"
             }
           }
         }
@@ -246,6 +293,14 @@
             "4": {
               "remediation_item": "Consult the AppDynamics <a href='https://education.appdynamics.com'>Education Portal</a> for available resources. For access please reach out to your Cisco/AppDynamics Account Manager."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Too many Health Rule violations on per application basis can create Alert Fatigue. Currently <eval>count(numberOfHealthRuleViolations > 30)</eval> application(s) show triggering Health rule violations greater than 30 over the last few hours. This might be ok based on your use case but consider revisiting the rules for optimal configuration"
+            },
+            "2": {
+              "remediation_item": "Policies attach critical HR violations to Actionable Alerts such as notifying developers though Slack, generating service ticket, notifying Ops teams about an issue, etc. This is part of a pro-active monitoring stance. Consider adding actionable Alerts to critical HR violations. Currently only <eval>count(numberOfActionsBoundToEnabledPolicies > 0)</eval> show having Policies that tie HR violations to some sort of Action."
+            }
           }
         },
         "2": {
@@ -262,6 +317,17 @@
             "2": {
               "remediation_item": "Utilize the new <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/dashboards-and-reports/dash-studio'>Dash Studio</a> designed to make building dashboards easier."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Stale dashboards loose their value. Ensure you revisit configuration of your dashboards periodically to keep them relevant."
+            },
+            "2": {
+              "remediation_item": "<eval>count(percentageOfDashboardsModifiedLast6Months > 0)</eval> application(s) show having dashboards modified in the last 6 months."
+            },
+            "3": {
+              "remediation_item": "If BiQ(Analytics) is being utilized, ensure there are BiQ specific dashboards that provide insight into your Business Application KPI's. Currently only <eval>count(numberOfDashboardsUsingBiQ > 0)</eval> application(s) show having BiQ related dashboards."
+            }
           }
         },
         "3": {
@@ -277,6 +343,14 @@
             },
             "2": {
               "remediation_item": "Checkout report types that <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/appdynamics-essentials/dashboards-and-reports/reports'>are available</a>"
+            }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "This section will be updated later to show best-practices to further improve your instrumentation around the Adopt pitstop . Please re-run the assessment tool later."
+            },
+            "2": {
+              "remediation_item": "Here are some tricks on Do's and Don'ts when creating <a href='https://community.appdynamics.com/t5/Knowledge-Base/Custom-Dashboard-Dos-and-Don-ts/ta-p/24185'>Custom Dashboards</a>"
             }
           }
         },
@@ -314,6 +388,14 @@
             "2": {
               "remediation_item": "See <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/extend-appdynamics'>Online Documentation</a> on ways to extend AppDynamics."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "This section will be updated later to show best-practices to further improve your instrumentation around the Adopt pitstop . Please re-run the assessment tool later."
+            },
+            "2": {
+              "remediation_item": "Meanwhile check out on-demand training videos: <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
+            }
           }
         },
         "2": {
@@ -325,10 +407,21 @@
           "min_pass_threshold": "",
           "remediation_steps": {
             "1": {
-              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/infrastructure-visibility/machine-agent/install-the-machine-agent'>Online Documentation</a> on how to deploy Machine agents."
+              "remediation_item": "For customer that have purchased the Hybrid Application Monitoring Use Case SKU, they should have a Database Agent as well. If no DB Agents/collectors are configured/detected, then this Health Check will fail. Ensure utilization of all the procured agents to get the most ROI on your investment"
             },
             "2": {
+              "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/infrastructure-visibility/machine-agent/install-the-machine-agent'>Online Documentation</a> on how to deploy Machine agents."
+            },
+            "3": {
               "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/database-visibility/administer-the-database-agent/install-the-database-agent'>Online Documentation</a> on how to deploy Database agents."
+            }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "Check back later on how to further improve your instrumentation using our best practice recommendations for Third party integration."
+            },
+            "2": {
+              "remediation_item": "Meanwhile check out on-demand training videos: <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
             }
           }
         }
@@ -350,6 +443,14 @@
             "2": {
               "remediation_item": "General understanding of <a href='https://docs.appdynamics.com/appd/22.x/22.2/en/application-monitoring/business-transactions'>Business Transactions</a> is also crucial."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "This section will be updated later to show best-practices to further improve your instrumentation around Optimize pitstop. Please re-run the assessment tool later."
+            },
+            "2": {
+              "remediation_item": "Meanwhile check out on-demand training videos: <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
+            }
           }
         },
         "2": {
@@ -365,6 +466,14 @@
             },
             "2": {
               "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/appdynamics-essentials/alert-and-respond/actions/remediation-actions'>Online Documentation</a> on how to configure automated remediation actions."
+            }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "This section will be updated later to show best-practices to further improve your instrumentation around Optimize pitstop. Please re-run the assessment tool later."
+            },
+            "2": {
+              "remediation_item": "Meanwhile check out on-demand training videos: <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
             }
           }
         },
@@ -382,6 +491,14 @@
             "2": {
               "remediation_item": "See <a href='https://docs.appdynamics.com/appd/23.x/latest/en/extend-appdynamics/appdynamics-apis/alert-and-respond-api'>AppDynamics APIs</a> for managing Health Rules programmatically."
             }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "This section will be updated later to show best-practices to further improve your instrumentation around Optimize pitstop. Please re-run the assessment tool later."
+            },
+            "2": {
+              "remediation_item": "Meanwhile check out on-demand training videos: <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
+            }
           }
         },
         "4": {
@@ -397,6 +514,14 @@
             },
             "2": {
               "remediation_item": "Monitoring <a href='https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/business-transactions/monitor-the-performance-of-business-transactions'>Business Transactions</a> is crucial in identifying performance issues."
+            }
+          },
+          "remediation_steps_secondary": {
+            "1": {
+              "remediation_item": "This section will be updated later to show best-practices to further improve your instrumentation around Optimize pitstop. Please re-run the assessment tool later."
+            },
+            "2": {
+              "remediation_item": "Meanwhile check out on-demand training videos: <a href='https://event.on24.com/eventRegistration/EventLobbyServlet?target=reg20.jsp&referrer=&eventid=2720830&sessionid=1&key=4E7D3A187D9C001891CA0D4B027ADE03&regTag=1656646&V2=false&sourcepage=register'>free webcasts</a> covering all aspects of AppDynamics."
             }
           }
         }

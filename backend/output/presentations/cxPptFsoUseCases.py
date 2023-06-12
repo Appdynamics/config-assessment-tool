@@ -5,11 +5,186 @@ import re
 from enum import Enum
 from typing import Dict, Optional
 
+import pandas as pd
 from openpyxl import load_workbook
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Pt, Inches
+
+
+from enum import Enum
+
+class SlideId(Enum):
+    INTRO = ("INTRO", 0)
+    RACETRACK = ("RACETRACK", 1)
+    ONBOARD = ("onboard", 2)
+    ONBOARD_REMEDIATION_PRIMARY = ("onboard_remediation_primary", 3)
+    ONBOARD_REMEDIATION_SECONDARY = ("onboard_remediation_secondary", 4)
+    IMPLEMENT = ("implement", 5)
+    IMPLEMENT_REMEDIATION_PRIMARY = ("implement_remediation_primary", 6)
+    IMPLEMENT_REMEDIATION_SECONDARY = ("implement_remediation_secondary", 7)
+    USE = ("use", 8)
+    USE_REMEDIATION_PRIMARY = ("use_remediation_primary", 9)
+    USE_REMEDIATION_SECONDARY = ("use_remediation_secondary", 10)
+    ENGAGE = ("engage", 11)
+    ENGAGE_REMEDIATION_PRIMARY = ("engage_remediation_primary", 12)
+    ENGAGE_REMEDIATION_SECONDARY = ("engage_remediation_secondary", 13)
+    ADOPT = ("adopt", 14)
+    ADOPT_REMEDIATION_PRIMARY = ("adopt_remediation_primary", 15)
+    ADOPT_REMEDIATION_SECONDARY = ("adopt_remediation_secondary", 16)
+    OPTIMIZE = ("optimize", 17)
+    OPTIMIZE_REMEDIATION_PRIMARY = ("optimize_remediation_primary", 18)
+    OPTIMIZE_REMEDIATION_SECONDARY = ("optimize_remediation_secondary", 19)
+    FINAL = ("FINAL", 20)
+
+    @property
+    def id(self) -> str:
+        return self.value[0]
+
+    @property
+    def number(self) -> int:
+        return self.value[1]
+
+    def isSecondary(slide):
+        if slide in [
+            SlideId.ONBOARD_REMEDIATION_SECONDARY,
+            SlideId.IMPLEMENT_REMEDIATION_SECONDARY,
+            SlideId.USE_REMEDIATION_SECONDARY,
+            SlideId.ENGAGE_REMEDIATION_SECONDARY,
+            SlideId.ADOPT_REMEDIATION_SECONDARY,
+            SlideId.OPTIMIZE_REMEDIATION_SECONDARY
+        ]:
+            return True
+
+
+class ExcelSheets(object):
+    def __init__(self, directory: str, filenames: tuple):
+        self.workbooks = {}
+        for filename in filenames:
+            full_path = os.path.join(directory, filename)
+            self.workbooks[filename] = pd.read_excel(full_path, sheet_name=None)
+
+    def findSheetByHeader(self, header_name):
+        result = []
+        # iterate over all loaded workbooks
+        for filename, workbook in self.workbooks.items():
+            # iterate over all sheets in the workbook
+            for sheet_name, df in workbook.items():
+                # check if the given header exists in the sheet
+                if header_name in df.columns:
+                    return (filename, sheet_name)
+        return None
+
+    def getHeaders(self, filename, sheetname):
+        if filename not in self.workbooks:
+            logging.error(f"No workbook found with filename: {filename}")
+            return
+
+        if sheetname not in self.workbooks[filename]:
+            logging.error(f"No sheet found with name: {sheetname} in workbook: {filename}")
+            return
+
+        df = self.workbooks[filename][sheetname]
+        return list(df.columns)
+
+
+    def getWorkBooks(self):
+        return self.workbooks
+
+    def validColumn(self, filename, sheet_name, column_name):
+
+        if filename not in self.workbooks:
+            logging.error(f"No workbook found with filename: {filename}")
+            return False
+
+        if sheet_name not in self.workbooks[filename]:
+            logging.error(f"No sheet found with name: {sheet_name} in workbook: {filename}")
+            return False
+
+        return True
+
+    def getColumnTotal(self, filename, sheet_name, column_name):
+        df = None
+        if self.validColumn(filename, sheet_name, column_name) \
+            and column_name in self.workbooks[filename][sheet_name].columns:
+            df = self.workbooks[filename][sheet_name]
+        else:
+            logging.error(f"No column found with name: {column_name}")
+            return
+        return df[column_name].sum()
+
+    def getColumnAverage(self, filename, sheet_name, column_name):
+        df = None
+        if self.validColumn(filename, sheet_name, column_name) \
+            and column_name in self.workbooks[filename][sheet_name].columns:
+            df = self.workbooks[filename][sheet_name]
+        else:
+            logging.error(f"No column found with name: {column_name}")
+            return
+        return df[column_name].mean()
+
+    def getRowCountForColumnValue(self, filename, sheet_name, column_name, operator, value):
+        if filename not in self.workbooks:
+            logging.error(f"No workbook found with filename: {filename}")
+            return
+
+        if sheet_name not in self.workbooks[filename]:
+            logging.error(f"No sheet found with name: {sheet_name}")
+            return
+
+        df = self.workbooks[filename][sheet_name]
+        if column_name not in df.columns:
+            logging.error(f"No column found with name: {column_name}")
+            return
+
+        # Map string operators to Pandas methods
+        operator_mapping = {
+            '==': df[column_name].eq,
+            '!=': df[column_name].ne,
+            '<': df[column_name].lt,
+            '<=': df[column_name].le,
+            '>': df[column_name].gt,
+            '>=': df[column_name].ge,
+        }
+
+        # Get the appropriate method and apply it
+        comparison_method = operator_mapping.get(operator)
+        if comparison_method:
+            return comparison_method(value).sum()
+        else:
+            logging.error(f"Invalid operator: {operator}")
+            return
+
+
+    def parseExpression(self, expression):
+        match = re.search(r"<eval>\s*count\((.*?) (>=|<=|>|<|==|!=) (.*?)\)\s*</eval>", expression)
+        if not match:
+            logging.debug(f"no evaluation found, ignoring expression: {expression}")
+            return None, None, None, None, False
+
+        column_name = match.group(1)
+        operator = match.group(2)
+        value_str = match.group(3)
+
+        try:
+            value = int(value_str)
+        except ValueError:
+            if value_str.lower() == 'true':
+                value = True
+            elif value_str.lower() == 'false':
+                value = False
+            else:
+                value = value_str
+
+        return f"count({column_name} {operator} {str(value)})", column_name, operator, value, True
+
+    def getValue(self, filename, sheet_name, column_name, operator, value):
+        return self.getRowCountForColumnValue(filename, sheet_name, column_name, operator, value)
+
+    def substituteExpression(self, expression, sub_exp, value):
+        return expression.replace("<eval>" + sub_exp + "</eval>", str(value))
+
 
 
 class UseCase(tuple):
@@ -30,21 +205,8 @@ class UseCase(tuple):
         return self.pitstop_data.values()
 
     def _initSlideMapping(self):
-        self.setSlideId('INTRO', 0)  # Welcome slide page 1
-        self.setSlideId('RACETRACK', 1)  # Welcome slide page 2
-        self.setSlideId("onboard", 2)
-        self.setSlideId("onboard_remediation", 3)
-        self.setSlideId("implement", 4)
-        self.setSlideId("implement_remediation", 5)
-        self.setSlideId("use", 6)
-        self.setSlideId("use_remediation", 7)
-        self.setSlideId("engage", 8)
-        self.setSlideId("engage_remediation", 9)
-        self.setSlideId("adopt", 10)
-        self.setSlideId("adopt_remediation", 11)
-        self.setSlideId("optimize", 12)
-        self.setSlideId("optimize_remediation", 13)
-        self.setSlideId("FINAL", 14)
+        for slide in SlideId:
+            self.setSlideId(slide.id, slide.number)
 
     def getAllSlideIndexes(self):
         return list(self.task_id_to_slide.values())
@@ -77,7 +239,8 @@ class UseCase(tuple):
                         'tooltip': task_data.get('tooltip', None),
                         'exit_criteria_logic': task_data.get('exit_criteria_logic', None),
                         'min_pass_threshold': task_data.get('min_pass_threshold', None),
-                        'remediation_items': task_data.get('remediation_steps', None)
+                        'remediation_items': task_data.get('remediation_steps', None),
+                        'remediation_items_secondary': task_data.get('remediation_steps_secondary', None)
                     }
         return {}
 
@@ -115,12 +278,16 @@ class UseCase(tuple):
         task_data = self._get_task_data(task_id)
         return task_data.get('remediation_items', None) if task_data else None
 
-    def setSlideId(self, task_id: str, slide_index: int):
-        self.task_id_to_slide[task_id] = slide_index
+    def getRemediationSecondaryList(self, task_id: str) -> Optional[list]:
+        task_data = self._get_task_data(task_id)
+        return task_data.get('remediation_items_secondary', None) if task_data else None
 
-    def getSlideId(self, task_id: str) -> Optional[int]:
+    def setSlideId(self, slide_id: str, slide_number: int):
+        self.task_id_to_slide[slide_id] = slide_number
+
+    def getSlideId(self, slide_id: str) -> Optional[int]:
         # this avoids a potential KeyError
-        return self.task_id_to_slide.get(task_id, None)
+        return self.task_id_to_slide.get(slide_id, None)
 
     def setHealthCheckStatus(self, task_id: str, hc: str):
         self.task_id_to_health_check_status[task_id] = hc
@@ -257,7 +424,7 @@ def addRemediationTable(slide, data, color=None, fontSize=16, left=1.5, top=3.5,
                         hyperlink_run.text = segment
 
                 makeParaBulletPointed(paragraph)
-                paragraph.font.size = Pt(8)
+                paragraph.font.size = Pt(10)
 
 
 def getValuesInColumn(sheet, col1_value):
@@ -349,10 +516,30 @@ def markRaceTrackFailures(root, uc: UseCase):
         except KeyError:
             logging.error(f"Shape with name '{pitstop}' not found in the slide. This prevents properly marking the race track with visual markers. ")
 
+
 def createCxHamUseCasePpt(folder: str):
     logging.info(f"Creating CX HAM Use Case PPT for {folder}")
-    apm_wb = load_workbook(f"output/{folder}/{folder}-MaturityAssessment-apm.xlsx")
-    db_wb = load_workbook(f"output/{folder}/{folder}-AgentMatrix.xlsx")
+    directory = f"output/{folder}"
+    file_prefix = f"{folder}"
+    apm_wb = load_workbook(f"{directory}/{file_prefix}-MaturityAssessment-apm.xlsx")
+    db_wb = load_workbook(f"{directory}/{file_prefix}-AgentMatrix.xlsx")
+
+    excels = ExcelSheets(directory,
+                         (
+                             f"{file_prefix}-AgentMatrix.xlsx",
+                             f"{file_prefix}-CustomMetrics.xlsx",
+                             f"{file_prefix}-Dashboards.xlsx",
+                             f"{file_prefix}-License.xlsx",
+                             f"{file_prefix}-MaturityAssessment-apm.xlsx",
+                             f"{file_prefix}-MaturityAssessment-brum.xlsx",
+                             f"{file_prefix}-MaturityAssessment-mrum.xlsx",
+                             f"{file_prefix}-MaturityAssessmentRaw-apm.xlsx",
+                             f"{file_prefix}-MaturityAssessmentRaw-brum.xlsx",
+                             f"{file_prefix}-MaturityAssessmentRaw-mrum.xlsx",
+                             f"{file_prefix}-Synthetics.xlsx"
+                         ))
+
+    assert len(excels.getWorkBooks()) == 11
 
     # currently only 1st controller in the job file is examined.
     controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
@@ -366,26 +553,33 @@ def createCxHamUseCasePpt(folder: str):
 
     ############################# Onboard ###########################
     generatePitstopHealthCheckTable(controller, root, uc, "onboard")
-    generateRemediationSlides(controller, root, uc, "onboard", "onboard_remediation")
+    generateRemediationSlides(controller, root, uc, excels, "onboard", SlideId.ONBOARD_REMEDIATION_PRIMARY)
+    generateRemediationSlides(controller, root, uc, excels, "onboard", SlideId.ONBOARD_REMEDIATION_SECONDARY)
     ############################# Implement ###########################
     generatePitstopHealthCheckTable(controller, root, uc, "implement")
-    generateRemediationSlides(controller, root, uc, "implement", "implement_remediation")
+    generateRemediationSlides(controller, root, uc, excels, "implement", SlideId.IMPLEMENT_REMEDIATION_PRIMARY)
+    generateRemediationSlides(controller, root, uc, excels, "implement", SlideId.IMPLEMENT_REMEDIATION_SECONDARY)
     ############################ Use ##################################
     generatePitstopHealthCheckTable(controller, root, uc, "use")
-    generateRemediationSlides(controller, root, uc, "use", "use_remediation")
+    generateRemediationSlides(controller, root, uc, excels, "use", SlideId.USE_REMEDIATION_PRIMARY)
+    generateRemediationSlides(controller, root, uc, excels, "use", SlideId.USE_REMEDIATION_SECONDARY)
     ############################ Engage ###############################
     generatePitstopHealthCheckTable(controller, root, uc, "engage")
-    generateRemediationSlides(controller, root, uc, "engage", "engage_remediation")
+    generateRemediationSlides(controller, root, uc, excels, "engage", SlideId.ENGAGE_REMEDIATION_PRIMARY)
+    generateRemediationSlides(controller, root, uc, excels, "engage", SlideId.ENGAGE_REMEDIATION_SECONDARY)
     ############################ Adopt ###############################
     generatePitstopHealthCheckTable(controller, root, uc, "adopt")
-    generateRemediationSlides(controller, root, uc, "adopt", "adopt_remediation")
+    generateRemediationSlides(controller, root, uc, excels, "adopt", SlideId.ADOPT_REMEDIATION_PRIMARY)
+    generateRemediationSlides(controller, root, uc, excels, "adopt", SlideId.ADOPT_REMEDIATION_SECONDARY)
     ########################### Optimize ##############################
     generatePitstopHealthCheckTable(controller, root, uc, "optimize")
-    generateRemediationSlides(controller, root, uc, "optimize", "optimize_remediation")
+    generateRemediationSlides(controller, root, uc, excels, "optimize", SlideId.OPTIMIZE_REMEDIATION_PRIMARY)
+    generateRemediationSlides(controller, root, uc, excels, "optimize", SlideId.OPTIMIZE_REMEDIATION_SECONDARY)
 
-    cleanup_slides(root, uc)
-    markRaceTrackFailures(root,uc)
-
+    # for now, we will not clean up slides. Primary and secondary feedback slides will
+    # remain as further resource for the customer
+    # cleanup_slides(root, uc)
+    markRaceTrackFailures(root, uc)
 
     root.save(f"output/{folder}/{folder}-cx-HybridApplicationMonitoringUseCaseMaturityAssessment-presentation.pptx")
 
@@ -398,19 +592,40 @@ def generatePitstopHealthCheckTable(folder, root, uc, pitstop):
     addTable(slide, data, fontSize=10, top=2, left=1.5)
 
 
-def generateRemediationSlides(folder: str, root: Presentation, uc: UseCase, pitstop: str, remediation_slide: str):
-    if uc.pitStopContainsFailureOrManualCheck(pitstop):
-        slide = root.slides[uc.getSlideId(remediation_slide)]
-        data = [["Controller", "Checklist Item", "Recommendation"]]
-        for task in uc.getPitstopTasks(pitstop):
+def parseHelper(expression, excels: ExcelSheets):
+    sub_exp, column_name, operator, value, is_eval_expr = excels.parseExpression(expression)
+    if is_eval_expr:
+        wb,sh = excels.findSheetByHeader(column_name)
+        count = excels.getValue(wb, sh, column_name, operator, value)
+        return excels.substituteExpression(expression, sub_exp, count)
+    else:
+        return expression
+
+
+def generateRemediationSlides(folder: str, root: Presentation, uc: UseCase, excels: ExcelSheets, pitstop: str, remediation_slide: SlideId):
+
+    # take out the check for now. We want to generate feedback pages regardless of pass/fail/manual status
+    # if uc.pitStopContainsFailureOrManualCheck(pitstop):
+    slide = root.slides[uc.getSlideId(remediation_slide.id)]
+    data = []
+    for task in uc.getPitstopTasks(pitstop):
+        if SlideId.isSecondary(remediation_slide):
+            values_to_use = uc.getRemediationSecondaryList(task)
+        else:
+            values_to_use = uc.getRemediationList(task)
+        if not values_to_use:
+            continue
+        else:
             data.append(
                 [folder,
                  f"{uc.getChecklistItem(task)}",
-                 '\n'.join(value["remediation_item"] for value in uc.getRemediationList(task).values())
+                 '\n'.join(parseHelper(value["remediation_item"],excels) for value in values_to_use.values())
                  ]
             )
-        addRemediationTable(slide, data, fontSize=10, top=2, left=.5)
 
+    if len(data) > 0:
+        data.insert(0,["Controller", "Checklist Item", "Recommendation"] )
+        addRemediationTable(slide, data, fontSize=10, top=2, left=.5)
 
 def filter_slides(keep_slide_indexes, prs: Presentation):
     total_slides = len(prs.slides)
@@ -428,17 +643,17 @@ def filter_slides(keep_slide_indexes, prs: Presentation):
 def cleanup_slides(root: Presentation, uc: UseCase):
     slides_to_keep = uc.getAllSlideIndexes()
     if not uc.pitStopContainsFailureOrManualCheck("onboard"):
-        slides_to_keep.remove(uc.getSlideId("onboard_remediation"))
+        slides_to_keep.remove(uc.getSlideId(SlideId.ONBOARD_REMEDIATION_PRIMARY.id))
     if not uc.pitStopContainsFailureOrManualCheck("implement"):
-        slides_to_keep.remove(uc.getSlideId("implement_remediation"))
+        slides_to_keep.remove(uc.getSlideId(SlideId.IMPLEMENT_REMEDIATION_PRIMARY.id))
     if not uc.pitStopContainsFailureOrManualCheck("use"):
-        slides_to_keep.remove(uc.getSlideId("use_remediation"))
+        slides_to_keep.remove(uc.getSlideId(SlideId.USE_REMEDIATION_PRIMARY.id))
     if not uc.pitStopContainsFailureOrManualCheck("engage"):
-        slides_to_keep.remove(uc.getSlideId("engage_remediation"))
+        slides_to_keep.remove(uc.getSlideId(SlideId.ENGAGE_REMEDIATION_PRIMARY.id))
     if not uc.pitStopContainsFailureOrManualCheck("adopt"):
-        slides_to_keep.remove(uc.getSlideId("adopt_remediation"))
+        slides_to_keep.remove(uc.getSlideId(SlideId.ADOPT_REMEDIATION_PRIMARY.id))
     if not uc.pitStopContainsFailureOrManualCheck("optimize"):
-        slides_to_keep.remove(uc.getSlideId("optimize_remediation"))
+        slides_to_keep.remove(uc.getSlideId(SlideId.OPTIMIZE_REMEDIATION_PRIMARY.id))
 
     filter_slides(slides_to_keep, root)
 
