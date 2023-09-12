@@ -326,7 +326,7 @@ def createCxPpt(folder: str):
             folder,
             str(
                 format(
-                    (len([x for x in successPercentageOfWorstTransaction if x == 100]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    (len([x for x in successPercentageOfWorstTransaction if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100,
                     ".0f",
                 )
             )

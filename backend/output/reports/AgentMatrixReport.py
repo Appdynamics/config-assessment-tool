@@ -103,6 +103,7 @@ class AgentMatrixReport(ReportBase):
 
             machineAgentCols.extend(
                 [
+                    "hostId",
                     "simEnabled",
                     "historical",
                     "reportingData",
@@ -152,6 +153,12 @@ class AgentMatrixReport(ReportBase):
                         if agent["hostName"] in hostInfo["servers"]:
                             server = hostInfo["servers"][agent["hostName"]]
 
+                            # Windows hostName is different than hostId by default, make consistent with how it shows on UI
+                            if server["name"] != server["hostId"]:
+                                data[cols.index("hostName")] = server["name"]
+
+                            data.append(server["hostId"] if "hostId" in server else "")
+
                             # use id shown in UI
                             data[cols.index("machineId")] = server["id"]
 
@@ -171,6 +178,8 @@ class AgentMatrixReport(ReportBase):
 
                             data.append(json.dumps(server["tags"]) if "tags" in server else "")
                         else:
+                            # hostId
+                            data.append(None)
                             # simEnabled
                             data.append(False)
                             # historical
