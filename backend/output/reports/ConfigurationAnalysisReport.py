@@ -1,20 +1,16 @@
-import json
 import logging
 import os.path
-from collections import Counter
-from datetime import datetime
-from openpyxl import Workbook
-from openpyxl.reader.excel import load_workbook
-from output.PostProcessReport import PostProcessReport
-import xlsxwriter
+
 import pandas as pd
+import xlsxwriter
+
+from output.PostProcessReport import PostProcessReport
 
 light_font = '#FFFFFF'
 dark_font = '#000000'
 
 medium_bg = '#A0A0A0'
 dark_bg = '#000000'
-
 
 
 class ConfigurationAnalysisReport(PostProcessReport):
@@ -288,20 +284,20 @@ class ConfigurationAnalysisReport(PostProcessReport):
         if (appFrame['numberOfDashboardsUsingBiQ'] == 0).any():
             taskList[4].append('No Custom Dashboards using BiQ')
 
-    def performAnalysis(self,application, taskList):
-            overallRanking = self.overallAppStatus(application, taskList)
-            self.appAgentStatus(application, taskList)
-            self.machineAgentStatus(application, taskList)
-            self.businessTranStatus(application, taskList)
-            self.backendStatus(application, taskList)
-            self.overheadStatus(application, taskList)
-            self.serviceEndpointStatus(application, taskList)
-            self.errorConfigurationStatus(application, taskList)
-            self.healthRulesAlertingStatus(application, taskList)
-            self.dataCollectorStatus(application, taskList)
-            self.apmDashBoardsStatus(application, taskList)
+    def performAnalysis(self, application, taskList):
+        overallRanking = self.overallAppStatus(application, taskList)
+        self.appAgentStatus(application, taskList)
+        self.machineAgentStatus(application, taskList)
+        self.businessTranStatus(application, taskList)
+        self.backendStatus(application, taskList)
+        self.overheadStatus(application, taskList)
+        self.serviceEndpointStatus(application, taskList)
+        self.errorConfigurationStatus(application, taskList)
+        self.healthRulesAlertingStatus(application, taskList)
+        self.dataCollectorStatus(application, taskList)
+        self.apmDashBoardsStatus(application, taskList)
 
-            return overallRanking
+        return overallRanking
 
     def buildOutput(self, applicationData, worksheets):
         worksheet = None

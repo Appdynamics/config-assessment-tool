@@ -13,7 +13,7 @@ There are four options to run the tool:
 1. [UI Method](https://github.com/Appdynamics/config-assessment-tool#ui-method)
    - Run jobs from a convenient web based UI
    - Easier way to configure jobs but requires Python and Docker installation
-2. [Platform executable](https://github.com/Appdynamics/config-assessment-tool#platform-executable)
+2. [Platform executable](https://github.com/Appdynamics/config-assessment-tool#platform-executable). (Preferred method for most users running Windows and Linux)
    - A self contained OS specific bundle if you are not using Docker and Python. Bundles available for Linux and Windows
    - Recommended for users that do not wish to install Python and Docker and/or can not access external repositories
 3. [Directly via Docker](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
@@ -35,9 +35,9 @@ The tool expects ONLY the following permissions to be given:
 - Administrator (Default)
 - Analytics Administrator (Default)
 
-### UI method
+### 1) UI method
 
-Obtain frontend and backend Docker images via:
+This method will automatically create local Docker images if not already in the local registry and runs them using the newly built images:
 
 1. Download or clone the latest `Source Code.zip` from [here](https://github.com/Appdynamics/config-assessment-tool/releases)
 2. `cd config-assessment-tool`
@@ -50,7 +50,7 @@ Add new Jobs or Thresholds to `config_assessment_tool/resources/jobs` and `confi
 
 Refresh the page to see the Jobs and Thresholds appear.
 
-### Platform executable
+### 2) Platform executable
 
 Use this method if you are not able to use Docker or Python in your target deployment environment. Currently, platform bundles are available for x86 Windows and Linux only. Currently arm architectures are not supported.
 
@@ -79,12 +79,26 @@ config-assessment-tool-<OS>-<version>/
     └── ...
 
 ```
+To see a list of options you may use the ```--help``` when running the executable command. Available options are listed below.
+```
+Usage: config-assessment-tool [OPTIONS]
 
-### Directly via Docker
+Where below OPTIONS are available:
+
+Options:
+  -j, --job-file TEXT
+  -t, --thresholds-file TEXT
+  -d, --debug
+  -c, --concurrent-connections INTEGER
+  -u, --username TEXT             Adds the option to put username dynamically
+  -p, --password TEXT             Adds the option to put password dynamically
+  --car                           Generate the configration analysis report as part of the output
+  --help                          Show this help message and exit.
+```
+
+### 3) Directly via Docker
 
 You can start the backend container with the following command:
-
-Unix
 
 ```
 docker run \
@@ -112,7 +126,7 @@ docker run `
 ghcr.io/appdynamics/config-assessment-tool-backend-{platform}:{tag} -j DefaultJob -t DefaultThresholds
 ```
 
-### From Source
+### 4) From Source
 
 #### Steps to run
 
@@ -124,15 +138,22 @@ Required
 4. `pipenv shell`
 5. `python3 backend/backend.py -j DefaultJob -t DefaultThresholds`
 
+To see a list of options you may use the ```--help``` flag when running the backend command. Available options are listed below.
+
 ```
 Usage: backend.py [OPTIONS]
+
+Where below OPTIONS are available:
 
 Options:
   -j, --job-file TEXT
   -t, --thresholds-file TEXT
   -d, --debug
   -c, --concurrent-connections INTEGER
-  --help                          Show this message and exit.
+  -u, --username TEXT             Adds the option to put username dynamically
+  -p, --password TEXT             Adds the option to put password dynamically
+  --car                           Generate the configration analysis report as part of the output
+  --help                          Show this help message and exit
 ```
 
 Options `--job-file` and `--thresholds-file` will default to `DefaultJob` and `DefaultThresholds` respectively.
@@ -165,6 +186,10 @@ This program will create the following files in the `out` directory.
   - Raw metrics which go into MaturityAssessment for BRUM report
 - `{jobName}-MaturityAssessmentRaw-mrum.xlsx`
   - Raw metrics which go into MaturityAssessment for MRUM report
+- `{jobName}-HybridApplicationMonitoringUseCaseMaturityAssessment-presentation.pptx
+    - Primarily used by customers that have purchased the Hybrid App Monitoring(HAM) SKU's
+- `{jobName}-ConfigurationAnalysisReport.xlsx`
+    - Configuration Analysis Report used primarily by AppD Services team, generated separately 
 - `controllerData.json`
   - Contains all raw data used in analysis.
 - `info.json`
@@ -247,9 +272,9 @@ For example: Use HTTPS_PROXY environment variable if your controller is accessib
 
 ## Support
 
-For general feature requests or questions/feedback please create an issue in this Github repository.
+For general feature requests or questions/feedback please create an issue in this Github repository. Ensure that no proprietary information is included in the issue or attachments as this is an open source project with public visibility.   
 
-If you are having difficulty running the tool email Alex Afshar at aleafsha@cisco.com and attach debug logs.
+If you are having difficulty running the tool email Alex Afshar at aleafsha@cisco.com and attach any relevant information including debug logs.
 
 Debug logs can be taken by either:
 
