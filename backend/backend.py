@@ -14,10 +14,11 @@ from util.logging_utils import initLogging
 @click.option("-c", "--concurrent-connections", type=int)
 @click.option("-u", "--username", default=None, help="Adds the option to put username dynamically")
 @click.option("-p", "--password", default=None, help="Adds the option to put password dynamically")
+@click.option("--car", is_flag=True, help="Generate the configration analysis report as part of the output")
 @coro
-async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, username: str, password: str):
+async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, username: str, password: str, car: bool):
     initLogging(debug)
-    engine = Engine(job_file, thresholds_file, concurrent_connections, username, password)
+    engine = Engine(job_file, thresholds_file, concurrent_connections, username, password, car)
     await engine.run()
 
 

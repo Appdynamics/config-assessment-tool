@@ -9,6 +9,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 import requests
+
 from api.appd.AppDService import AppDService
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
@@ -30,9 +31,11 @@ from extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import Overal
 from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
 from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
 from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
+from output.PostProcessReport import PostProcessReport
 from output.presentations.cxPpt import createCxPpt
 from output.presentations.cxPptFsoUseCases import createCxHamUseCasePpt
 from output.reports.AgentMatrixReport import AgentMatrixReport
+from output.reports.ConfigurationAnalysisReport import ConfigurationAnalysisReport
 from output.reports.CustomMetricsReport import CustomMetricsReport
 from output.reports.DashboardReport import DashboardReport
 from output.reports.LicenseReport import LicenseReport
@@ -44,7 +47,10 @@ from util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str, car: bool):
+
+        # should we run the configuration analysis report in post-processing?
+        self.car = car
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as executable bundle
@@ -61,6 +67,7 @@ class Engine:
         logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
         self.codebaseVersion = open(f"VERSION").read()
         logging.info(f"Running Software Version: {self.codebaseVersion}")
+
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
@@ -196,6 +203,7 @@ class Engine:
             await self.validateThresholdsFile()
             await self.initControllers()
             await self.process()
+            await self.postProcess()
             self.finalize(startTime)
         except Exception as e:
             # catch exceptions here, so we can terminate coroutines before program exit
@@ -396,3 +404,20 @@ class Engine:
             if msg:
                 logging.info(msg)
             sys.exit(0)
+
+    async def postProcess(self):
+        """Post-processing reports that rely on the core generated excel reports.
+        Currently, for CAR(configuration analysis report) that consumes the core
+        reports post process
+         """
+        logging.info(f"----------Post Process----------")
+        commands = []
+
+        if self.car:
+            commands.append(ConfigurationAnalysisReport())
+
+        for command in commands:
+            if isinstance(command, PostProcessReport):
+                await command.post_process(self.jobFileName)
+
+        logging.info(f"----------Post Process Done----------")
