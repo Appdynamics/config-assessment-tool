@@ -49,31 +49,39 @@ class JobStepBase(ABC):
             return
 
         rawDataHeaders = list(list(controllerData.values())[0][self.componentType].values())[0][jobStepName][metricFolder].keys()
-        writeUncoloredRow(rawDataSheet, 1, ["controller", "application", *rawDataHeaders])
+        headers = ["controller", "application"] + (["description"] if self.componentType == "apm" else []) + list(rawDataHeaders)
+
+        writeUncoloredRow(rawDataSheet, 1, headers)
 
         # Write Data
         rowIdx = 2
         for host, hostInfo in controllerData.items():
             for application in hostInfo[self.componentType].values():
                 if colorRows:
+                    data = [
+                        ( hostInfo["controller"].host, None),
+                        ( application["name"], None),
+                        *[application[jobStepName][metricFolder][header] for header in rawDataHeaders]
+                    ]
+                    if self.componentType == "apm":
+                        data.insert(2, ( application["description"], None))
                     writeColoredRow(
                         rawDataSheet,
                         rowIdx,
-                        [
-                            (hostInfo["controller"].host, None),
-                            (application["name"], None),
-                            *[application[jobStepName][metricFolder][header] for header in rawDataHeaders],
-                        ],
+                        data
                     )
                 else:
+                    data = [
+                        hostInfo["controller"].host,
+                        application["name"],
+                        *[application[jobStepName][metricFolder][header] for header in rawDataHeaders]
+                    ]
+                    if self.componentType == "apm":
+                        data.insert(2, application["description"])
                     writeUncoloredRow(
                         rawDataSheet,
                         rowIdx,
-                        [
-                            hostInfo["controller"].host,
-                            application["name"],
-                            *[application[jobStepName][metricFolder][header] for header in rawDataHeaders],
-                        ],
+                        data
                     )
                 rowIdx += 1
 

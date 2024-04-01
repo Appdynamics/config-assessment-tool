@@ -26,30 +26,41 @@ class MaturityAssessmentReport(ReportBase):
                 jobNameCols.append(name if not name.startswith("OverallAssessment") else "OverallAssessment")
                 jobStep.reportData(workbook, controllerData, name)
 
+            data_header = [
+                "controller",
+                "componentType",
+                "name",
+                *jobNameCols,
+            ]
+
+            if reportType == "apm": # add desc header after name
+                data_header.insert(3, "description")
+
             # Write Headers
             writeUncoloredRow(
                 analysisSheet,
                 1,
-                [
-                    "controller",
-                    "componentType",
-                    "name",
-                    *jobNameCols,
-                ],
+                data_header
             )
 
             rowIdx = 2
             for host, hostInfo in controllerData.items():
                 for component in hostInfo[reportType].values():
+
+                    data_row = [
+                        (hostInfo["controller"].host, None),
+                        (reportType, None),
+                        (component["name"], None),
+                        *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in filteredJobs]],
+                    ]
+
+                    if reportType == "apm": # add desc after name
+                        data_row.insert(3, (component["description"], None))
+
                     writeColoredRow(
                         analysisSheet,
                         rowIdx,
-                        [
-                            (hostInfo["controller"].host, None),
-                            (reportType, None),
-                            (component["name"], None),
-                            *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in filteredJobs]],
-                        ],
+                        data_row
                     )
                     rowIdx += 1
 

@@ -62,8 +62,12 @@ class ExcelSheets(object):
     def __init__(self, directory: str, filenames: tuple):
         self.workbooks = {}
         for filename in filenames:
-            full_path = os.path.join(directory, filename)
-            self.workbooks[filename] = pd.read_excel(full_path, sheet_name=None)
+            try:
+                full_path = os.path.join(directory, filename)
+                self.workbooks[filename] = pd.read_excel(full_path, sheet_name=None)
+            except Exception as e:
+                logging.warning(f"Not able to load workbook {filename}")
+                logging.warning(f"Was it generated to begin with? Ignoring.")
 
     def findSheetByHeader(self, header_name):
         result = []
@@ -538,8 +542,6 @@ def createCxHamUseCasePpt(folder: str):
                              f"{file_prefix}-MaturityAssessmentRaw-mrum.xlsx",
                              f"{file_prefix}-Synthetics.xlsx"
                          ))
-
-    assert len(excels.getWorkBooks()) == 11
 
     # currently only 1st controller in the job file is examined.
     controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
