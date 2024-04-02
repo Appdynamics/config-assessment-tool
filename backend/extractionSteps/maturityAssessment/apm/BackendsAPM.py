@@ -116,11 +116,20 @@ class BackendsAPM(JobStepBase):
                     analysisDataEvaluatedMetrics["percentBackendsWithLoad"] = 0
 
                 # backendLimitNotHit
-                backendLimit = int(
-                    next(
-                        iter([configuration for configuration in hostInfo["configurations"] if configuration["name"] == "backend.registration.limit"])
-                    )["value"]
-                )
+                try:
+                    backendLimit = int(
+                        next(
+                            iter([configuration for configuration in hostInfo["configurations"] if configuration["name"] == "backend.registration.limit"])
+                        )["value"]
+                    )
+                except StopIteration:
+                    logging.warning(f'{hostInfo["controller"].host} - '
+                                    f'backend.registration.limit '
+                                    f'configuration not found for'
+                                    f' {application["name"]}. Use default.')
+                    # set to default if api not returning
+                    backendLimit = 500000
+
                 analysisDataEvaluatedMetrics["backendLimitNotHit"] = len(application["backends"]) <= backendLimit
 
                 # numberOfCustomBackendRules
