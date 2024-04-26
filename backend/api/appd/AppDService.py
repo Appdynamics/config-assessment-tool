@@ -752,7 +752,24 @@ class AppDService:
         response = await self.controller.getServersKeys(json.dumps(body))
         serverKeys = await self.getResultFromResponse(response, debugString)
 
-        machineIds = [serverKey["machineId"] for serverKey in serverKeys.data["machineKeys"]]
+        machineIds = []
+        if not isinstance(serverKeys.data["machineKeys"], list):
+            logging.warning("Expected 'serverKeys.data[\"machineKeys\"]' to be a "
+                      "list, but got {}".format(type(serverKeys.data["machineKeys"])))
+        else:
+            for serverKey in serverKeys.data["machineKeys"]:
+                if isinstance(serverKey, dict) and "machineId" in serverKey:
+                    try:
+                        machineIds.append(serverKey["machineId"])
+                    except TypeError:
+                        logging.warning("TypeError encountered with "
+                                        "machineId: {}".format(serverKey["machineId"]))
+                else:
+                    if isinstance(serverKey, dict):
+                        logging.warning("Dictionary lacks 'machineId' key: {}".format(serverKey))
+                    else:
+                        logging.warning("Expected a dictionary, but found type: {}".format(type(serverKey)))
+
 
         serverFutures = [self.controller.getServer(serverId) for serverId in machineIds]
         serversResponses = await AsyncioUtils.gatherWithConcurrency(*serverFutures)
