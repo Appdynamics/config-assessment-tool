@@ -663,7 +663,9 @@ def cleanup_slides(root: Presentation, uc: UseCase):
 def calculate_kpis(apm_wb, agent_wb, uc: UseCase):
     # currently only supports one controller report out of the workbook
     controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
-    logging.info(f"processing report for 1st controller only as multiple controllers are not supported yet: {controller}")
+    logging.info(f"processing CX HAM Use Case report for 1st controller only "
+                 f"as multiple "
+                 f"controllers are not supported yet: {controller}")
 
     totalApplications = getRowCountForController(apm_wb["Analysis"], controller)
     percentAgentsReportingData = getValuesInColumnForController(apm_wb["AppAgentsAPM"], "percentAgentsReportingData", controller)
