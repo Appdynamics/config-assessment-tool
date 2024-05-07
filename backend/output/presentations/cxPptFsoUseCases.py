@@ -67,7 +67,8 @@ class ExcelSheets(object):
                 self.workbooks[filename] = pd.read_excel(full_path, sheet_name=None)
             except Exception as e:
                 logging.warning(f"Not able to load workbook {filename}")
-                logging.warning(f"Was it generated to begin with? Ignoring.")
+                logging.warning(f"Was it generated to begin with? Ignoring. "
+                                f"Continuing with the rest of the workbooks.")
 
     def findSheetByHeader(self, header_name):
         result = []

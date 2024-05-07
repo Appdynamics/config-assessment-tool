@@ -51,7 +51,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
                 applicationData.append([application, ranking, []])
 
         self.buildOutput(applicationData, worksheets)
-        logging.debug(f"Saving ConfigurationAnalysisReport Workbook")
+        logging.info(f"Saving ConfigurationAnalysisReport Workbook")
         self.workbook.close()
 
     def getValuesInColumn(self, sheet, col1_value):
@@ -65,7 +65,8 @@ class ConfigurationAnalysisReport(PostProcessReport):
         return values
 
     def getListOfApplications(self):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='Analysis', engine='openpyxl').dropna()
+        frame = pd.read_excel(self.analysis_sheet, sheet_name='Analysis',
+                              engine='openpyxl').dropna(how='all')
         return frame['name'].tolist()
 
     def overallAppStatus(self, application, tasklist):
