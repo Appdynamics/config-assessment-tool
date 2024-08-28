@@ -112,7 +112,7 @@ class ExcelSheets(object):
     def getColumnTotal(self, filename, sheet_name, column_name):
         df = None
         if self.validColumn(filename, sheet_name, column_name) \
-            and column_name in self.workbooks[filename][sheet_name].columns:
+                and column_name in self.workbooks[filename][sheet_name].columns:
             df = self.workbooks[filename][sheet_name]
         else:
             logging.error(f"No column found with name: {column_name}")
@@ -122,7 +122,7 @@ class ExcelSheets(object):
     def getColumnAverage(self, filename, sheet_name, column_name):
         df = None
         if self.validColumn(filename, sheet_name, column_name) \
-            and column_name in self.workbooks[filename][sheet_name].columns:
+                and column_name in self.workbooks[filename][sheet_name].columns:
             df = self.workbooks[filename][sheet_name]
         else:
             logging.error(f"No column found with name: {column_name}")
@@ -544,6 +544,8 @@ def createCxHamUseCasePpt(folder: str):
                              f"{file_prefix}-Synthetics.xlsx"
                          ))
 
+    assert len(excels.getWorkBooks()) >= 10
+
     # currently only 1st controller in the job file is examined.
     controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
 
@@ -664,9 +666,7 @@ def cleanup_slides(root: Presentation, uc: UseCase):
 def calculate_kpis(apm_wb, agent_wb, uc: UseCase):
     # currently only supports one controller report out of the workbook
     controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
-    logging.info(f"processing CX HAM Use Case report for 1st controller only "
-                 f"as multiple "
-                 f"controllers are not supported yet: {controller}")
+    logging.info(f"processing report for 1st controller only as multiple controllers are not supported yet: {controller}")
 
     totalApplications = getRowCountForController(apm_wb["Analysis"], controller)
     percentAgentsReportingData = getValuesInColumnForController(apm_wb["AppAgentsAPM"], "percentAgentsReportingData", controller)
