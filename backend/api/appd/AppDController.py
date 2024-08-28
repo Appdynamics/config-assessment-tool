@@ -16,10 +16,23 @@ class AppdController(Consumer):
     jsessionid: str = None
     xcsrftoken: str = None
 
+    def __init__(self, *args, session=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.client_session=session
+
+    def get_client_session(self):
+        return self.client_session
+
     @params({"action": "login"})
     @get("/controller/auth")
     def login(self):
-        """Verifies Login Success"""
+        """Verifies Login Success (Basic Auth)"""
+
+    @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
+    @post("/controller/api/oauth/access_token")
+    def loginOAuth(self, data: Body):
+        """Method to get a token."""
 
     @params({"output": "json"})
     @get("/controller/rest/applications")
@@ -67,11 +80,13 @@ class AppdController(Consumer):
         """Retrieves Controller Configurations"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/customExitPoint/getAllCustomExitPoints")
     def getAllCustomExitPoints(self, application: Body):
         """Retrieves Custom Edit Point Configurations"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/backendConfig/getBackendDiscoveryConfigs")
     def getBackendDiscoveryConfigs(self, body: Body):
         """Retrieves Controller Configurations"""
@@ -87,6 +102,11 @@ class AppdController(Consumer):
         """Retrieves Instrumentation Level"""
 
     @params({"output": "json"})
+    @headers(
+        {
+            "Accept": "application/json, text/plain, */*",
+        }
+    )
     @get("/controller/restui/agentManager/getAllApplicationComponentsWithNodes/{applicationID}")
     def getAllApplicationComponentsWithNodes(self, applicationID: Path):
         """Retrieves Node Configurations"""
@@ -112,11 +132,13 @@ class AppdController(Consumer):
         """Retrieves Application Components for Later  to get getServiceEndpointCustomMatchRules"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/serviceEndpoint/getAll")
     def getServiceEndpointCustomMatchRules(self, body: Body):
         """Retrieves Service Endpoint Custom Match Rules for an individual Application Tier"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/serviceEndpoint/getServiceEndpointMatchConfigs")
     def getServiceEndpointDefaultMatchRules(self, body: Body):
         """Retrieves Service Endpoint Custom Match Rules for an individual Application Tier"""
@@ -124,15 +146,16 @@ class AppdController(Consumer):
     @params({"output": "json"})
     @get("/controller/restui/events/eventCounts")
     def getEventCounts(
-        self,
-        applicationID: Query("applicationId"),
-        entityType: Query("entityType"),
-        entityID: Query("entityId"),
-        timeRangeString: Query("timeRangeString"),
+            self,
+            applicationID: Query("applicationId"),
+            entityType: Query("entityType"),
+            entityID: Query("entityId"),
+            timeRangeString: Query("timeRangeString"),
     ):
         """Retrieves Event Counts"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/metricBrowser/async/metric-tree/root")
     def getMetricTree(self, body: Body):
         """Retrieves Metrics"""
@@ -140,28 +163,28 @@ class AppdController(Consumer):
     @params({"output": "json"})
     @get("/controller/rest/applications/{applicationID}/metric-data")
     def getMetricData(
-        self,
-        applicationID: Path,
-        metric_path: Query("metric-path"),
-        rollup: Query("rollup"),
-        time_range_type: Query("time-range-type"),
-        duration_in_mins: Query("duration-in-mins"),
-        start_time: Query("start-time"),
-        end_time: Query("end-time"),
+            self,
+            applicationID: Path,
+            metric_path: Query("metric-path"),
+            rollup: Query("rollup"),
+            time_range_type: Query("time-range-type"),
+            duration_in_mins: Query("duration-in-mins"),
+            start_time: Query("start-time"),
+            end_time: Query("end-time"),
     ):
         """Retrieves Metrics"""
 
     @params({"output": "json"})
     @get("/controller/rest/applications/{applicationID}/events")
     def getApplicationEvents(
-        self,
-        applicationID: Path,
-        event_types: Query("event-types"),
-        severities: Query("severities"),
-        time_range_type: Query("time-range-type"),
-        duration_in_mins: Query("duration-in-mins"),
-        start_time: Query("start-time"),
-        end_time: Query("end-time"),
+            self,
+            applicationID: Path,
+            event_types: Query("event-types"),
+            severities: Query("severities"),
+            time_range_type: Query("time-range-type"),
+            duration_in_mins: Query("duration-in-mins"),
+            start_time: Query("start-time"),
+            end_time: Query("end-time"),
     ):
         """Retrieves Events"""
 
@@ -186,6 +209,7 @@ class AppdController(Consumer):
         """Retrieves Data Collectors"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/snapshot/snapshotListDataWithFilterHandle")
     def getSnapshotsWithDataCollector(self, body: Body):
         """Retrieves Snapshots"""
@@ -196,11 +220,13 @@ class AppdController(Consumer):
         """Retrieves Analytics Enabled Status for app Applications"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @get("/controller/restui/dashboards/getAllDashboardsByType/false")
     def getAllDashboardsMetadata(self):
         """Retrieves all Dashboards"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @get("/controller/CustomDashboardImportExportServlet")
     def getDashboard(self, dashboardId: Query("dashboardId")):
         """Retrieves a single Dashboard"""
@@ -216,26 +242,41 @@ class AppdController(Consumer):
         """Retrieves permission set of a given user"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/licenseRule/getAllLicenseModuleProperties")
     def getAccountUsageSummary(self, body: Body):
         """Retrieves license usage summary"""
 
     @params({"output": "json"})
+    @get("/controller/restui/apiClientAdministrationUiService/apiClients")
+    def getApiClients(self):
+        """Retrieves list of API Clients"""
+
+    @params({"output": "json"})
+    @get("/controller/restui/accountRoleAdministrationUiService/accountRoleSummaries")
+    def getRoles(self):
+        """Retrieves list of Roles"""
+
+    @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/licenseRule/getEumLicenseUsage")
     def getEumLicenseUsage(self, body: Body):
         """Retrieves EUM license usage"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/agents/list/appserver")
     def getAppServerAgents(self, body: Body):
         """Retrieves app server agent summary list"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/agents/list/machine")
     def getMachineAgents(self, body: Body):
         """Retrieves machine agent summary list"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/agents/list/appserver/ids")
     def getAppServerAgentsIds(self, body: Body):
         """Retrieves app server agent summary list"""
@@ -246,6 +287,7 @@ class AppdController(Consumer):
         """Retrieves app agent metadata"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/agents/list/machine/ids")
     def getMachineAgentsIds(self, body: Body):
         """Retrieves machine agent summary list"""
@@ -261,6 +303,7 @@ class AppdController(Consumer):
         """Retrieves analytics agent summary list"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/sim/v2/user/machines/keys")
     def getServersKeys(self, body: Body):
         """Retrieves machine agents in bulk"""
@@ -271,6 +314,7 @@ class AppdController(Consumer):
         """Retrieves server agent info"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/sim/v2/user/metrics/query/machines")
     def getServerAvailability(self, body: Body):
         """Retrieves server availability info"""
@@ -281,11 +325,13 @@ class AppdController(Consumer):
         """Retrieves all Eum Applications"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/pageList/getEumPageListViewData")
     def getEumPageListViewData(self, body: Body):
         """Retrieves Eum Page List View Data"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/web/pagelist")
     def getEumNetworkRequestList(self, body: Body):
         """Retrieves Eum Network Request List"""
@@ -306,6 +352,7 @@ class AppdController(Consumer):
         """Retrieves virtual pages config"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/browserSnapshotList/getSnapshots")
     def getBrowserSnapshots(self, body: Body):
         """Retrieves browser snapshots"""
@@ -326,26 +373,31 @@ class AppdController(Consumer):
         """Retrieves network request limit"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/mobileSnapshotListUiService/getMobileSnapshotSummaries")
     def getMobileSnapshots(self, body: Body):
         """Retrieves mobile snapshots"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/synthetic/schedule/getJobList/{applicationId}")
     def getSyntheticJobs(self, applicationId: Path):
         """Retrieves Synthetic Job List"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/eumSyntheticJobListUiService/getBillableTimeData")
     def getSyntheticBillableTime(self, body: Body):
         """Retrieves Synthetic Billable Time"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/synthetic/schedule/{applicationId}/getJobPAUtilizations")
     def getSyntheticPrivateAgentUtilization(self, applicationId: Path, body: Body):
         """Retrieves Synthetic Private Agent Utilization"""
 
     @params({"output": "json"})
+    @headers({"Content-Type": "application/json"})
     @post("/controller/restui/eumSyntheticJobListUiService/getSessionData")
     def getSyntheticSessionData(self, body: Body):
         """Retrieves Synthetic Session Data"""

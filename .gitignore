@@ -1,8 +1,10 @@
 /logs
 /output
+/input
 /.idea
 *.ipr
 *.iml
 *.iws
+*.DS_Store
 .git-bitbucket
 __pycache__

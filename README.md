@@ -4,24 +4,71 @@
 
 # config-assessment-tool
 
-This project aims to provide a single source of truth for performing AppDynamics Health Checks.
+This project aims to provide a single source of truth for performing
+AppDynamics Instrumentation Health Checks. These health checks provide
+metrics on how well your applications are instrumented based on some of the
+field best practices.
 
 ## Usage
 
+### Prerequisite
+Ensure the DefaultJob.json file correctly reflects the controller
+credentials you are running the tool for.  The file format is outlined
+below with some default placeholder values. Change according to your setup.
+You may also create your own custom named job file.
+
+```
+{
+  "host": "acme.saas.appdynamics.com",
+  "port": 443, 
+  "account": "acme",  
+  "username": "foo", 
+  "pwd": "hunter1", 
+  "authType": "<basic|token|secret>",  # see Note **
+  "verifySsl": true,
+  "useProxy": true,
+  "applicationFilter": {
+    "apm": ".*",
+    "mrum": ".*",
+    "brum": ".*"
+  },
+  "timeRangeMins": 1440
+}
+```
+Note **
+The tool supports both basic UI authentication or API Client authentication
+(oAuth tokens) using either client secrets or temporary access tokens. The
+authType field is used to specify the authentication method. See
+Administration -> API Clients in controller UI for setup.
+
+authType:
+- "basic" use controller web UI username for "username" and controller web
+  UI password for "pwd". This method will be deprecated in a future release.
+- "token" use API Clients -> Client Name for "username", and API Clients ->
+  Temporary Access Token for "pwd" field.  This authentication method is 
+  preferred. Note "username" is not strictly required if use token 
+  authentication.
+- "secret" use API Clients -> Client Name for "username", and API Clients ->
+  Client Secret for "pwd" fields.
+
+If using API Client authentication, ensure the Default/Temporary Token
+expiration times are sufficient to complete the run
+
+### How to run
 There are four options to run the tool:
 
 1. [UI Method](https://github.com/Appdynamics/config-assessment-tool#ui-method)
-   - Run jobs from a convenient web based UI
-   - Easier way to configure jobs but requires Python and Docker installation
+    - Run jobs from a convenient web based UI
+    - Easier way to configure jobs but requires Python and Docker installation
 2. [Platform executable](https://github.com/Appdynamics/config-assessment-tool#platform-executable). (Preferred method for most users running Windows and Linux)
-   - A self contained OS specific bundle if you are not using Docker and Python. Bundles available for Linux and Windows
-   - Recommended for users that do not wish to install Python and Docker and/or can not access external repositories
+    - A self contained OS specific bundle if you are not using Docker and Python. Bundles available for Linux and Windows
+    - Recommended for users that do not wish to install Python and Docker and/or can not access external repositories
 3. [Directly via Docker](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
-   - The backend container can be run manually from the command line
-   - Recommended for users with Docker who do not want to use the UI
+    - The backend container can be run manually from the command line
+    - Recommended for users with Docker who do not want to use the UI
 4. [From Source](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
-   - Manually install dependencies and run the `backend.py` script directly
-   - Recommended for users who want to build the tool from source
+    - Manually install dependencies and run the `backend.py` script directly
+    - Recommended for users who want to build the tool from source
 
 ### Important step for running on Windows (Ignore this step if using method 2 or 4 above)
 
@@ -168,32 +215,32 @@ The frontend can be invoked by navigating to `config_assessment_tool/frontend` a
 This program will create the following files in the `out` directory.
 
 - `{jobName}-MaturityAssessment-apm.xlsx`
-  - MaturityAssessment report for APM
+    - MaturityAssessment report for APM
 - `{jobName}-MaturityAssessment-brum.xlsx`
-  - MaturityAssessment report for BRUM
+    - MaturityAssessment report for BRUM
 - `{jobName}-MaturityAssessment-mrum.xlsx`
-  - MaturityAssessment report for MRUM
+    - MaturityAssessment report for MRUM
 - `{jobName}-AgentMatrix.xlsx`
-  - Details agent versions rolled up by application
-  - Lists the details of individual without any rollup
+    - Details agent versions rolled up by application
+    - Lists the details of individual without any rollup
 - `{jobName}-CustomMetrics.xlsx`
-  - Lists which applications are leveraging Custom Extensions
+    - Lists which applications are leveraging Custom Extensions
 - `{jobName}-License.xlsx`
-  - Export of the License Usage page in the Controller
+    - Export of the License Usage page in the Controller
 - `{jobName}-MaturityAssessmentRaw-apm.xlsx`
-  - Raw metrics which go into MaturityAssessment for APM report
+    - Raw metrics which go into MaturityAssessment for APM report
 - `{jobName}-MaturityAssessmentRaw-brum.xlsx`
-  - Raw metrics which go into MaturityAssessment for BRUM report
+    - Raw metrics which go into MaturityAssessment for BRUM report
 - `{jobName}-MaturityAssessmentRaw-mrum.xlsx`
-  - Raw metrics which go into MaturityAssessment for MRUM report
+    - Raw metrics which go into MaturityAssessment for MRUM report
 - `{jobName}-HybridApplicationMonitoringUseCaseMaturityAssessment-presentation.pptx
     - Primarily used by customers that have purchased the Hybrid App Monitoring(HAM) SKU's
 - `{jobName}-ConfigurationAnalysisReport.xlsx`
-    - Configuration Analysis Report used primarily by AppD Services team, generated separately 
+    - Configuration Analysis Report used primarily by AppD Services team, generated separately
 - `controllerData.json`
-  - Contains all raw data used in analysis.
+    - Contains all raw data used in analysis.
 - `info.json`
-  - Contains information on previous job execution.
+    - Contains information on previous job execution.
 
 ## Program Architecture
 
@@ -213,7 +260,7 @@ There is no other communication from the tool to any other external services. We
 Consult the links below for the aforementioned references:
 
 - AppDynamics API's: https://docs.appdynamics.com/appd/22.x/latest/en/extend-appdynamics/appdynamics-apis#AppDynamicsAPIs-apiindex
-- Platform executable bundles: https://github.com/Appdynamics/config-assessment-tool/releases 
+- Platform executable bundles: https://github.com/Appdynamics/config-assessment-tool/releases
 - Job file: https://github.com/Appdynamics/config-assessment-tool/blob/master/input/jobs/DefaultJob.json
 - Build from source: https://github.com/Appdynamics/config-assessment-tool#from-source
 - config-assessment-tool GitHub open source project: https://github.com/Appdynamics/config-assessment-tool
@@ -243,36 +290,36 @@ For example: Use HTTPS_PROXY environment variable if your controller is accessib
 [DefaultJob.json](https://github.com/Appdynamics/config-assessment-tool/blob/master/input/jobs/DefaultJob.json) defines a number of optional configurations.
 
 - verifySsl
-  - enabled by default, disable it to disable SSL cert checking (equivalent to `curl -k`)
+    - enabled by default, disable it to disable SSL cert checking (equivalent to `curl -k`)
 - useProxy
-  - As defined above under [Proxy Support](https://github.com/Appdynamics/config-assessment-tool#proxy-support), enable this to use a configured proxy
+    - As defined above under [Proxy Support](https://github.com/Appdynamics/config-assessment-tool#proxy-support), enable this to use a configured proxy
 - applicationFilter
-  - Three filters are available, one for `apm`, `mrum`, and `brum`
-  - The filter value accepts any valid regex, set to `.*` by default
-  - Set the value to null to filter out all applications for the set type
+    - Three filters are available, one for `apm`, `mrum`, and `brum`
+    - The filter value accepts any valid regex, set to `.*` by default
+    - Set the value to null to filter out all applications for the set type
 - timeRangeMins
-  - Configure the data pull time range, by default set to 1 day (1440 mins)
+    - Configure the data pull time range, by default set to 1 day (1440 mins)
 - pwd
-  - Your password will be automatically encrypted to base64 when it is persisted to disk
-  - If your password is not entered as base64, it will be automatically converted
+    - Your password will be automatically encrypted to base64 when it is persisted to disk
+    - If your password is not entered as base64, it will be automatically converted
 
 ## Requirements
 
-- Python 3.9 if running from source method. In addition, Docker engine is required if running using either th UI or Docker methods 
+- Python 3.9 if running from source method. In addition, Docker engine is required if running using either th UI or Docker methods
 - No Python/Docker needed if using Platform executable bundles. Linux and Windows(10/11/Server), x86 architectures are supported only. No ARM architecture support currenlty provided.
 
 ## Limitations
 
 - Data Collectors
-  - The API to directly find snapshots containing data collectors of type `Session Key` or `HTTP Header` does not work.
-  - The API does however work for `Business Data` (POJO match rule), `HTTP Parameter`, and `Cookie` types.
-  - As far as I can tell this is a product limitation, the transaction snapshot filtering UI does not even have an option for `Session Key` or `HTTP Header`.
-  - The only way to check for `Session Key` or `HTTP Header` data collector existence within snapshots would be to inspect ALL snapshots (prohibitively time intensive).
-  - As a workaround, we will assume any `Session Key` or `HTTP Header` data collectors are present in snapshots.
+    - The API to directly find snapshots containing data collectors of type `Session Key` or `HTTP Header` does not work.
+    - The API does however work for `Business Data` (POJO match rule), `HTTP Parameter`, and `Cookie` types.
+    - As far as I can tell this is a product limitation, the transaction snapshot filtering UI does not even have an option for `Session Key` or `HTTP Header`.
+    - The only way to check for `Session Key` or `HTTP Header` data collector existence within snapshots would be to inspect ALL snapshots (prohibitively time intensive).
+    - As a workaround, we will assume any `Session Key` or `HTTP Header` data collectors are present in snapshots.
 
 ## Support
 
-For general feature requests or questions/feedback please create an issue in this Github repository. Ensure that no proprietary information is included in the issue or attachments as this is an open source project with public visibility.   
+For general feature requests or questions/feedback please create an issue in this Github repository. Ensure that no proprietary information is included in the issue or attachments as this is an open source project with public visibility.
 
 If you are having difficulty running the tool email Alex Afshar at aleafsha@cisco.com and attach any relevant information including debug logs.
 

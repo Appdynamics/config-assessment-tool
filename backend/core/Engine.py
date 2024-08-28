@@ -11,6 +11,7 @@ from pathlib import Path
 import requests
 
 from api.appd.AppDService import AppDService
+from api.appd.AuthMethod import AuthMethod
 from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
 from extractionSteps.general.CustomMetrics import CustomMetrics
 from extractionSteps.general.Synthetics import Synthetics
@@ -50,6 +51,7 @@ class Engine:
     def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str, car: bool):
 
         # should we run the configuration analysis report in post-processing?
+        self.controllers = []
         self.car = car
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
@@ -138,26 +140,50 @@ class Engine:
                 indent=4,
             )
 
-        # Instantiate controllers, jobs, and report lists
-        self.controllers = [
-            AppDService(
+        for controller in self.job:
+
+            if controller.get("authType") is None:
+                logging.warn(f'\'authType\' is not '
+                             f'specified for host {controller["host"]} in '
+                             f'the input job file. Will '
+                             f'default to basic authentication for '
+                             f'backward compatibility.')
+                controller["authType"] = "basic"
+
+            logging.debug(
+                f'authenticationMethod: {controller["authType"]} '
+                f'for host {controller["host"]}')
+
+            authMethod = AuthMethod(
+                auth_method=controller["authType"],
                 host=controller["host"],
                 port=controller["port"],
                 ssl=controller["ssl"],
                 account=controller["account"],
                 username=username if username else controller["username"],
-                pwd=password if password else base64Decode(controller["pwd"])[len("CAT-ENCODED-") :],
+                password=password if password else base64Decode(controller[
+                                                                    "pwd"])[len("CAT-ENCODED-") :],
                 verifySsl=controller.get("verifySsl", True),
-                useProxy=controller.get("useProxy", False),
+                useProxy=controller.get("useProxy", False)
+            )
+
+            controllerService = AppDService(
                 applicationFilter=controller.get("applicationFilter", None),
                 timeRangeMins=controller.get("timeRangeMins", 1440),
+                authMethod=authMethod
             )
-            for controller in self.job
-        ]
+
+
+            self.controllers.append(controllerService)
+            username = None
+            password = None
+
+
         if password:  # I will let it here until it's the final version, so that we will
             logging.info("Dynamic password change was used!")  # have confirmation, that it's working as intended
         else:
             logging.info("Using password from jobfile")
+
         self.controllerData = OrderedDict()
         self.otherSteps = [
             ControllerLevelDetails(),
@@ -214,31 +240,15 @@ class Engine:
             error=False,
         )
 
+
     async def initControllers(self) -> ([AppDService], str):
         logging.info(f"Validating Controller Login(s) for Job - {self.jobFileName} ")
-
-        loginFutures = [controller.loginToController() for controller in self.controllers]
+        loginFutures = [controller.getAuthMethod().authenticate() for controller in
+                        self.controllers]
         loginResults = await AsyncioUtils.gatherWithConcurrency(*loginFutures)
         if any(login.error is not None for login in loginResults):
             await self.abortAndCleanup(f"Unable to connect to one or more controllers. Aborting.")
 
-        userPermissionFutures = [controller.getUserPermissions(controller.username) for controller in self.controllers]
-        userPermissionsResults = await AsyncioUtils.gatherWithConcurrency(*userPermissionFutures)
-        if any(userPermissions.error is not None for userPermissions in userPermissionsResults):
-            await self.abortAndCleanup(f"Get user permissions failed for one or more controllers. Aborting.")
-
-        anyUserNotAdmin = False
-        for idx, userPermissions in enumerate(userPermissionsResults):
-            adminRole = next(
-                (role for role in userPermissions.data["roles"] if role["name"] == "super-admin"),
-                None,
-            )
-            if adminRole is None:
-                anyUserNotAdmin = True
-                logging.error(f"{self.controllers[idx].host} - Login user does not have Account Owner role. Please modify permissions.")
-
-        if anyUserNotAdmin:
-            await self.abortAndCleanup(f"Login user not admin on one or more controllers. Aborting.")
 
         for idx, controller in enumerate(self.controllers):
             self.controllerData[controller.host] = OrderedDict()
@@ -263,21 +273,21 @@ class Engine:
         def thresholdStrictlyDecreasing(jobStep, thresholdMetric, componentType: str) -> bool:
             thresholds = self.thresholds[componentType][jobStep]
             if all(
-                value is True
-                for value in [
-                    thresholds["platinum"][thresholdMetric],
-                    thresholds["gold"][thresholdMetric],
-                    thresholds["silver"][thresholdMetric],
-                ]
+                    value is True
+                    for value in [
+                        thresholds["platinum"][thresholdMetric],
+                        thresholds["gold"][thresholdMetric],
+                        thresholds["silver"][thresholdMetric],
+                    ]
             ):
                 return True
             if all(
-                value is False
-                for value in [
-                    thresholds["platinum"][thresholdMetric],
-                    thresholds["gold"][thresholdMetric],
-                    thresholds["silver"][thresholdMetric],
-                ]
+                    value is False
+                    for value in [
+                        thresholds["platinum"][thresholdMetric],
+                        thresholds["gold"][thresholdMetric],
+                        thresholds["silver"][thresholdMetric],
+                    ]
             ):
                 return False
             return thresholds["platinum"][thresholdMetric] >= thresholds["gold"][thresholdMetric] >= thresholds["silver"][thresholdMetric]
@@ -285,21 +295,21 @@ class Engine:
         def thresholdStrictlyIncreasing(jobStep, thresholdMetric, componentType: str) -> bool:
             thresholds = self.thresholds[componentType][jobStep]
             if all(
-                value is False
-                for value in [
-                    thresholds["platinum"][thresholdMetric],
-                    thresholds["gold"][thresholdMetric],
-                    thresholds["silver"][thresholdMetric],
-                ]
+                    value is False
+                    for value in [
+                        thresholds["platinum"][thresholdMetric],
+                        thresholds["gold"][thresholdMetric],
+                        thresholds["silver"][thresholdMetric],
+                    ]
             ):
                 return True
             if all(
-                value is True
-                for value in [
-                    thresholds["platinum"][thresholdMetric],
-                    thresholds["gold"][thresholdMetric],
-                    thresholds["silver"][thresholdMetric],
-                ]
+                    value is True
+                    for value in [
+                        thresholds["platinum"][thresholdMetric],
+                        thresholds["gold"][thresholdMetric],
+                        thresholds["silver"][thresholdMetric],
+                    ]
             ):
                 return False
             return thresholds["platinum"][thresholdMetric] <= thresholds["gold"][thresholdMetric] <= thresholds["silver"][thresholdMetric]
