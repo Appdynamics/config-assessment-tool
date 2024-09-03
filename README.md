@@ -46,8 +46,7 @@ authType:
   UI password for "pwd". This method will be deprecated in a future release.
 - "token" use API Clients -> Client Name for "username", and API Clients ->
   Temporary Access Token for "pwd" field.  This authentication method is 
-  preferred. Note "username" is not strictly required if use token 
-  authentication.
+  preferred.
 - "secret" use API Clients -> Client Name for "username", and API Clients ->
   Client Secret for "pwd" fields.
 
