@@ -29,9 +29,12 @@ class CustomMetricsReport(ReportBase):
                 "controller",
                 "componentType",
                 "application",
+                "applicationId",
                 *allExtensions,
             ],
         )
+
+        summarySheet.column_dimensions["D"].hidden = True
 
         rowIdx = 2
         for host, hostInfo in controllerData.items():
@@ -43,12 +46,13 @@ class CustomMetricsReport(ReportBase):
                         hostInfo["controller"].host,
                         "apm",
                         component["name"],
+                        component["id"],
                         *[(True if e in component["customMetrics"] else False) for e in allExtensions],
                     ],
                 )
                 rowIdx += 1
 
-        addFilterAndFreeze(summarySheet)
+        addFilterAndFreeze(summarySheet, "E2")
         resizeColumnWidth(summarySheet)
 
         logging.debug(f"Saving CustomMetrics Workbook")

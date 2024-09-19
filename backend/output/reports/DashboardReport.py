@@ -33,7 +33,7 @@ class DashboardReport(ReportBase):
                 )
                 rowIdx += 1
 
-        addFilterAndFreeze(dashboardSheet)
+        addFilterAndFreeze(dashboardSheet, "C2")
         resizeColumnWidth(dashboardSheet)
 
         logging.debug(f"Saving Dashboard Workbook")
