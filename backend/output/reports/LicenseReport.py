@@ -47,7 +47,7 @@ class LicenseReport(ReportBase):
                 )
                 rowIdx += 1
 
-        addFilterAndFreeze(licenseSheet)
+        addFilterAndFreeze(licenseSheet, "C2")
         resizeColumnWidth(licenseSheet)
 
         logging.debug(f"Saving License Workbook")

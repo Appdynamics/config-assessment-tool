@@ -52,6 +52,7 @@ class SyntheticsReport(ReportBase):
                             "host": (host, color),
                             "componentType": ("brum", color),
                             "application": (application["name"], color),
+                            "applicationId": (application["id"], color),
                             "jobName": (syntheticJob["config"]["description"], color),
                             "numberOfWebDriverCalls": (numberOfWebDriverCalls, color),
                             "projectedDailyRuns": (syntheticJob["config"]["projectedUsage"]["projectedDailyRuns"], color),
@@ -95,7 +96,9 @@ class SyntheticsReport(ReportBase):
             )
             rowIdx += 1
 
-        addFilterAndFreeze(summarySheet, freezePane="E2")
+        summarySheet.column_dimensions["D"].hidden = True
+
+        addFilterAndFreeze(summarySheet, freezePane="F2")
         resizeColumnWidth(summarySheet)
 
         logging.debug(f"Saving Synthetics Workbook")

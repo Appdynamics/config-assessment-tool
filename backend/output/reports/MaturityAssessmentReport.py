@@ -30,11 +30,12 @@ class MaturityAssessmentReport(ReportBase):
                 "controller",
                 "componentType",
                 "name",
+                "applicationId",
                 *jobNameCols,
             ]
 
             if reportType == "apm": # add desc header after name
-                data_header.insert(3, "description")
+                data_header.insert(4, "description")
 
             # Write Headers
             writeUncoloredRow(
@@ -42,6 +43,7 @@ class MaturityAssessmentReport(ReportBase):
                 1,
                 data_header
             )
+            analysisSheet.column_dimensions["D"].hidden = True
 
             rowIdx = 2
             for host, hostInfo in controllerData.items():
@@ -51,6 +53,7 @@ class MaturityAssessmentReport(ReportBase):
                         (hostInfo["controller"].host, None),
                         (reportType, None),
                         (component["name"], None),
+                        (component["applicationId"] if reportType == "mrum" else component["id"], None),
                         *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in filteredJobs]],
                     ]
 
@@ -64,7 +67,7 @@ class MaturityAssessmentReport(ReportBase):
                     )
                     rowIdx += 1
 
-            addFilterAndFreeze(analysisSheet)
+            addFilterAndFreeze(analysisSheet, "E2")
             resizeColumnWidth(analysisSheet)
 
             # Now that we have the data , Populate the summary sheet with headers

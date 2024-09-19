@@ -107,7 +107,7 @@ def resizeColumnWidth(sheet: Worksheet):
         sheet.column_dimensions[col].width = value + headerFilterArrowPadding
 
 
-def addFilterAndFreeze(sheet: Worksheet, freezePane: str = "C2"):
+def addFilterAndFreeze(sheet: Worksheet, freezePane: str = "D2"):
     """Add filter on headers and freeze the first 2 columns and 1 row."""
     sheet.auto_filter.ref = sheet.dimensions
     # Freeze controller and application columns
