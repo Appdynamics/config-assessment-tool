@@ -22,7 +22,9 @@ class AgentMatrixReport(ReportBase):
 
         logging.debug(f"Creating workbook sheet for App Agents")
         appAgentsSheet = workbook.create_sheet(f"Overall - App Agents")
-        writeUncoloredRow(appAgentsSheet, 1, ["controller", "application", *allAppAgentVersions])
+        writeUncoloredRow(appAgentsSheet, 1, ["controller", "application", "applicationId", *allAppAgentVersions])
+        appAgentsSheet.column_dimensions["C"].hidden = True
+
         # Write Data
         rowIdx = 2
         for host, hostInfo in controllerData.items():
@@ -41,6 +43,7 @@ class AgentMatrixReport(ReportBase):
                     [
                         hostInfo["controller"].host,
                         application["name"],
+                        application["id"],
                         *agentCountRow,
                     ],
                 )
@@ -60,8 +63,10 @@ class AgentMatrixReport(ReportBase):
         writeUncoloredRow(
             machineAgentsSheet,
             1,
-            ["controller", "application", *allMachineAgentVersions],
+            ["controller", "application", "applicationId", *allMachineAgentVersions],
         )
+        machineAgentsSheet.column_dimensions["C"].hidden = True
+
         # Write Data
         rowIdx = 2
         for host, hostInfo in controllerData.items():
@@ -80,6 +85,7 @@ class AgentMatrixReport(ReportBase):
                     [
                         hostInfo["controller"].host,
                         application["name"],
+                        application["id"],
                         *agentCountRow,
                     ],
                 )

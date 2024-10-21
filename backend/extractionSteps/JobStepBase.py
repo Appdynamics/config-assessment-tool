@@ -49,9 +49,10 @@ class JobStepBase(ABC):
             return
 
         rawDataHeaders = list(list(controllerData.values())[0][self.componentType].values())[0][jobStepName][metricFolder].keys()
-        headers = ["controller", "application"] + (["description"] if self.componentType == "apm" else []) + list(rawDataHeaders)
+        headers = ["controller", "application", "applicationId"] + (["description"] if self.componentType == "apm" else []) + list(rawDataHeaders)
 
         writeUncoloredRow(rawDataSheet, 1, headers)
+        rawDataSheet.column_dimensions["C"].hidden = True
 
         # Write Data
         rowIdx = 2
@@ -61,10 +62,11 @@ class JobStepBase(ABC):
                     data = [
                         ( hostInfo["controller"].host, None),
                         ( application["name"], None),
+                        ( application["applicationId"] if self.componentType == "mrum" else application["id"], None),
                         *[application[jobStepName][metricFolder][header] for header in rawDataHeaders]
                     ]
                     if self.componentType == "apm":
-                        data.insert(2, ( application["description"], None))
+                        data.insert(3, ( application["description"], None))
                     writeColoredRow(
                         rawDataSheet,
                         rowIdx,
@@ -74,10 +76,11 @@ class JobStepBase(ABC):
                     data = [
                         hostInfo["controller"].host,
                         application["name"],
+                        application["applicationId"] if self.componentType == "mrum" else application["id"],
                         *[application[jobStepName][metricFolder][header] for header in rawDataHeaders]
                     ]
                     if self.componentType == "apm":
-                        data.insert(2, application["description"])
+                        data.insert(3, application["description"])
                     writeUncoloredRow(
                         rawDataSheet,
                         rowIdx,
@@ -85,7 +88,7 @@ class JobStepBase(ABC):
                     )
                 rowIdx += 1
 
-        addFilterAndFreeze(rawDataSheet)
+        addFilterAndFreeze(rawDataSheet, "E2") if self.componentType == "apm" else addFilterAndFreeze(rawDataSheet, "D2")
         resizeColumnWidth(rawDataSheet)
 
     def applyThresholds(self, analysisDataEvaluatedMetrics, analysisDataRoot, jobStepThresholds):
