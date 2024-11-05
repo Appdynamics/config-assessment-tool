@@ -58,7 +58,7 @@ class MaturityAssessmentReport(ReportBase):
                     ]
 
                     if reportType == "apm": # add desc after name
-                        data_row.insert(3, (component["description"], None))
+                        data_row.insert(4, (component["description"], None))
 
                     writeColoredRow(
                         analysisSheet,
