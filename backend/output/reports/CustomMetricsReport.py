@@ -34,8 +34,6 @@ class CustomMetricsReport(ReportBase):
             ],
         )
 
-        summarySheet.column_dimensions["D"].hidden = True
-
         rowIdx = 2
         for host, hostInfo in controllerData.items():
             for component in hostInfo["apm"].values():

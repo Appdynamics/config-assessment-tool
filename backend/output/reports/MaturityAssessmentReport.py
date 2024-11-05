@@ -43,7 +43,6 @@ class MaturityAssessmentReport(ReportBase):
                 1,
                 data_header
             )
-            analysisSheet.column_dimensions["D"].hidden = True
 
             rowIdx = 2
             for host, hostInfo in controllerData.items():

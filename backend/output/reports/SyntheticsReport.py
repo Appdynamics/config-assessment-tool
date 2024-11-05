@@ -96,8 +96,6 @@ class SyntheticsReport(ReportBase):
             )
             rowIdx += 1
 
-        summarySheet.column_dimensions["D"].hidden = True
-
         addFilterAndFreeze(summarySheet, freezePane="F2")
         resizeColumnWidth(summarySheet)
 

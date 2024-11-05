@@ -23,7 +23,6 @@ class AgentMatrixReport(ReportBase):
         logging.debug(f"Creating workbook sheet for App Agents")
         appAgentsSheet = workbook.create_sheet(f"Overall - App Agents")
         writeUncoloredRow(appAgentsSheet, 1, ["controller", "application", "applicationId", *allAppAgentVersions])
-        appAgentsSheet.column_dimensions["C"].hidden = True
 
         # Write Data
         rowIdx = 2
@@ -65,7 +64,6 @@ class AgentMatrixReport(ReportBase):
             1,
             ["controller", "application", "applicationId", *allMachineAgentVersions],
         )
-        machineAgentsSheet.column_dimensions["C"].hidden = True
 
         # Write Data
         rowIdx = 2
