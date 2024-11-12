@@ -52,7 +52,6 @@ class JobStepBase(ABC):
         headers = ["controller", "application", "applicationId"] + (["description"] if self.componentType == "apm" else []) + list(rawDataHeaders)
 
         writeUncoloredRow(rawDataSheet, 1, headers)
-        rawDataSheet.column_dimensions["C"].hidden = True
 
         # Write Data
         rowIdx = 2
