@@ -29,7 +29,7 @@ class AppdController(Consumer):
         """Verifies Login Success (Basic Auth)"""
 
     @params({"output": "json"})
-    @headers({"Content-Type": "application/json"})
+    @headers({"Content-Type": "application/x-www-form-urlencoded"})
     @post("/controller/api/oauth/access_token")
     def loginOAuth(self, data: Body):
         """Method to get a token."""
