@@ -56,16 +56,17 @@ expiration times are sufficient to complete the run
 ### How to run
 There are four options to run the tool:
 
-1. [UI Method](https://github.com/Appdynamics/config-assessment-tool#ui-method)
+1. [UI Method](#1-ui-method)
     - Run jobs from a convenient web based UI
     - Easier way to configure jobs but requires Python and Docker installation
-2. [Platform executable](https://github.com/Appdynamics/config-assessment-tool#platform-executable). (Preferred method for most users running Windows and Linux)
+2. [Platform executable](#2-platform-executable). (Preferred method for most users running 
+   Windows and Linux)
     - A self contained OS specific bundle if you are not using Docker and Python. Bundles available for Linux and Windows
     - Recommended for users that do not wish to install Python and Docker and/or can not access external repositories
-3. [Directly via Docker](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
+3. [Directly via Docker](#3-directly-via-docker)
     - The backend container can be run manually from the command line
     - Recommended for users with Docker who do not want to use the UI
-4. [From Source](https://github.com/Appdynamics/config-assessment-tool#directly-via-docker)
+4. [From Source](#4-from-source)
     - Manually install dependencies and run the `backend.py` script directly
     - Recommended for users who want to build the tool from source
 
@@ -95,7 +96,6 @@ This method will automatically create local Docker images if not already in the 
 Add new Jobs or Thresholds to `config_assessment_tool/resources/jobs` and `config_assessment_tool/resources/thresholds` respectively.
 
 Refresh the page to see the Jobs and Thresholds appear.
-
 ### 2) Platform executable
 
 Use this method if you are not able to use Docker or Python in your target deployment environment. Currently, platform bundles are available for x86 Windows and Linux only. Currently arm architectures are not supported.

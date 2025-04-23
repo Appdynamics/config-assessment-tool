@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-click = "==7.1.2"
-openpyxl = "==3.0.9"
+click = "==8.1.8"
+openpyxl = "==3.1.0"
 uplink = "==0.9.4"
 aiohttp = "==3.7.4.post0"
 docker = "==5.0.2"
@@ -14,6 +14,9 @@ streamlit = "==1.10.0"
 deepdiff = "==5.5.0"
 requests = "==2.26.0"
 python-pptx = "==0.6.21"
+Flask = "==3.1.0"
+# pandas= "==2.2.3"
+xlwings = "==0.33.12"
 
 [dev-packages]
 black = "==21.8b0"
@@ -26,3 +29,4 @@ pyinstaller = "==5.1"
 
 [requires]
 python_version = "3.9"
+
