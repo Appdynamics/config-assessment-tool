@@ -2,13 +2,17 @@ import json
 import logging
 import math
 import os
+import subprocess
 import sys
 import time
 import traceback
+import webbrowser
 from collections import OrderedDict
 from pathlib import Path
 
 import requests
+from flask import Flask
+from numpy.typing.mypy_plugin import plugin
 
 from api.appd.AppDService import AppDService
 from api.appd.AuthMethod import AuthMethod
@@ -48,11 +52,12 @@ from util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str, car: bool):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str, car: bool, compare: bool):
 
         # should we run the configuration analysis report in post-processing?
         self.controllers = []
         self.car = car
+        self.compare = compare
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as executable bundle
@@ -226,6 +231,7 @@ class Engine:
         startTime = time.monotonic()
 
         try:
+            self.preprocess()
             await self.validateThresholdsFile()
             await self.initControllers()
             await self.process()
@@ -239,7 +245,6 @@ class Engine:
             "",
             error=False,
         )
-
 
     async def initControllers(self) -> ([AppDService], str):
         logging.info(f"Validating Controller Login(s) for Job - {self.jobFileName} ")
@@ -431,3 +436,19 @@ class Engine:
                 await command.post_process(self.jobFileName)
 
         logging.info(f"----------Post Process Done----------")
+
+    def preprocess(self):
+        # launch compare app
+        if self.compare:
+            self.launch_flask_app("compare-plugin/core.py")
+        logging.info(f"----------Preprocess Done----------")
+
+    def launch_flask_app(self, script_path):
+        script_abs_path = os.path.abspath(script_path)
+        script_dir = os.path.dirname(script_abs_path)
+        os.chdir(script_dir)
+        logging.info(f"Changed working directory to: {script_dir}")
+        app = Flask(__name__)
+        url = "http://127.0.0.1:5000"  # This is the default URL where Flask serves
+        webbrowser.open(url)
+        app.run(debug=False)

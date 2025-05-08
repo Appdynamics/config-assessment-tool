@@ -19,11 +19,13 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
         openOutputFolderColumn,
         openJobFileColumn,
         openThresholdsFileColumn,
+        openPreviousReport,
         _,
-    ) = st.columns([1.25, 1, 1.3, 1])
+    ) = st.columns([1.25, 1, 1.3, 1, 1])
 
     openOutputFolderColumn.text("")  # vertical padding
     openOutputFolderColumn.text("")  # vertical padding
+    openPreviousReport.text("")  # vertical padding
     if openOutputFolderColumn.button(f"Open Output Folder", key=f"{jobName}-outputFolder"):
         if not isDocker():
             openFolder(f"../output/{jobName}")
@@ -69,6 +71,14 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
+    if openPreviousReport.button(f"Compare Reports - Open Previous Report", key=f"{jobName}-openPreviousReport"):
+        if not isDocker():
+            openFolder(f"../output/{jobName}")
+        else:
+            payload = {"type": "folder", "path": f"output/{jobName}"}
+            payload = parse.urlencode(payload)
+            requests.get(f"http://host.docker.internal:16225?{payload}")
+
     dynamicCredentials = st.expander("Pass credentials dynamically (optional)")
     dynamicCredentials.write("Credentials will be changed for all jobs in the job file.")
     usrNameCol, pwdCol, dynChckCol = dynamicCredentials.columns(3)
@@ -108,3 +118,4 @@ def jobPreviouslyExecuted(client: APIClient, jobName: str, debug: bool, concurre
             }
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
+

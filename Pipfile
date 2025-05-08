@@ -14,9 +14,8 @@ streamlit = "==1.10.0"
 deepdiff = "==5.5.0"
 requests = "==2.26.0"
 python-pptx = "==0.6.21"
-Flask = "==3.1.0"
-# pandas= "==2.2.3"
-xlwings = "==0.33.12"
+altair = "==4.2.0"
+numpy ="==1.22.4"
 
 [dev-packages]
 black = "==21.8b0"
