@@ -1,3 +1,5 @@
+
+
 import os
 import json
 import sys
@@ -14,7 +16,22 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
+from pptx.shapes.placeholder import SlidePlaceholder
+from pptx.shapes.placeholder import TablePlaceholder
 import xlwings as xw
+
+# Set up logging configuration
+def setup_logging():
+    # Set log level to INFO directly
+    log_level = logging.INFO  # INFO, WARNING, ERROR, CRITICAL
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    logging.info("Logging is set up!")
+
+# Call the setup_logging function to initialize logging
+setup_logging()
 
 app = Flask(__name__)
 
@@ -58,6 +75,7 @@ def load_config():
     # Convert relative paths to absolute paths
     config['upload_folder'] = os.path.join(script_dir, config.get('upload_folder', 'uploads'))
     config['result_folder'] = os.path.join(script_dir, config.get('result_folder', 'results'))
+    config['TEMPLATE_FOLDER'] = os.path.join(script_dir, config.get('TEMPLATE_FOLDER', 'templates'))  # Adding this line
     
     return config
 
@@ -100,48 +118,141 @@ def generate_powerpoint_from_analysis(comparison_result_path, powerpoint_output_
     logging.debug("Generating PowerPoint presentation...")
 
     try:
-        # Create a PowerPoint presentation
-        prs = Presentation()
-        slide_layout_title = prs.slide_layouts[0]  # Title slide layout
-        slide_layout_content = prs.slide_layouts[5]  # Title and Content layout
+        # Load the template
+        # template_path = '/Users/eubreen/Documents/GitHub/config-assessment-tool/compare-plugin/templates/template.pptx'
+        # prs = Presentation(template_path)  # Open the template
 
-        # Slide 1: Title slide with "CAT Compare"
-        slide = prs.slides.add_slide(slide_layout_title)
-        title_shape = slide.shapes.title
-        title_shape.text = "CAT Compare"
-        
-        # Slide 2: Content from 'Summary' tab in table format
+        # Define the relative path for the template using the TEMPLATE_FOLDER
+        template_folder = config.get('TEMPLATE_FOLDER', 'templates')  # 'templates' is the default folder name
+        template_path = os.path.join(template_folder, 'template.pptx')
+
+        # Check if the template exists, otherwise, ask the user for input or use environment variables
+        if not os.path.exists(template_path):
+            template_path = os.getenv('TEMPLATE_PATH', template_path)  # Allow user to set this via an environment variable
+            if not os.path.exists(template_path):
+                template_path = input("Template not found! Please provide the full path to the template: ")
+
+        # Load the template
+        prs = Presentation(template_path)
+        logging.debug(f"Template loaded from: {template_path}")
+
+        # Load the Summary sheet
         summary_df = pd.read_excel(comparison_result_path, sheet_name='Summary')
         logging.debug("Loaded Summary sheet successfully.")
         logging.debug(f"Summary DataFrame head:\n{summary_df.head()}")
 
-        # Add a new slide for the Summary content
-        slide = prs.slides.add_slide(slide_layout_content)
-        title_shape = slide.shapes.title
-        title_shape.text = "Summary Tab"
+        # Load the Analysis sheet
+        df_analysis = pd.read_excel(comparison_result_path, sheet_name='Analysis')
+        # Load the 'AppAgentsAPM' sheet from the Excel file
+        df_app_agents = pd.read_excel(comparison_result_path, sheet_name='AppAgentsAPM')
+        # Load the 'MachineAgentsAPM' sheet from the Excel file
+        df_machine_agents = pd.read_excel(comparison_result_path, sheet_name='MachineAgentsAPM')
+        # Load the 'BusinessTransactionsAPM' sheet from the Excel file
+        df_BTs = pd.read_excel(comparison_result_path, sheet_name='BusinessTransactionsAPM')
+        # Load the 'BackendsAPM' sheet from the Excel file
+        df_Backends = pd.read_excel(comparison_result_path, sheet_name='BackendsAPM')
+        # Load the 'OverheadAPM' sheet from the Excel file
+        df_Overhead = pd.read_excel(comparison_result_path, sheet_name='OverheadAPM')
+        # Load the 'ServiceEndpointsAPM' sheet from the Excel file
+        df_ServiceEndpoints = pd.read_excel(comparison_result_path, sheet_name='ServiceEndpointsAPM')
+        # Load the 'ErrorConfigurationAPM' sheet from the Excel file
+        df_ErrorConfiguration = pd.read_excel(comparison_result_path, sheet_name='ErrorConfigurationAPM')
+        # Load the 'HealthRulesAndAlertingAPM' sheet from the Excel file
+        df_HealthRulesAndAlerting = pd.read_excel(comparison_result_path, sheet_name='HealthRulesAndAlertingAPM')
+        # Load the 'DataCollectorsAPM' sheet from the Excel file
+        df_DataCollectors = pd.read_excel(comparison_result_path, sheet_name='DataCollectorsAPM')
+        # Load the 'DashboardsAPM' sheet from the Excel file
+        df_Dashboards = pd.read_excel(comparison_result_path, sheet_name='DashboardsAPM')
 
-        # Add a table for the summary data
-        rows, cols = summary_df.shape
-        table = slide.shapes.add_table(rows + 1, cols, Inches(0.5), Inches(1.5), Inches(8), Inches(5)).table
+        # Function to find table placeholders by name
+        def find_table_placeholder_by_name(slide, name):
+            for shape in slide.shapes:
+                if shape.is_placeholder and shape.name == name:
+                    return shape
+            return None  # Return None if not found
 
-        # Set the column headers (from DataFrame columns)
+        def insert_table_at_placeholder(slide, placeholder_name, rows, cols):
+            """Insert a table at the position of a placeholder."""
+            placeholder = find_table_placeholder_by_name(slide, placeholder_name)
+            
+            if not placeholder:
+                logging.error(f"Placeholder '{placeholder_name}' not found on the slide.")
+                return None
+
+            # Get placeholder dimensions
+            left = placeholder.left
+            top = placeholder.top
+            width = placeholder.width
+            height = placeholder.height
+
+            logging.debug(f"Inserting table at placeholder position: left={left}, top={top}, width={width}, height={height}")
+
+            # Insert table at the placeholder's position
+            table_shape = slide.shapes.add_table(rows, cols, left, top, width, height)
+            return table_shape.table  # Return the inserted table
+        
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Now handle Slide 3 table with "Upgraded" applications **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        slide = prs.slides[2]  # Slide 3 (index 2)
+        upgraded_apps = df_analysis[df_analysis['OverallAssessment'].str.contains('upgraded', case=False, na=False)]['name'].tolist()
+
+        # Insert Upgraded Applications Table onto Slide 3 (Slide index 2) - using Table Placeholder 1
+        upgraded_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")  # We are now using the same placeholder
+        if upgraded_placeholder:
+            logging.debug("Found Upgraded Applications table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(upgraded_apps) + 1, 1)
+        else:
+            logging.warning("Upgraded Applications table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(upgraded_apps) + 1, 1, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  
+
+        # Add header for the new table
+        table.cell(0, 0).text = "Applications with Upgraded Metrics"
+        table.cell(0, 0).text_frame.paragraphs[0].font.size = Pt(12)
+
+        # Populate the table with upgraded applications
+        for idx, app in enumerate(upgraded_apps):
+            table.cell(idx + 1, 0).text = app
+            table.cell(idx + 1, 0).text_frame.paragraphs[0].font.size = Pt(12)
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert Summary Table onto Slide 4 (Slide index 3) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+        slide = prs.slides[3]  # Slide 4 (index 3)
+        summary_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")  # Placeholder for Summary Table
+
+        if summary_placeholder:
+            logging.debug("Found Summary table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(summary_df) + 1, len(summary_df.columns))
+        else:
+            logging.warning("Summary table placeholder not found. Adding manually.")
+            # Explicitly add a new table with defined dimensions for Slide 4
+            table = slide.shapes.add_table(len(summary_df) + 1, len(summary_df.columns), Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  
+
+        # Set column headers for the Summary table
         for col_idx, column in enumerate(summary_df.columns):
             table.cell(0, col_idx).text = str(column)
             table.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
-        # Add the data rows
+        # Populate table with Summary data
         for row_idx, row in summary_df.iterrows():
             for col_idx, value in enumerate(row):
                 table.cell(row_idx + 1, col_idx).text = str(value)
                 table.cell(row_idx + 1, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
-        # Slide 3: The current slide with Assessment comparison
-        df = pd.read_excel(comparison_result_path, sheet_name='Analysis')
-        logging.debug("Loaded Analysis sheet successfully.")
-        logging.debug(f"DataFrame head:\n{df.head()}")
+        # Add the title for Slide 4 (Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Comparison Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
 
-        # Initialize counts
-        results = {}
+
+        # Load the Analysis sheet
+        df = pd.read_excel(comparison_result_path, sheet_name='Analysis')
+
         columns = [
             'AppAgentsAPM', 'MachineAgentsAPM', 'BusinessTransactionsAPM',
             'BackendsAPM', 'OverheadAPM', 'ServiceEndpointsAPM',
@@ -149,65 +260,1471 @@ def generate_powerpoint_from_analysis(comparison_result_path, powerpoint_output_
             'DataCollectorsAPM', 'DashboardsAPM', 'OverallAssessment'
         ]
 
-        total_applications = len(df)  # Total number of applications
-
+        results = {}
+        total_applications = len(df)
+        
         for col in columns:
-            # Extract upgrade and downgrade information
             df[col] = df[col].astype(str)
             upgraded_count = df[col].str.contains('upgraded', case=False, na=False).sum()
             downgraded_count = df[col].str.contains('downgraded', case=False, na=False).sum()
 
-            # Store results
+            # Total applications is the length of the column
+            total_applications = len(df[col])
+
+            overall_result = "Increase" if upgraded_count > downgraded_count else "Decrease" if downgraded_count > upgraded_count else "Even"
+            percentage_value = 0 if overall_result == "Even" else round((upgraded_count / total_applications) * 100)
+
+            # Log the results for each column
+            # logging.debug(f"Column: {col}")
+            # logging.debug(f"Upgraded Count: {upgraded_count}")
+            # logging.debug(f"Total Applications: {total_applications}")
+            # logging.debug(f"Overall Result: {overall_result}")
+            # logging.debug(f"Percentage: {percentage_value}%")
+
             results[col] = {
                 'upgraded': upgraded_count,
-                'downgraded': downgraded_count
+                'downgraded': downgraded_count,
+                'overall_result': overall_result,
+                'percentage': percentage_value
             }
-            logging.debug(f"Column: {col}, Upgraded: {upgraded_count}, Downgraded: {downgraded_count}")
 
-        # Add the third slide for Assessment Comparison
-        slide = prs.slides.add_slide(slide_layout_content)
-        title_shape = slide.shapes.title
-        title_shape.text = "Assessment Comparison - Status"
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+        # Insert Overall Assessment Table onto Slide 5 (Slide index 4)
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+        slide = prs.slides[4]  # Slide 5 (index 4)
+        overall_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")  # Placeholder name
 
-        textbox = slide.shapes.add_textbox(Inches(0.5), Inches(1.0), Inches(8), Inches(0.5))
-        text_frame = textbox.text_frame
-        p = text_frame.add_paragraph()
-        p.text = f"Total number of Applications Compared: {total_applications}"
-        p.font.size = Pt(14)
-        text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-        textbox.left = Inches(0.5)
-        textbox.width = Inches(8)
+        if overall_placeholder:
+            # logging.debug("Found Overall Assessment table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", 2, 5)
+        else:
+            # logging.warning("Overall Assessment table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(2, 5, Inches(0.5), Inches(1.5), Inches(9), Inches(1.5)).table  
 
-        # Add table to the slide
-        rows = len(columns) + 1
-        cols = 3  # Total, Upgraded, Downgraded columns
-        table = slide.shapes.add_table(rows, cols, Inches(0.5), Inches(2.0), Inches(8), Inches(4)).table
+        headers = ['Metric', '# of Apps Improved', '# Apps Degraded', 'Overall Result', 'Percentage Value']
+        for col_idx, header in enumerate(headers):
+            table.cell(0, col_idx).text = header
+            table.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(14)
+
+        overall_assessment = results['OverallAssessment']
+        table.cell(1, 0).text = 'OverallAssessment'
+        table.cell(1, 1).text = str(overall_assessment['upgraded'])
+        table.cell(1, 2).text = str(overall_assessment['downgraded'])
+        table.cell(1, 3).text = overall_assessment['overall_result']
+        table.cell(1, 4).text = f"{overall_assessment['percentage']}%"
+
+        if overall_assessment['overall_result'] == "Increase":
+            table.cell(1, 4).fill.solid()
+            table.cell(1, 4).fill.fore_color.rgb = RGBColor(0, 255, 0)  # Green
+
+        # Add the title for Slide 4
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Overall Assessment Result"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+        # Insert Status Table onto Slide 6 (Slide index 5)
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+        slide = prs.slides[5]  # Slide 6 (index 5)
+        status_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")  # Placeholder name
+
+        num_rows = len(columns)  # Should match the expected row count
+        num_cols = 5  
+
+        if status_placeholder:
+            # logging.debug("Found Status table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", num_rows, num_cols)
+        else:
+            # logging.warning("Status table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(num_rows, num_cols, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  
+
+        headers = ['Metric', '# of Apps Improved', '# Apps Degraded', 'Overall Result', 'Percentage Value']
+        for col_idx, header in enumerate(headers):
+            table.cell(0, col_idx).text = header
+            table.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(14)
+
+        for i, col in enumerate(columns[:-1]):  
+            table.cell(i + 1, 0).text = col
+            table.cell(i + 1, 1).text = str(results[col]['upgraded'])
+            table.cell(i + 1, 2).text = str(results[col]['downgraded'])
+            table.cell(i + 1, 3).text = results[col]['overall_result']
+            table.cell(i + 1, 4).text = f"{results[col]['percentage']}%"
+
+            if results[col]['overall_result'] == "Increase":
+                table.cell(i + 1, 4).fill.solid()
+                table.cell(i + 1, 4).fill.fore_color.rgb = RGBColor(0, 255, 0)  # Green
+
+        # Add the title for Slide 5
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "APM Maturity Assessment Result"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert APM AGENT Downgrade Table onto Slide 10 (Slide index 9) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[9]  # Slide 10 (index 9)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the AppAgentsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['AppAgentsAPM']
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 10 (Slide index 9)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
 
         # Set table headers
-        table.cell(0, 0).text = 'Metric'
-        table.cell(0, 1).text = 'Maturity Increase'
-        table.cell(0, 2).text = 'Maturity Decrease'
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
 
-        # Set font size for headers
-        for cell in table.rows[0].cells:
-            cell.text_frame.paragraphs[0].font.size = Pt(14)
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
 
-        # Populate the table
-        for i, col in enumerate(columns, start=1):
-            table.cell(i, 0).text = col
-            table.cell(i, 1).text = f"{results[col]['upgraded'] / total_applications * 100:.2f}%"
-            table.cell(i, 2).text = f"{results[col]['downgraded'] / total_applications * 100:.2f}%"
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
-            for cell in table.rows[i].cells:
-                cell.text_frame.paragraphs[0].font.size = Pt(14)
+        # Add the title for Slide 10 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "APM Agent - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
 
-        # Save the presentation
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'percentAgentsLessThan1YearOld': 'Rectangle 11',
+            'metricLimitNotHit': 'Rectangle 10',
+            'percentAgentsLessThan2YearsOld': 'Rectangle 12',
+            'percentAgentsReportingData': 'Rectangle 13',
+            'percentAgentsRunningSameVersion': 'Rectangle 14'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_app_agents.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'declined' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        # for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 10
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 10.") 
+
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert MACHINE AGENT Downgrade Table onto Slide 11 (Slide index 10) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[10]  # Slide 11 (index 10)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the MachineAgentsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['MachineAgentsAPM']  # Use MachineAgentsAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 11 (Slide index 10)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 11 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Machine Agent - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'percentAgentsLessThan1YearOld': 'Rectangle 8',
+            'percentAgentsLessThan2YearsOld': 'Rectangle 9',
+            'percentAgentsReportingData': 'Rectangle 10',
+            'percentAgentsRunningSameVersion': 'Rectangle 11',
+            'percentAgentsInstalledAlongsideAppAgents': 'Rectangle 12'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_machine_agents.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'declined' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        # for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 10
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 11.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert BT Downgrade Table onto Slide 12 (Slide index 11) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[11]  # Slide 12 (index 11)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the BusinessTransactionsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['BusinessTransactionsAPM']  # Use BusinessTransactionsAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 12 (Slide index 11)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 12 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Business Transactions - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'numberOfBTs': 'Rectangle 17',
+            'percentBTsWithLoad': 'Rectangle 18',
+            'btLockdownEnabled': 'Rectangle 19',
+            'numberCustomMatchRules': 'Rectangle 20'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_BTs.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        # for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 10
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 11.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert Backend Downgrade Table onto Slide 13 (Slide index 12) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[12]  # Slide 13 (index 12)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the BackendsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['BackendsAPM']  # Use BackendsAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 13 (Slide index 12)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            # Convert all items in the applications list to strings
+            applications_str = ', '.join(str(app) for app in downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            
+            # Log the grade and applications
+            logging.debug(f"Grade: {grade}, Applications: {applications_str}")
+            
+            # Populate the table with the data
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = applications_str  # Display the application names
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 13 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Backends - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'percentBackendsWithLoad': 'Rectangle 10',
+            'backendLimitNotHit': 'Rectangle 11',
+            'numberOfCustomBackendRules': 'Rectangle 12'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_Backends.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        # for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 10
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 11.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert SEP Downgrade Table onto Slide 14 (Slide index 13) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[13]  # Slide 14 (index 13)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the ServiceEndpointsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['ServiceEndpointsAPM']  # Use ServiceEndpointsAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 14 (Slide index 13)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 14 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Service Endpoints - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'numberOfCustomServiceEndpointRules': 'Rectangle 10',
+            'serviceEndpointLimitNotHit': 'Rectangle 11',
+            'percentServiceEndpointsWithLoadOrDisabled': 'Rectangle 12'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_ServiceEndpoints.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        #for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 14
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 14.") 
+
+        
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert ERROR CONFIG Downgrade Table onto Slide 15 (Slide index 14) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[14]  # Slide 15 (index 14)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the ErrorConfigurationAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['ErrorConfigurationAPM']  # Use ErrorConfigurationAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 15 (Slide index 14)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 15 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Error Configuration - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'successPercentageOfWorstTransaction': 'Rectangle 10',
+            'numberOfCustomRules': 'Rectangle 11'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_ErrorConfiguration.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        #for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 15
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 15.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert HR & ALERTS Downgrade Table onto Slide 16 (Slide index 15) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[15]  # Slide 16 (index 15)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the HealthRulesAndAlertingAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['HealthRulesAndAlertingAPM']  # Use HealthRulesAndAlertingAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 16 (Slide index 15)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 16 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Health Rules & Alerting - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'numberOfHealthRuleViolations': 'Rectangle 10',
+            'numberOfDefaultHealthRulesModified': 'Rectangle 11',
+            'numberOfActionsBoundToEnabledPolicies': 'Rectangle 12',
+            'numberOfCustomHealthRules': 'Rectangle 13'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_HealthRulesAndAlerting.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        #for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 16
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 16.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert DATA COLLECTORS Downgrade Table onto Slide 17 (Slide index 16) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[16]  # Slide 17 (index 16)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the DataCollectorsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['DataCollectorsAPM']  # Use DataCollectorsAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 17 (Slide index 16)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 17 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Data Collectors - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'numberOfDataCollectorFieldsConfigured': 'Rectangle 10',
+            'numberOfDataCollectorFieldsCollectedInSnapshots': 'Rectangle 11',
+            'numberOfDataCollectorFieldsCollectedInAnalytics': 'Rectangle 12',
+            'biqEnabled': 'Rectangle 13'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_DataCollectors.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        #for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 17
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 17.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert DASHBOARDS Downgrade Table onto Slide 18 (Slide index 17) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[17]  # Slide 18 (index 17)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the DashboardsAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['DashboardsAPM']  # Use DashboardsAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 18 (Slide index 17)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 18 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Dashboards - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+                # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'numberOfDashboards': 'Rectangle 10',
+            'percentageOfDashboardsModifiedLast6Months': 'Rectangle 11',
+            'numberOfDashboardsUsingBiQ': 'Rectangle 12'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_Dashboards.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'decreased' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        #for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 18
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 18.") 
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert OVERHEAD Downgrade Table onto Slide 19 (Slide index 18) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+        slide = prs.slides[18]  # Slide 19 (index 18)
+
+        # Define grades for comparison, including 'platinum' for the downgrade logic
+        all_grades = ['platinum', 'gold', 'silver', 'bronze']
+
+        # Define grades for the table (no platinum included as requested)
+        grades_for_table = ['gold', 'silver', 'bronze']
+        downgrade_data = {grade: {'applications': [], 'number_of_apps': 0, 'percentage': 0} for grade in grades_for_table}
+
+        # Iterate through the OverheadAPM column to detect downgrades
+        for index, row in df_analysis.iterrows():
+            current_value = row['OverheadAPM']  # Use OverheadAPM column for comparison
+            app_name = row['name']  # Capture the application name
+
+            # Log the application name and values for debugging
+            logging.debug(f"Checking App: {app_name} - Current Value: {current_value}")
+
+            # Check if the value contains a downgrade based on '→'
+            if '→' in str(current_value):
+                logging.debug(f"Found potential Downgrade in {app_name}: {current_value}")
+
+                try:
+                    # Split the value into previous and current grades based on '→'
+                    previous_value, current_grade = current_value.split('→')
+                    previous_value = previous_value.strip().lower()  # Ensure case-insensitive comparison
+                    current_grade = current_grade.strip().lower().split(' ')[0]  # Get only the grade name
+
+                    # Log the extracted values for debugging
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, Current Grade: {current_grade}")
+                    logging.debug(f"App Name: {app_name}")
+
+                    # Ensure that both grades are valid and are in the `all_grades` list
+                    if previous_value in all_grades and current_grade in all_grades:
+                        # Check if downgrade is valid (previous grade > current grade)
+                        if all_grades.index(previous_value) < all_grades.index(current_grade):
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
+                            downgrade_data[current_grade]['applications'].append(app_name)
+                            downgrade_data[current_grade]['number_of_apps'] += 1  # Increment the number of applications
+                            logging.debug(f"Current Downgrade Data: {downgrade_data}")
+                        else:
+                            logging.debug(f"Not a downgrade for {app_name}: {previous_value} → {current_grade}")
+                    else:
+                        logging.debug(f"Invalid grades detected for downgrade comparison: {previous_value}, {current_grade}")
+                except Exception as e:
+                    logging.error(f"Error processing downgrade for {app_name}: {e}")
+            else:
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
+
+        # Log applications for each grade to check population
+        for grade in grades_for_table:
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
+
+        # Calculate the percentage of downgrades for each grade
+        total_apps = len(df_analysis)
+        for grade in grades_for_table:
+            downgrade_data[grade]['percentage'] = len(downgrade_data[grade]['applications']) / total_apps * 100
+
+        # Log the percentage of downgrades
+        logging.debug(f"Downgrade Percentages: {downgrade_data}")
+
+        # Insert Downgrade Summary Table onto Slide 19 (Slide index 18)
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
+        if downgrade_placeholder:
+            logging.debug("Found Downgrade table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)  # Increase columns to 4
+        else:
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
+            table = slide.shapes.add_table(len(grades_for_table) + 1, 4, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  # Increase columns to 4
+
+        # Set table headers
+        table.cell(0, 0).text = "Grade"
+        table.cell(0, 1).text = "Application Names"
+        table.cell(0, 2).text = "Number of Applications"
+        table.cell(0, 3).text = "Percentage Declined"
+
+        # Populate the table with downgrade data
+        logging.debug(f"Populating table with downgrade data:")
+        for i, grade in enumerate(grades_for_table):
+            logging.debug(f"Grade: {grade}, Applications: {', '.join(downgrade_data[grade]['applications'])}")
+            table.cell(i + 1, 0).text = grade.capitalize()  # Capitalize the grade names for display
+            table.cell(i + 1, 1).text = ', '.join(downgrade_data[grade]['applications']) if downgrade_data[grade]['applications'] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]['number_of_apps'])  # Number of Applications
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
+
+        # Add the title for Slide 19 (Downgrade Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Overhead - Downgrade Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
+        # Create a dictionary of column names and their corresponding rectangle names
+        columns_and_rectangles = {
+            'developerModeNotEnabledForAnyBT': 'Rectangle 10',
+            'findEntryPointsNotEnabled': 'Rectangle 11',
+            'aggressiveSnapshottingNotEnabled': 'Rectangle 12',
+            'developerModeNotEnabledForApplication': 'Rectangle 13'
+        }
+
+        # Initialize a dictionary to store 'Declined' counts for each column
+        declined_counts = {key: 0 for key in columns_and_rectangles}
+
+        # Iterate through the rows and count 'Declined' in each relevant column
+        for index, row in df_Overhead.iterrows():
+            for column, rectangle in columns_and_rectangles.items():
+                # If 'Declined' is found in the current column (case insensitive)
+                if 'changed' in str(row[column]).lower():
+                    declined_counts[column] += 1
+
+        # Log the counts for debugging
+        #for column, count in declined_counts.items():
+        #    logging.debug(f"Number of 'Declined' cells in {column}: {count}")
+
+        # Insert the 'Declined' count into the corresponding rectangles on Slide 19
+        for column, rectangle_name in columns_and_rectangles.items():
+            # Find the rectangle shape by name
+            rectangle = None
+            for shape in slide.shapes:
+                if shape.name == rectangle_name:
+                    rectangle = shape
+                    break
+            
+            # Update the text of the rectangle if found
+            if rectangle:
+                rectangle.text = f"{declined_counts[column]}"  # Set the text with the count
+            else:
+                logging.warning(f"{rectangle_name} not found on Slide 19.")
+
+        # Save the PowerPoint
         prs.save(powerpoint_output_path)
         logging.debug(f"PowerPoint saved to {powerpoint_output_path}.")
 
     except Exception as e:
         logging.error(f"Error generating PowerPoint: {e}", exc_info=True)
         raise
+
+
+
+
+ 
 
 @app.route('/')
 def index():
@@ -239,6 +1756,7 @@ def upload():
     current_sum_path = os.path.join(app.config['UPLOAD_FOLDER'], 'current_sum.xlsx')
     comparison_sum_path = os.path.join(app.config['RESULT_FOLDER'], 'comparison_sum.xlsx')
     powerpoint_output_path = os.path.join(app.config['RESULT_FOLDER'], 'Analysis_Summary.pptx')
+
 
     try:
         # Save the uploaded files

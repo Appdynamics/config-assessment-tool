@@ -12,17 +12,17 @@ The CompareResults project piggy backs on to the output of the CAT, by allowing 
 
 ## Setup Instructions
 
-1. Unzip the `CompareResults` folder.
+1. Unzip the `CONFIG-ASSESSMENT-TOOL` folder.
 
-2. On mac - open a terminal and navigate to the `CompareResults` directory:
-    cd path/to/unzipped/CompareResults
+2. On mac - open a terminal and navigate to the `compare-plugin` directory:
+    cd path/to/unzipped/CONFIG-ASSESSMENT-TOOL/compare-plugin
 
 3. Run the setup script using bash:
     ./setup.sh
 
 4. After the bash script has complete and if all modules have been installed - run the following commands 1 after the other:
     source venv/bin/activate
-    python3 compare_results/core.py
+    python3 core.py
 
 5. The UI should automatically launch with an address of: http://127.0.0.1:5000/ - see considerations for upload. 
     - The only CAT report we can compare at this time is the APM output - ending with "-MaturityAssessment-apm.xlsx" 
@@ -43,6 +43,14 @@ Below is a list of the modules needed:
 - pandas
 - openpyxl
 - python-pptx
+- xlwings
+
+Below is the versions being used
+- Flask>=2.3.2
+- pandas>=1.5.3
+- openpyxl>=3.1.2
+- python-pptx>=0.6.21
+- xlwings>=0.28.0
 
 Install Module as follows:
 - pip3 install <<module>> or pip install <<module>>

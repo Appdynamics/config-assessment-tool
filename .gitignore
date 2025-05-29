@@ -8,3 +8,12 @@
 *.DS_Store
 .git-bitbucket
 __pycache__
+compare-plugin/results/*
+compare-plugin/templates/template_old.pptx
+/compare-plugin/uploads
+/compare-plugin/test1.py
+/compare-plugin/test copy.py
+/compare-plugin/test copy 2.py
+debug_analysis.csv
+/compare-plugin/venv
+/compare-plugin/input/response.json
