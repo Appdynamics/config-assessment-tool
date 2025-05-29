@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compare Config Assessment Tool Results</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #FFFFFF;
+            border-radius: 10px;
+            background-color: #333333;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 18px;
+        }
+        input[type="file"] {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            padding: 5px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Compare Config Assessment Tool Results</h1>
+        <!-- <h2>Click <a href="http://127.0.0.1:5000/">here</a> to return to the home page</h2> -->
+        
+        <!-- Display messages or results here -->
+        {% if message %}
+        <p>{{ message | safe }}</p>
+        {% else %}
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="previous_file">Previous File:</label>
+            <br>
+            <input type="file" id="previous_file" name="previous_file" required>
+            <br><br>
+            <label for="current_file">Current File:</label>
+            <br>
+            <input type="file" id="current_file" name="current_file" required>
+            <br><br>
+            <input type="submit" value="Upload and Compare">
+        </form>
+        {% endif %}
+    </div>
+</body>
+</html>
