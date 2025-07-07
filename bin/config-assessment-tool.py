@@ -119,9 +119,9 @@ def run(path: str, platformStr: str, tag: str):
 def build(platform: str, tag: str):
     if os.path.isfile("backend/Dockerfile") and os.path.isfile("frontend/Dockerfile"):
         logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} from Dockerfile")
-        runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} -f backend/Dockerfile .")
+        runBlockingCommand(f"docker build --no-cache -t ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag} -f backend/Dockerfile .")
         logging.info(f"Building ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag} from Dockerfile")
-        runBlockingCommand(f"docker build -t ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag} -f frontend/Dockerfile .")
+        runBlockingCommand(f"docker build --no-cache -t ghcr.io/appdynamics/config-assessment-tool-frontend-{platformStr}:{tag} -f frontend/Dockerfile .")
     else:
         logging.info("Dockerfiles not found in either backend/ or frontend/.")
         logging.info("Please either clone the full repository to build the images manually.")

@@ -51,6 +51,9 @@ class ControllerLevelDetails(JobStepBase):
             logging.info(f'{hostInfo["controller"].host} - Extracting Agent Details')
             hostInfo["appServerAgents"] = (await controller.getAppServerAgents()).data
             hostInfo["machineAgents"] = (await controller.getMachineAgents()).data
+
+            logging.info(f'hostInfo["machineAgents"] - {hostInfo["machineAgents"]}')
+
             hostInfo["dbAgents"] = (await controller.getDBAgents()).data
             hostInfo["analyticsAgents"] = (await controller.getAnalyticsAgents()).data
 

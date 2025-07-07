@@ -98,13 +98,13 @@ class ConfigurationAnalysisReport(PostProcessReport):
 
         # Agent Versions
         if (appFrame['percentAgentsLessThan2YearsOld'] < 50).any():
-            taskList[0].append(str(100 - int(appFrame['percentAgentsLessThan2YearsOld'])) + '% of Application Agents are 2+ years old')
+            taskList[0].append(str(100 - int(appFrame['percentAgentsLessThan2YearsOld'].iloc[0])) + '% of Application Agents are 2+ years old')
         elif (appFrame['percentAgentsLessThan1YearOld'] < 80).any():
-            taskList[0].append(str(100 - int(appFrame['percentAgentsLessThan1YearOld'])) + '% of Application Agents are at least 1 year old')
+            taskList[0].append(str(100 - int(appFrame['percentAgentsLessThan1YearOld'].iloc[0])) + '% of Application Agents are at least 1 year old')
 
         # Agents reporting data
         if (appFrame['percentAgentsReportingData'] < 100).any():
-            taskList[0].append(str(100 - int(appFrame['percentAgentsReportingData'])) + "% of Application Agents aren't reporting data")
+            taskList[0].append(str(100 - int(appFrame['percentAgentsReportingData'].iloc[0])) + "% of Application Agents aren't reporting data")
 
         if (appFrame['percentAgentsRunningSameVersion'] < 100).any():
             taskList[0].append('Multiple Application Agent Versions')
@@ -121,11 +121,11 @@ class ConfigurationAnalysisReport(PostProcessReport):
 
         # Number of Business Transcations
         if (appFrame['numberOfBTs'] > 200).any():
-            taskList[1].append("Reduce amount of Business transactions from " + str(int(appFrame['numberOfBTs'])))
+            taskList[1].append("Reduce amount of Business transactions from " + str(int(appFrame['numberOfBTs'].iloc[0])))
 
         # % of Business Transactions with load
         if (appFrame['percentBTsWithLoad'] < 90).any():
-            taskList[1].append(str(100 - int(appFrame['percentBTsWithLoad'])) + '% of Business Transactions have no load over the last 24 hours')
+            taskList[1].append(str(100 - int(appFrame['percentBTsWithLoad'].iloc[0])) + '% of Business Transactions have no load over the last 24 hours')
 
         # Business Transaction Lockdown
         if (appFrame['btLockdownEnabled'] == False).any():
@@ -136,7 +136,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
             if (appFrame['numberCustomMatchRules'] == 0).any():
                 taskList[2].append('No Custom Match Rules')
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberCustomMatchRules'])) + ' Custom Match Rules')
+                taskList[2].append('Only ' + str(int(appFrame['numberCustomMatchRules'].iloc[0])) + ' Custom Match Rules')
 
     def backendStatus(self, application, taskList):
         frame = pd.read_excel(self.analysis_sheet, sheet_name='BackendsAPM', engine='openpyxl')
@@ -145,7 +145,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
 
         # % of Backends with load
         if (appFrame['percentBackendsWithLoad'] < 75).any():
-            taskList[2].append(str(100 - int(appFrame['percentBackendsWithLoad'])) + '% of Backends have no load')
+            taskList[2].append(str(100 - int(appFrame['percentBackendsWithLoad'].iloc[0])) + '% of Backends have no load')
 
         # Backend limit not hit
         if (appFrame['backendLimitNotHit'] == False).any():
@@ -191,7 +191,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
 
         # % of enabled Service Endpoints with load
         if (appFrame['percentServiceEndpointsWithLoadOrDisabled'] < 75).any():
-            taskList[2].append(str(100 - int(appFrame['percentServiceEndpointsWithLoadOrDisabled'])) + '% of enabled Service Endpoints have no load')
+            taskList[2].append(str(100 - int(appFrame['percentServiceEndpointsWithLoadOrDisabled'].iloc[0])) + '% of enabled Service Endpoints have no load')
 
     def errorConfigurationStatus(self, application, taskList):
         frame = pd.read_excel(self.analysis_sheet, sheet_name='ErrorConfigurationAPM', engine='openpyxl')
@@ -200,7 +200,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
 
         # Sucess Percentage of Worst Transaction
         if (appFrame['successPercentageOfWorstTransaction'] < 80).any():
-            taskList[3].append('Some Business Transactions fail ' + str(100 - int(appFrame['successPercentageOfWorstTransaction'])) + '% of the time')
+            taskList[3].append('Some Business Transactions fail ' + str(100 - int(appFrame['successPercentageOfWorstTransaction'].iloc[0])) + '% of the time')
 
         # Number of Custom rules
         if (appFrame['numberOfCustomRules'] == 0).any():
@@ -213,14 +213,14 @@ class ConfigurationAnalysisReport(PostProcessReport):
 
         # Number of Health Rule Violations in last 24 hours
         if (appFrame['numberOfHealthRuleViolations'] > 10).any():
-            taskList[3].append(str(int(appFrame['numberOfHealthRuleViolations'])) + ' Health Rule Violations in 24 hours')
+            taskList[3].append(str(int(appFrame['numberOfHealthRuleViolations'].iloc[0])) + ' Health Rule Violations in 24 hours')
 
         # Number of modifications to default Health Rules
         if (appFrame['numberOfDefaultHealthRulesModified'] < 2).any():
             if (appFrame['numberOfDefaultHealthRulesModified'] < 2).any():
                 taskList[3].append('No modifications to the default Health Rules')
             else:
-                taskList[3].append('Only ' + str(int(appFrame['numberOfDefaultHealthRulesModified'])) + ' modifications to the default Health Rules')
+                taskList[3].append('Only ' + str(int(appFrame['numberOfDefaultHealthRulesModified'].iloc[0])) + ' modifications to the default Health Rules')
 
         # Number of actions bound to enabled policies
         if (appFrame['numberOfActionsBoundToEnabledPolicies'] < 1).any():
@@ -231,7 +231,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
             if (appFrame['numberOfCustomHealthRules'] == 0).any():
                 taskList[3].append('No Custom Health Rules')
             else:
-                taskList[3].append('Only ' + str(int(appFrame['numberOfCustomHealthRules'])) + ' Custom Health Rules')
+                taskList[3].append('Only ' + str(int(appFrame['numberOfCustomHealthRules'].iloc[0])) + ' Custom Health Rules')
 
     def dataCollectorStatus(self, application, taskList):
         frame = pd.read_excel(self.analysis_sheet, sheet_name='DataCollectorsAPM', engine='openpyxl')
@@ -243,21 +243,21 @@ class ConfigurationAnalysisReport(PostProcessReport):
             if (appFrame['numberOfDataCollectorFieldsConfigured'] == 0).any():
                 taskList[2].append('No configured Data Collectors')
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsConfigured'])) + ' configured Data Collectors')
+                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsConfigured'].iloc[0])) + ' configured Data Collectors')
 
         # Number of data collector fields colleced in snapshots in last 24 hours
         if (appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'] < 5).any():
             if (appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'] == 0).any():
                 taskList[2].append('No Data Collector fields collected in APM Snapshots in 24 hours')
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'])) + ' Data Collector fields collected in APM Snapshots in 24 hours')
+                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'].iloc[0])) + ' Data Collector fields collected in APM Snapshots in 24 hours')
 
         # Number of data collector fields collect in analytics in last 24 hours
         if (appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'] < 5).any():
             if (appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'] == 0).any():
                 taskList[2].append('No Data Collector fields collected in Analytics in 24 hours')
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'])) + ' Data Collector fields collected in Analytics in 24 hours')
+                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'].iloc[0])) + ' Data Collector fields collected in Analytics in 24 hours')
 
         # BiQ enabled
         if (appFrame['biqEnabled'] == False).any():
@@ -275,11 +275,11 @@ class ConfigurationAnalysisReport(PostProcessReport):
             elif (appFrame['numberOfDashboards'] == 0).any():
                 taskList[4].append('No Custom Dashboards')
             else:
-                taskList[4].append('Only ' + str(int(appFrame['numberOfDashboards'])) + ' Custom Dashboards')
+                taskList[4].append('Only ' + str(int(appFrame['numberOfDashboards'].iloc[0])) + ' Custom Dashboards')
 
         # % of Custom Dashboards modified in last 6 months
         if (appFrame['percentageOfDashboardsModifiedLast6Months'] < 100).any():
-            taskList[4].append(str(100 - int(appFrame['percentageOfDashboardsModifiedLast6Months'])) + '% of Custom Dashboards have not been updated in 6+ months')
+            taskList[4].append(str(100 - int(appFrame['percentageOfDashboardsModifiedLast6Months'].iloc[0])) + '% of Custom Dashboards have not been updated in 6+ months')
 
         # Number of Custom Dashboards using BiQ
         if (appFrame['numberOfDashboardsUsingBiQ'] == 0).any():

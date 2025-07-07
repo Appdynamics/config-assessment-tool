@@ -32,6 +32,7 @@ from extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import Overal
 from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
 from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
 from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
+from output.Archiver import Archiver
 from output.PostProcessReport import PostProcessReport
 from output.presentations.cxPpt import createCxPpt
 from output.presentations.cxPptFsoUseCases import createCxHamUseCasePpt
@@ -48,7 +49,7 @@ from util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str, car: bool):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, user_name: str, password: str, auth_method : str, car: bool):
 
         # should we run the configuration analysis report in post-processing?
         self.controllers = []
@@ -155,12 +156,13 @@ class Engine:
                 f'for host {controller["host"]}')
 
             authMethod = AuthMethod(
-                auth_method=controller["authType"],
+                # auth_method=controller["authType"],
+                auth_method=auth_method if auth_method else controller["authType"],
                 host=controller["host"],
                 port=controller["port"],
                 ssl=controller["ssl"],
                 account=controller["account"],
-                username=username if username else controller["username"],
+                username=user_name if user_name else controller["username"],
                 password=password if password else base64Decode(controller[
                                                                     "pwd"])[len("CAT-ENCODED-") :],
                 verifySsl=controller.get("verifySsl", True),
@@ -423,8 +425,12 @@ class Engine:
         logging.info(f"----------Post Process----------")
         commands = []
 
+
         if self.car:
             commands.append(ConfigurationAnalysisReport())
+
+        # after ALL reports generated archive a copy for safekeeping
+        commands.append(Archiver())
 
         for command in commands:
             if isinstance(command, PostProcessReport):

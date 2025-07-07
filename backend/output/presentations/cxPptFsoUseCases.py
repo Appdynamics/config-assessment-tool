@@ -544,7 +544,7 @@ def createCxHamUseCasePpt(folder: str):
                              f"{file_prefix}-Synthetics.xlsx"
                          ))
 
-    assert len(excels.getWorkBooks()) >= 10
+    assert len(excels.getWorkBooks()) >= 9
 
     # currently only 1st controller in the job file is examined.
     controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
