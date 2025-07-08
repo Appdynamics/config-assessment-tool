@@ -114,17 +114,24 @@ def check_controllers_match(previous_file_path, current_file_path):
 
     return True
 
-def generate_powerpoint_from_analysis(comparison_result_path, powerpoint_output_path):
+def generate_powerpoint_from_analysis(comparison_result_path, powerpoint_output_path, current_file_path, previous_file_path):
     logging.debug("Generating PowerPoint presentation...")
 
     try:
-        # Load the template
-        # template_path = '/Users/eubreen/Documents/GitHub/config-assessment-tool/compare-plugin/templates/template.pptx'
         # prs = Presentation(template_path)  # Open the template
 
         # Define the relative path for the template using the TEMPLATE_FOLDER
         template_folder = config.get('TEMPLATE_FOLDER', 'templates')  # 'templates' is the default folder name
         template_path = os.path.join(template_folder, 'template.pptx')
+
+        # Load the 'Analysis' sheet from the current workbook (uploaded by the user)
+        df_current_analysis = pd.read_excel(current_file_path, sheet_name='Analysis')
+
+        # Count the number of valid applications by counting rows where 'name' column is not NaN or empty
+        number_of_apps = df_current_analysis['name'].dropna().str.strip().ne('').sum()
+
+        # Log the number of valid applications
+        logging.info(f"Number of applications in the current 'Analysis' sheet: {number_of_apps}")
 
         # Check if the template exists, otherwise, ask the user for input or use environment variables
         if not os.path.exists(template_path):
@@ -196,6 +203,22 @@ def generate_powerpoint_from_analysis(comparison_result_path, powerpoint_output_
         # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
         slide = prs.slides[2]  # Slide 3 (index 2)
         upgraded_apps = df_analysis[df_analysis['OverallAssessment'].str.contains('upgraded', case=False, na=False)]['name'].tolist()
+
+        # Count the number of applications in the current "Analysis" sheet
+        current_analysis_df = pd.read_excel(current_file_path, sheet_name='Analysis')  # Load the current "Analysis" sheet
+        number_of_apps = len(current_analysis_df)
+
+        # Insert the count into TextBox 7
+        textbox_7 = None
+        for shape in slide.shapes:
+            if shape.name == "TextBox 7":
+                textbox_7 = shape
+                break
+
+        if textbox_7:
+            textbox_7.text = f"{number_of_apps}"  # Set the text with the count
+        else:
+            logging.warning("TextBox 8 not found on Slide 3.")
 
         # Insert Upgraded Applications Table onto Slide 3 (Slide index 2) - using Table Placeholder 1
         upgraded_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")  # We are now using the same placeholder
@@ -287,6 +310,70 @@ def generate_powerpoint_from_analysis(comparison_result_path, powerpoint_output_
                 'overall_result': overall_result,
                 'percentage': percentage_value
             }
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert Summary Table from Previous Workbook onto Slide 4 (Table Placeholder 4) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        slide = prs.slides[3]  # Slide 4 (index 3)
+
+        # Load the previous summary data
+        previous_summary_df = pd.read_excel(previous_file_path, sheet_name='Summary')
+
+        # Add to Table Placeholder 4 (for previous summary)
+        summary_placeholder_previous = find_table_placeholder_by_name(slide, "Table Placeholder 4")  # Placeholder for Previous Summary Table
+        if summary_placeholder_previous:
+            logging.debug("Found Table Placeholder 4. Inserting table for previous summary.")
+            table_previous = insert_table_at_placeholder(slide, "Table Placeholder 4", len(previous_summary_df) + 1, len(previous_summary_df.columns))
+        else:
+            logging.warning("Table Placeholder 4 not found. Adding manually.")
+            table_previous = slide.shapes.add_table(len(previous_summary_df) + 1, len(previous_summary_df.columns), Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table  
+
+        # Set column headers for the previous summary table
+        for col_idx, column in enumerate(previous_summary_df.columns):
+            table_previous.cell(0, col_idx).text = str(column)
+            table_previous.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
+
+        # Populate the table with previous summary data
+        for row_idx, row in previous_summary_df.iterrows():
+            for col_idx, value in enumerate(row):
+                table_previous.cell(row_idx + 1, col_idx).text = str(value)
+                table_previous.cell(row_idx + 1, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
+
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # ** Insert Summary Table from Current Workbook onto Slide 4 (Table Placeholder 3) **
+        # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* 
+        # Load the current summary data
+        current_summary_df = pd.read_excel(current_file_path, sheet_name='Summary')
+
+        # Add to Table Placeholder 3 (for current summary)
+        summary_placeholder_current = find_table_placeholder_by_name(slide, "Table Placeholder 3")  # Placeholder for Current Summary Table
+        if summary_placeholder_current:
+            logging.debug("Found Table Placeholder 3. Inserting table for current summary.")
+            table_current = insert_table_at_placeholder(slide, "Table Placeholder 3", len(current_summary_df) + 1, len(current_summary_df.columns))
+        else:
+            logging.warning("Table Placeholder 3 not found. Adding manually.")
+            table_current = slide.shapes.add_table(len(current_summary_df) + 1, len(current_summary_df.columns), Inches(0.5), Inches(6), Inches(9), Inches(4)).table  
+
+        # Set column headers for the current summary table
+        for col_idx, column in enumerate(current_summary_df.columns):
+            table_current.cell(0, col_idx).text = str(column)
+            table_current.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
+
+        # Populate the table with current summary data
+        for row_idx, row in current_summary_df.iterrows():
+            for col_idx, value in enumerate(row):
+                table_current.cell(row_idx + 1, col_idx).text = str(value)
+                table_current.cell(row_idx + 1, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
+
+        # Add the title for Slide 4 (Summary Slide)
+        title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
+        if title_placeholder:
+            title_placeholder.text = "Comparison Summary"
+            # Set text color to white
+            for paragraph in title_placeholder.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)  # Set font color to white
+
 
         # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
         # Insert Overall Assessment Table onto Slide 5 (Slide index 4)
@@ -1777,7 +1864,7 @@ def upload():
         compare_files_summary(previous_sum_path, current_sum_path, comparison_sum_path)
         compare_files_other_sheets(previous_file_path, current_file_path, output_file_path)
         copy_summary_to_result(comparison_sum_path, output_file_path)
-        generate_powerpoint_from_analysis(output_file_path, powerpoint_output_path)
+        generate_powerpoint_from_analysis(output_file_path, powerpoint_output_path, current_file_path, previous_file_path)
 
         return render_template(
             'index.html', 
@@ -2048,7 +2135,7 @@ def compare_files_other_sheets(previous_file_path, current_file_path, output_fil
                     logging.warning(f"No comparison function defined for sheet: {sheet_name}")
 
         wb_current.save(output_file_path)
-        logging.debug(f"Comparison results saved to: {output_file_path}")
+        logging.info(f"Comparison results saved to: {output_file_path}")
 
     except Exception as e:
         logging.error(f"Error in compare_files_other_sheets: {e}", exc_info=True)
@@ -2120,22 +2207,29 @@ def compare_appagentsapm(ws_previous, ws_current):
                    # logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
 
                     if previous_value == current_value:
-                        # No change in value
+                        # No change in value; retain original formatting or clear output
                         continue
 
                     if column == 'metricLimitNotHit':
-                        # Handle boolean logic for metricLimitNotHit
-                        if current_value == 'TRUE' and previous_value == 'FALSE':
-                            cell_output.fill = green_fill
+                        # Handle boolean logic for metricLimitNotHit (True/False)
+                        prev_value_str = str(previous_value).strip().upper()  # Ensure it's in upper case and string
+                        curr_value_str = str(current_value).strip().upper()  # Ensure it's in upper case and string
+
+                        logging.info(f"Comparing {column}: Previous={prev_value_str}, Current={curr_value_str}")
+
+                        # Compare "TRUE" vs "FALSE"
+                        if prev_value_str == "FALSE" and curr_value_str == "TRUE":
+                            cell_output.fill = green_fill  # Green for improvement (False → True)
                             cell_output.value = f"{previous_value} → {current_value} (Improved)"
-                        elif current_value == 'FALSE' and previous_value == 'TRUE':
-                            cell_output.fill = red_fill
+                        elif prev_value_str == "TRUE" and curr_value_str == "FALSE":
+                            cell_output.fill = red_fill  # Red for decline (True → False)
                             cell_output.value = f"{previous_value} → {current_value} (Declined)"
                         else:
                             cell_output.fill = red_fill
                             cell_output.value = f"{previous_value} → {current_value} (Changed)"
+
+                    # Handle numeric logic for other columns
                     else:
-                        # Handle numeric logic for other columns
                         try:
                             prev_value_num = float(previous_value)
                             curr_value_num = float(current_value)
@@ -2162,6 +2256,7 @@ def compare_appagentsapm(ws_previous, ws_current):
     except Exception as e:
         logging.error(f"Error in compare_appagentsapm: {e}", exc_info=True)
         raise
+ 
 
 def compare_machineagentsapm(ws_previous, ws_current):
     try:
@@ -2322,7 +2417,7 @@ def compare_datacollectorsapm(ws_previous, ws_current):
                     cell_output = ws_current.cell(row=current_row[0].row, column=col_idx_curr)
 
                     # Log values being compared
-                  #  logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
+                    # logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
 
                     if previous_value == current_value:
                         # No change in value; retain original formatting or clear output
@@ -2331,31 +2426,23 @@ def compare_datacollectorsapm(ws_previous, ws_current):
 
                     if column == 'biqEnabled':
                         # Handle boolean logic for biqEnabled
-                        if current_value == 'TRUE' and previous_value == 'FALSE':
-                            cell_output.fill = green_fill
+                        prev_value_str = str(previous_value).strip().upper()  # Ensure it's in upper case and string
+                        curr_value_str = str(current_value).strip().upper()  # Ensure it's in upper case and string
+
+                        # Log the comparison for debugging
+                        logging.info(f"Comparing {column}: Previous={prev_value_str}, Current={curr_value_str}")
+
+                        # Compare "TRUE" vs "FALSE"
+                        if prev_value_str == "FALSE" and curr_value_str == "TRUE":
+                            cell_output.fill = green_fill  # Green for improvement (False → True)
                             cell_output.value = f"{previous_value} → {current_value} (Improved)"
-                        elif current_value == 'FALSE' and previous_value == 'TRUE':
-                            cell_output.fill = red_fill
+                        elif prev_value_str == "TRUE" and curr_value_str == "FALSE":
+                            cell_output.fill = red_fill  # Red for decline (True → False)
                             cell_output.value = f"{previous_value} → {current_value} (Declined)"
                         else:
+                            # For other cases, we just mark it as changed
                             cell_output.fill = red_fill
                             cell_output.value = f"{previous_value} → {current_value} (Changed)"
-                    else:
-                        # Handle numeric logic for other columns
-                        try:
-                            prev_value_num = float(previous_value)
-                            curr_value_num = float(current_value)
-                            formatted_prev_value = f"{prev_value_num:.2f}"
-                            formatted_curr_value = f"{curr_value_num:.2f}"
-
-                            if curr_value_num > prev_value_num:
-                                cell_output.fill = green_fill
-                                cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Improved)"
-                            else:
-                                cell_output.fill = red_fill
-                                cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Declined)"
-                        except ValueError:
-                            logging.error(f"Non-numeric value encountered for column '{column}': Previous={previous_value}, Current={current_value}")
 
         # Add new entries in the current sheet
         for key, current_row in current_data.items():
@@ -2369,16 +2456,18 @@ def compare_datacollectorsapm(ws_previous, ws_current):
         logging.error(f"Error in compare_datacollectorsapm: {e}", exc_info=True)
         raise
 
+
+# Function to compare 'Backends' sheet 
 def compare_backendsapm(ws_previous, ws_current):
     try:
         # Define column names and their specific comparison logic
         columns = {
             'percentBackendsWithLoad': None,
-            'backendLimitNotHit': None,
+            'backendLimitNotHit': None,  # Column to compare
             'numberOfCustomBackendRules': None
         }
 
-        # Retrieve column indices
+        # Retrieve column indices for the columns to be compared
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
             col_idx_curr = get_key_column(ws_current, column)
@@ -2387,7 +2476,7 @@ def compare_backendsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        # Retrieve key column indices
+        # Retrieve key column indices (application and controller columns)
         app_col_prev = get_key_column(ws_previous, 'application')
         app_col_curr = get_key_column(ws_current, 'application')
         ctrl_col_prev = get_key_column(ws_previous, 'controller')
@@ -2439,14 +2528,21 @@ def compare_backendsapm(ws_previous, ws_current):
 
                     if column == 'backendLimitNotHit':
                         # Handle boolean logic for backendLimitNotHit
-                        if current_value == 'TRUE' and previous_value == 'FALSE':
-                            cell_output.fill = green_fill
-                            cell_output.value = f"{previous_value} → {current_value} (Increased)"
-                        elif current_value == 'FALSE' and previous_value == 'TRUE':
-                            cell_output.fill = red_fill
-                            cell_output.value = f"{previous_value} → {current_value} (Decreased)"
+                        prev_value = str(previous_value).strip().upper()  # Convert to string and handle case insensitivity
+                        curr_value = str(current_value).strip().upper()  # Same for the current value
+
+                        # Log the comparison for debugging
+                        logging.info(f"Comparing backendLimitNotHit: Previous={prev_value}, Current={curr_value}")
+
+                        # Compare "FALSE" vs "TRUE"
+                        if prev_value == "FALSE" and curr_value == "TRUE":
+                            cell_output.fill = green_fill  # Correct color for FALSE → TRUE
+                            cell_output.value = "FALSE → TRUE"
+                        elif prev_value == "TRUE" and curr_value == "FALSE":
+                            cell_output.fill = red_fill  # Correct color for TRUE → FALSE
+                            cell_output.value = "TRUE → FALSE"
                         else:
-                            cell_output.fill = red_fill
+                            cell_output.fill = red_fill  # Default for unexpected values
                             cell_output.value = f"{previous_value} → {current_value} (Changed)"
                     else:
                         # Handle numeric logic for other columns
@@ -2539,22 +2635,31 @@ def compare_overheadapm(ws_previous, ws_current):
                     cell_output = ws_current.cell(row=current_row[0].row, column=col_idx_curr)
 
                     # Log values being compared
-                  #  logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
+                    # logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
 
                     if previous_value == current_value:
                         # No change in value
                         continue
 
                     # Handle boolean logic for specified columns
-                    if current_value == 'TRUE' and previous_value == 'FALSE':
-                        cell_output.fill = green_fill
-                        cell_output.value = f"{previous_value} → {current_value} (Improved)"
-                    elif current_value == 'FALSE' and previous_value == 'TRUE':
-                        cell_output.fill = red_fill
-                        cell_output.value = f"{previous_value} → {current_value} (Declined)"
-                    else:
-                        cell_output.fill = red_fill
-                        cell_output.value = f"{previous_value} → {current_value} (Changed)"
+                    if column == 'developerModeNotEnabledForAnyBT' or column == 'findEntryPointsNotEnabled' or column == 'aggressiveSnapshottingNotEnabled' or column == 'developerModeNotEnabledForApplication':
+                        prev_value_str = str(previous_value).strip().upper()  # Ensure it's in upper case and string
+                        curr_value_str = str(current_value).strip().upper()  # Ensure it's in upper case and string
+
+                        # Log the comparison for debugging
+                        logging.info(f"Comparing {column}: Previous={prev_value_str}, Current={curr_value_str}")
+
+                        # Compare "TRUE" vs "FALSE"
+                        if prev_value_str == "FALSE" and curr_value_str == "TRUE":
+                            cell_output.fill = green_fill  # Green for True (Improvement)
+                            cell_output.value = f"{previous_value} → {current_value} (Improved)"
+                        elif prev_value_str == "TRUE" and curr_value_str == "FALSE":
+                            cell_output.fill = red_fill  # Red for False (Decline)
+                            cell_output.value = f"{previous_value} → {current_value} (Declined)"
+                        else:
+                            # For other cases, we just mark it as changed
+                            cell_output.fill = red_fill
+                            cell_output.value = f"{previous_value} → {current_value} (Changed)"
 
         # Add new entries in the current sheet
         for key, current_row in current_data.items():
@@ -2567,6 +2672,7 @@ def compare_overheadapm(ws_previous, ws_current):
     except Exception as e:
         logging.error(f"Error in compare_overheadapm: {e}", exc_info=True)
         raise
+
 
 def compare_healthrulesandalertingapm(ws_previous, ws_current):
     try:
@@ -2773,6 +2879,7 @@ def compare_errorconfigurationapm(ws_previous, ws_current):
         logging.error(f"Error in compare_errorconfigurationapm: {e}", exc_info=True)
         raise
 
+# Function to compare 'Service Endpoints' sheet
 def compare_serviceendpointsapm(ws_previous, ws_current):
     try:
         # Define the columns for comparison
@@ -2834,7 +2941,7 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
                     cell_output = ws_current.cell(row=current_row[0].row, column=col_idx_curr)
 
                     # Log values being compared
-                   # logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
+                    logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
 
                     if previous_value == current_value:
                         # No change in value
@@ -2853,12 +2960,22 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
                                 cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
 
                         elif column == 'serviceEndpointLimitNotHit':
-                            if previous_value == "FALSE" and current_value == "TRUE":
+                            # Explicitly handle TRUE/FALSE as strings and booleans
+                            prev_value_str = str(previous_value).strip().upper()  # Ensure it's in upper case and string
+                            curr_value_str = str(current_value).strip().upper()  # Ensure it's in upper case and string
+
+                            logging.info(f"Comparing serviceEndpointLimitNotHit: Previous={prev_value_str}, Current={curr_value_str}")
+
+                            # Compare "TRUE" vs "FALSE"
+                            if prev_value_str == "FALSE" and curr_value_str == "TRUE":
                                 cell_output.fill = green_fill
                                 cell_output.value = "FALSE → TRUE"
-                            elif previous_value == "TRUE" and current_value == "FALSE":
+                            elif prev_value_str == "TRUE" and curr_value_str == "FALSE":
                                 cell_output.fill = red_fill
                                 cell_output.value = "TRUE → FALSE"
+                            else:
+                                # Log if we encounter an unexpected value
+                                logging.info(f"Unexpected values for serviceEndpointLimitNotHit: Previous={previous_value}, Current={current_value}")
 
                         elif column == 'percentServiceEndpointsWithLoadOrDisabled':
                             prev_value_num = float(previous_value)
@@ -2884,6 +3001,7 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
     except Exception as e:
         logging.error(f"Error in compare_serviceendpointsapm: {e}", exc_info=True)
         raise
+
 
 def compare_dashboardsapm(ws_previous, ws_current):
     try:
@@ -3085,7 +3203,7 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
             col_idx_prev = get_key_column(ws_previous, column)
             col_idx_curr = get_key_column(ws_current, column)
             if col_idx_prev is None or col_idx_curr is None:
-                logging.error(f"The '{column}' column is missing in one of the sheets. Cannot proceed with comparison.")
+                print(f"The '{column}' column is missing in one of the sheets. Cannot proceed with comparison.")
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
@@ -3096,11 +3214,11 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
         app_col_curr = get_key_column(ws_current, 'application')
 
         if app_col_prev is None or app_col_curr is None:
-            logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
+            print("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
             return
 
         if ctrl_col_prev is None or ctrl_col_curr is None:
-            logging.error("The 'controller' column is missing in one of the sheets. This might affect the comparison.")
+            print("The 'controller' column is missing in one of the sheets. This might affect the comparison.")
             return
 
         previous_data = {}
@@ -3131,14 +3249,13 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                     current_value = current_row[col_idx_curr - 1].value
                     cell_output = ws_current.cell(row=current_row[0].row, column=col_idx_curr)
 
-                    # Log values being compared
-                  #  logging.debug(f"Comparing '{column}' for key '{key}': Previous={previous_value}, Current={current_value}")
-
                     if previous_value == current_value:
                         # No change in value
                         continue
 
                     try:
+                        print(f"Column: {column}, Previous Value: {previous_value}, Current Value: {current_value}")
+
                         # Handle each column's specific comparison logic
                         if column == 'numberOfBTs':
                             prev_value_num = float(previous_value)
@@ -3162,12 +3279,24 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                                 cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
 
                         elif column == 'btLockdownEnabled':
-                            if previous_value == "FALSE" and current_value == "TRUE":
+                            # Normalize TRUE/FALSE as strings
+                            prev_value_str = str(previous_value).strip().upper()  # Ensure it's in upper case and string
+                            curr_value_str = str(current_value).strip().upper()  # Ensure it's in upper case and string
+
+                            # Log the comparison for debugging
+                            print(f"Comparing btLockdownEnabled for app {key}: Previous={prev_value_str}, Current={curr_value_str}")
+
+                            # Compare "TRUE" vs "FALSE"
+                            if prev_value_str == "FALSE" and curr_value_str == "TRUE":
+                                print(f"Update: FALSE → TRUE for app {key}")
                                 cell_output.fill = green_fill
                                 cell_output.value = "FALSE → TRUE"
-                            elif previous_value == "TRUE" and current_value == "FALSE":
+                            elif prev_value_str == "TRUE" and curr_value_str == "FALSE":
+                                print(f"Update: TRUE → FALSE for app {key}")
                                 cell_output.fill = red_fill
                                 cell_output.value = "TRUE → FALSE"
+                            else:
+                                print(f"Unexpected values for btLockdownEnabled: Previous={previous_value}, Current={current_value}")
 
                         elif column == 'numberCustomMatchRules':
                             prev_value_num = float(previous_value)
@@ -3179,7 +3308,7 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                                 cell_output.fill = red_fill
                                 cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
                     except ValueError:
-                        logging.error(f"Non-numeric or invalid value encountered for column '{column}': Previous={previous_value}, Current={current_value}")
+                        print(f"Non-numeric or invalid value encountered for column '{column}': Previous={previous_value}, Current={current_value}")
 
         # Add new entries in the current sheet
         for key, current_row in current_data.items():
@@ -3190,8 +3319,9 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                     new_cell.fill = added_fill
 
     except Exception as e:
-        logging.error(f"Error in compare_businesstransactionsapm: {e}", exc_info=True)
-        raise 
+        print(f"Error in compare_businesstransactionsapm: {e}")
+        raise
+
 
 def compare_analysis(ws_previous, ws_current):
     try:

@@ -20,15 +20,16 @@ The CompareResults project piggy backs on to the output of the CAT, by allowing 
 3. Run the setup script using bash:
     ./setup.sh
 
-4. After the bash script has complete and if all modules have been installed - run the following commands 1 after the other:
+4. After the bash script has complete and if all modules have been installed - run this command:
     source venv/bin/activate
+
+5. Then run this:
     python3 core.py
 
-5. The UI should automatically launch with an address of: http://127.0.0.1:5000/ - see considerations for upload. 
+6. The UI should automatically launch with an address of: http://127.0.0.1:5000/ - see considerations for upload. 
     - The only CAT report we can compare at this time is the APM output - ending with "-MaturityAssessment-apm.xlsx" 
     - The previous and current APM report has to be from the same controller - otherwise the script will terminate
     - For best results ensure the previous APM report is dated before the Current APM report
-
 
 
 ## If bash will not run:
