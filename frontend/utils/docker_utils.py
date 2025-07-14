@@ -73,36 +73,12 @@ def runConfigAssessmentTool(
     logText = ""
     for log in client.logs(container.get("Id"), stream=True):
         logText = log.decode("ISO-8859-1") + logText
-        logTextBox.markdown(
-            f"""
-            <div style="height: 250px; overflow-y: auto; background-color: #f9f9f9; padding: 8px; border: 1px solid #ccc;" id="logbox">
-                <pre style="margin: 0;">{logText}</pre>
-            </div>
-            <script>
-                var logbox = document.getElementById('logbox');
-                logbox.scrollTop = logbox.scrollHeight;
-            </script>
-            """,
-            unsafe_allow_html=True
-        )
+        logTextBox.text_area("", logText, height=250)
 
-    client.wait(container.get("Id"))
-
-    # clear the live log box
-    logTextBox.empty()
-
-    # Display the final logs after container finishes
-    st.info("Review the log above. When you're ready, click below to continue.")
-    st.success("✅ Job finished successfully.")
-    with st.expander("📄 View final logs", expanded=True):
-        st.text_area("Log Output", logText, height=400)
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            if st.button("✅ Close Log Window"):
-                st.experimental_rerun()
-        with col2:
-            st.caption("📋 To copy: Click inside the box, select All (Ctrl+A or ⌘+A),  then press Ctrl+C (or ⌘+C)")
-
+    # small delay to see job ended
+    time.sleep(8)
+    # refresh the page to see newly generated report
+    rerun()
 
 
 def buildConfigAssessmentToolImage(client: APIClient, platformStr: str, tag: str):

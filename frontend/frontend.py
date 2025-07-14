@@ -9,6 +9,7 @@ import requests
 import streamlit as st
 from utils.docker_utils import getImage, isDocker
 from views.header import header
+from views.jobHandler import jobHandler
 from views.jobNotYetExecuted import jobNotYetExecuted
 from views.jobPreviouslyExecuted import jobPreviouslyExecuted
 
@@ -73,11 +74,15 @@ def main():
                 orderedJobs.append(jobName)
 
         for jobName in orderedJobs:
-            if Path(f"../output/{jobName}/info.json").exists():
-                jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
-            else:
-                jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
+            jobHandler(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
             st.markdown("""---""")
+
+        # for jobName in orderedJobs:
+        #     if Path(f"../output/{jobName}/info.json").exists():
+        #         jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
+        #     else:
+        #         jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
+        #     st.markdown("""---""")
 
 
 main()
