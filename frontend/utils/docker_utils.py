@@ -92,7 +92,6 @@ def runConfigAssessmentTool(
     logTextBox.empty()
 
     # Display the final logs after container finishes
-    st.info("Review the log above. When you're ready, click below to continue.")
     st.success("✅ Job finished successfully.")
     with st.expander("📄 View final logs", expanded=True):
         st.text_area("Log Output", logText, height=400)

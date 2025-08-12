@@ -17,46 +17,79 @@ def header() -> tuple[bool, bool]:
         page_title="config-assessment-tool",
     )
     st.markdown(
-        f"""
-            <style>
-                h1{{
-                    text-align: center;
-                }}
-                .stTextArea textarea {{ 
-                    font-family: monospace;
-                    font-size: 15px; 
-                }}
-                .block-container{{
-                    min-width: 1000px;
-                }}
-            </style>
-            """,
+        """
+        <style>
+            h1 {
+                text-align: center;
+            }
+            .stTextArea textarea { 
+                font-family: monospace;
+                font-size: 15px; 
+            }
+            .block-container {
+                min-width: 1000px;
+            }
+            .info-bubble {
+                display: inline-block;
+                background-color: #e0e0e0;
+                color: #333;
+                border-radius: 12px;
+                padding: 2px 10px;
+                font-size: 12px;
+                margin-left: 8px;
+                vertical-align: middle;
+            }
+        </style>
+        """,
         unsafe_allow_html=True,
     )
 
     st.title("config-assessment-tool")
-    st.markdown("""---""")
-    openJobsFolderColumn, openThresholdsFolderColumn, optionsColumn = st.columns(3)
+    st.markdown("---")
 
-    if openJobsFolderColumn.button(f"Open Jobs Folder"):
+    if st.button("Open Jobs Folder"):
         if not isDocker():
-            openFolder(f"../input/jobs")
+            openFolder("../input/jobs")
         else:
-            payload = {"type": "folder", "path": f"input/jobs"}
+            payload = {"type": "folder", "path": "input/jobs"}
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    if openThresholdsFolderColumn.button(f"Open Thresholds Folder"):
+    if st.button("Open Thresholds Folder"):
         if not isDocker():
-            openFolder(f"../input/thresholds")
+            openFolder("../input/thresholds")
         else:
-            payload = {"type": "folder", "path": f"input/thresholds"}
+            payload = {"type": "folder", "path": "input/thresholds"}
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
-    newJobColumn, newThresholdColumn, _ = st.columns(3)
 
-    newJob = st.expander("Create New Job")
-    with newJob.form("NewJob"):
+    open_archive = st.button("Open Archive Folder")
+    if open_archive:
+        if not isDocker():
+            openFolder("../output/archive")
+        else:
+            payload = {"type": "folder", "path": "output/archive"}
+            payload = parse.urlencode(payload)
+            requests.get(f"http://host.docker.internal:16225?{payload}")
+
+    # Example: allow downloading a sample report file from archive folder
+    sample_file_path = "../output/archive/sample_report.json"
+    if os.path.exists(sample_file_path):
+        with open(sample_file_path, "rb") as f:
+            file_bytes = f.read()
+        st.download_button(
+            label="Download Sample Report",
+            data=file_bytes,
+            file_name="sample_report.json",
+            mime="application/json",
+        )
+    else:
+        st.info("No sample report available for download.")
+
+    st.markdown("---")
+
+    newJobExpander = st.expander("Create New Job")
+    with newJobExpander.form("NewJob"):
         st.write("Create new Job")
 
         hostCol, portCol, _ = st.columns(3)
@@ -69,7 +102,8 @@ def header() -> tuple[bool, bool]:
         pwd = pwdCol.text_input(label="password", value="hunter2", type="password")
 
         if st.form_submit_button("create"):
-            with open(f"../input/jobs/{host[:host.index('.')]}.json", "w", encoding="ISO-8859-1") as f:
+            job_file_path = f"../input/jobs/{host[:host.index('.')]}.json"
+            with open(job_file_path, "w", encoding="ISO-8859-1") as f:
                 json.dump(
                     [
                         {
@@ -89,18 +123,18 @@ def header() -> tuple[bool, bool]:
                     ensure_ascii=False,
                     indent=4,
                 )
-            if os.path.exists(f"../input/jobs/{host[:host.index('.')]}.json"):
+            if os.path.exists(job_file_path):
                 st.info(f"Successfully created job '{host[:host.index('.')]}'")
             else:
                 st.error(f"Failed to create job '{host[:host.index('.')]}'")
 
-            # small delay to see job ended
             time.sleep(2)
-            # refresh the page to see newly generated report
             rerun()
 
-    debug = optionsColumn.checkbox("Enable Debug")
-    throttleNetworkConnections = optionsColumn.checkbox("Throttle Network Connections")
-    st.markdown("""---""")
+    optionsCol1, optionsCol2, _ = st.columns(3)
+    debug = optionsCol1.checkbox("Enable Debug")
+    throttleNetworkConnections = optionsCol2.checkbox("Throttle Network Connections")
+
+    st.markdown("---")
 
     return debug, throttleNetworkConnections

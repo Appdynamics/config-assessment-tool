@@ -77,12 +77,5 @@ def main():
             jobHandler(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
             st.markdown("""---""")
 
-        # for jobName in orderedJobs:
-        #     if Path(f"../output/{jobName}/info.json").exists():
-        #         jobPreviouslyExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
-        #     else:
-        #         jobNotYetExecuted(client, jobName, debug, concurrentNetworkConnections, platformStr, tag)
-        #     st.markdown("""---""")
-
 
 main()
