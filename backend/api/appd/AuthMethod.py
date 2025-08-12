@@ -245,54 +245,61 @@ class AuthMethod():
         return Result(result.data, None)
 
 
-    async def _validateAPIClientPermissions(self, username) -> Result:
-        ''' validate permissions for token user
-        :param username: username to validate permissions for
-        :return: Result object with dict containing the roles for the user
-        '''
+    async def _validateAPIClientPermissions(self, username: str) -> Result:
         if username is None:
-            logging.error(
-                f"{self.host} - API Client username is required for token authentication")
-            return Result(
-                None,
-                Result.Error(
-                    f"{self.host} - API Client username is required for token authentication"),
-            )
+            error_msg = f"{self.host} - API Client username is required for token authentication."
+            logging.error(error_msg)
+            return Result(None, Result.Error(error_msg))
 
-        response = await self.controller.getApiClients()
-        apiClients = await (
-            self.getResultFromResponse(response, "Get API " "clients"))
+        raw_response = await self.controller.getApiClients()
+        api_clients_result = await self.getResultFromResponse(raw_response, "Get API clients")
 
-        # if no api clients exist, then the user is not an admin
-        if len(apiClients.data) == 0 or apiClients.error is not None:
-            errorMesg = (f"{self.host} - Not able to validate permissions. "
-                         f"Does {username} have Account Ownership role? ")
-            logging.error(errorMesg)
-            return Result(
-                response,
-                Result.Error(errorMesg),
-            )
+        if api_clients_result.error is not None:
+            error_msg = (f"{self.host} - Failed to retrieve API clients: "
+                         f"{api_clients_result.error.msg if api_clients_result.error.msg else 'Unknown error'}")
+            logging.error(error_msg)
+            return Result(raw_response, api_clients_result.error)
 
-        for apiClient in apiClients.data:
-            if apiClient["name"] == username:
-                roles = apiClient["accountRoleIds"]
-                # get the admin id for the admin role name and see if it exists in the list of roles for the user
-                adminRoleId = await self.getAdminRoleId()
-                if adminRoleId is not None and adminRoleId in roles:
-                    logging.info(f"{self.host} - API client {username} admin "
-                                 f"role validated. User has Account Ownership role!")
-                    # keep the interface consistent with basic auth perm check
-                    roles = {"roles": [{"name": "Account Administrator"}], }
-                    return Result(roles, None)
-                else:
-                    msg = f"{self.host} - Unable to validate user administrative roles/permission. "
-                    logging.error(msg)
-                    return Result(
-                        response,
-                        Result.Error(msg)
-                    )
+        if not api_clients_result.data: # Check if the data list is empty or None
+            error_msg = (f"{self.host} - No API clients found. Unable to validate permissions for '{username}'. "
+                         f"Please ensure API clients exist and {username} has the Account Ownership role.")
+            logging.error(error_msg)
+            return Result(raw_response, Result.Error(error_msg))
 
-        return Result(apiClients, None)
+        found_api_client = None
+        for client in api_clients_result.data:
+            # Use .get() for safer access to dictionary keys, preventing KeyError
+            if client.get("name") == username:
+                found_api_client = client
+                break # Found the client, no need to continue searching
+
+        if found_api_client is None:
+            error_msg = (f"{self.host} - Unable to validate user administrative roles/permission. "
+                         f"API client '{username}' not found in the retrieved list.")
+            logging.error(error_msg)
+            return Result(raw_response, Result.Error(error_msg))
+
+        account_role_ids = found_api_client.get("accountRoleIds", [])
+        if not isinstance(account_role_ids, list):
+            # Log a warning if the role IDs are not in the expected list format
+            logging.warning(f"{self.host} - API client '{username}' has invalid 'accountRoleIds' format. Expected a list.")
+            account_role_ids = [] # Treat as empty list if not valid
+
+        admin_role_id = await self.getAdminRoleId()
+
+        if admin_role_id is not None and admin_role_id in account_role_ids:
+            logging.info(f"{self.host} - API client {username} admin role validated. User has Account Ownership role!")
+            validated_roles = {"roles": [{"name": "Account Administrator"}]}
+            return Result(validated_roles, None)
+        else:
+            error_msg = (f"{self.host} - Unable to validate user administrative roles/permission for '{username}'. "
+                         f"Admin role ID could not be determined or the user lacks the required administrative role.")
+            logging.error(error_msg)
+            return Result(raw_response, Result.Error(error_msg))
+
+
+
+
 
     async def cleanup(self):
         logging.info(f"Cleaning up closing connection for this service using "
