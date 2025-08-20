@@ -16,7 +16,7 @@ def initLogging(debug: bool):
         level=logging.DEBUG if debug else logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s %(funcName)s: %(message)s",
         handlers=[
-            logging.FileHandler("logs/config-assessment-tool-backend.log"),
+            logging.FileHandler("logs/config-assessment-tool-backend.log", mode='w'),
             logging.StreamHandler(),
         ],
     )

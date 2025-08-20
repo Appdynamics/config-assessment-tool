@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 
 import click

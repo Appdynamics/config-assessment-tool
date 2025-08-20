@@ -1,7 +1,5 @@
 import os
 import json
-import subprocess
-import platform
 from datetime import datetime
 from urllib import parse
 
@@ -13,85 +11,42 @@ from utils.docker_utils import isDocker, runConfigAssessmentTool
 from FileHandler import openFolder
 
 
-def open_in_default_editor(file_path: str):
-    if not os.path.exists(file_path):
-        st.warning(f"File not found: {file_path}")
-        return
-
-    system_platform = platform.system()
-    try:
-        if system_platform == "Windows":
-            os.startfile(file_path)
-        else:
-            subprocess.run(["open", file_path])
-    except Exception as e:
-        st.error(f"Failed to open file in default editor: {e}")
-
-
-def load_json_file(file_path: str):
-    if not os.path.exists(file_path):
-        st.warning(f"File not found: {file_path}")
-        return None
-    try:
-        with open(file_path, "r") as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        st.error(f"Failed to parse JSON file: {e}")
-        return None
-
-
 def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnections: int, platformStr: str, tag: str):
     info_path = f"../output/{jobName}/info.json"
     job_executed = os.path.exists(info_path)
 
     st.header(f"{jobName}")
 
-    # Define columns for buttons depending on job execution status
-    if job_executed:
-        openEditCol, openOutputFolderCol, openThresholdsFileColumn = st.columns([1, 1.25, 1.3])
-    else:
-        openEditCol, openThresholdsFileColumn = st.columns([1, 1.3])
-        openOutputFolderCol = None  # No output folder button if job not executed
+    # Initialize run_with_car flag
+    run_with_car = False
 
-    # Single button: View/Edit Job file
-    openEditCol.text("")  # vertical padding
-    openEditCol.text("")
-    if openEditCol.button(f"View/Edit Job file", key=f"{jobName}-view-edit-jobfile"):
-        st.session_state[f"{jobName}-editor-open"] = True
+    # Define columns for the main button row: Open JobFile, Open Thresholds File, Open Output Folder
+    # Adjust column weights as needed for desired spacing
+    col_job_file, col_thresholds_file, col_output_folder = st.columns([1, 1, 1])
 
-    # If editor is open, show editable text area with save button
-    if st.session_state.get(f"{jobName}-editor-open", False):
+    # Place "Open JobFile" button
+    col_job_file.text("")  # vertical padding
+    col_job_file.text("")  # vertical padding
+    if col_job_file.button(f"Open JobFile", key=f"{jobName}-jobfile"):
         file_path = f"input/jobs/{jobName}.json" if isDocker() else f"../input/jobs/{jobName}.json"
-
         if os.path.exists(file_path):
-            try:
-                with open(file_path, "r") as f:
-                    file_content = f.read()
-            except Exception as e:
-                st.error(f"Error reading file: {e}")
-                file_content = ""
+            with st.expander(f"📂 {jobName}.json", expanded=True):
+                with open(file_path) as f:
+                    data = json.load(f)
+                    st.json(data)
         else:
             st.warning(f"File not found: {file_path}")
-            file_content = ""
 
-        edited_text = st.text_area(f"Editing {jobName}.json", value=file_content, height=400, key=f"{jobName}-edit-textarea")
+    # Place "Open Thresholds File" button (always present)
+    col_thresholds_file.text("")  # vertical padding
+    col_thresholds_file.text("")  # vertical padding
+    # The actual button logic will be inside job_executed/else blocks, but the button itself is placed here.
 
-        if st.button("Save Changes", key=f"{jobName}-save-changes"):
-            try:
-                # Validate JSON before saving
-                parsed_json = json.loads(edited_text)
-                with open(file_path, "w") as f:
-                    json.dump(parsed_json, f, indent=2)
-                st.success("File saved successfully.")
-                st.session_state[f"{jobName}-editor-open"] = False
-            except json.JSONDecodeError as e:
-                st.error(f"Invalid JSON format: {e}")
-
-    # Open Output Folder button (only if job executed)
-    if job_executed and openOutputFolderCol is not None:
-        openOutputFolderCol.text("")  # vertical padding
-        openOutputFolderCol.text("")  # vertical padding
-        if openOutputFolderCol.button(f"Open Output Folder", key=f"{jobName}-outputFolder"):
+    # Place "Open Output Folder" button (conditionally present)
+    if job_executed:
+        col_output_folder.text("")  # vertical padding
+        col_output_folder.text("")  # vertical padding
+        if col_output_folder.button(f"Open Output Folder", key=f"{jobName}-outputFolder"):
             if not isDocker():
                 openFolder(f"../output/{jobName}")
             else:
@@ -99,112 +54,14 @@ def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnectio
                 payload = parse.urlencode(payload)
                 requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    if job_executed:
-        # Load info.json for last run and thresholds
-        info = None
-        try:
-            with open(info_path, "r") as f:
-                info = json.load(f)
-        except Exception as e:
-            st.error(f"Failed to load info.json: {e}")
+    # Define a separate column for the "Run with CAR" checkbox on the next row
+    col_run_with_car = st.columns([1])[0] # Use a single column for the checkbox
 
-        thresholdsFiles = []
-        try:
-            thresholdsFiles = [f[:-5] for f in os.listdir("../input/thresholds")]
-        except Exception as e:
-            st.error(f"Failed to list thresholds files: {e}")
+    # Place the "Run with CAR" checkbox here. Its value will be used in the runConfigAssessmentTool call.
+    col_run_with_car.text("") # vertical padding for the checkbox row
+    run_with_car = col_run_with_car.checkbox("Generate ConfigurationAnalysisReport(CAR).xlsx report used mainly for Professional Services teams", key=f"{jobName}-run-with-car-checkbox")
 
-        if info and info.get("thresholds") in thresholdsFiles:
-            default_idx = thresholdsFiles.index(info["thresholds"])
-        else:
-            default_idx = 0
-
-        thresholdsColumn, lastRunColumn, runColumn = st.columns([1, 1, 0.3])
-
-        lastRunColumn.text("")  # vertical padding
-        if info and "lastRun" in info:
-            lastRunColumn.info(f'Last Run: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}')
-        else:
-            lastRunColumn.info("Last Run: N/A")
-
-        thresholds = thresholdsColumn.selectbox(
-            "Specify Thresholds File",
-            thresholdsFiles,
-            index=default_idx,
-            key=f"{jobName}-new",
-        )
-
-        openThresholdsFileColumn.text("")  # vertical padding
-        openThresholdsFileColumn.text("")  # vertical padding
-
-        if openThresholdsFileColumn.button(f"Open Thresholds File", key=f"{jobName}-thresholds"):
-            file_path = f"input/thresholds/{thresholds}.json" if isDocker() else f"../input/thresholds/{thresholds}.json"
-            if os.path.exists(file_path):
-                with st.expander(f"📂 {thresholds}.json", expanded=True):
-                    try:
-                        with open(file_path) as f:
-                            data = json.load(f)
-                        formatted = json.dumps(data, indent=2)
-                        st.markdown(
-                            f"""
-                            <div style="max-height: 240px; overflow-y: scroll; border: 1px solid #ccc; padding: 8px; background-color: #f9f9f9;">
-                            <pre>{formatted}</pre>
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-                    except Exception as e:
-                        st.error(f"Failed to load thresholds file: {e}")
-            else:
-                st.warning(f"File not found: {file_path}")
-
-    else:
-        # Job not yet executed
-        thresholdsFiles = []
-        try:
-            thresholdsFiles = [f[:-5] for f in os.listdir("../input/thresholds")]
-        except Exception as e:
-            st.error(f"Failed to list thresholds files: {e}")
-
-        # Prioritize jobName or DefaultThresholds at top of list
-        if jobName in thresholdsFiles:
-            thresholdsFiles.remove(jobName)
-            thresholdsFiles.insert(0, jobName)
-        elif "DefaultThresholds" in thresholdsFiles:
-            thresholdsFiles.remove("DefaultThresholds")
-            thresholdsFiles.insert(0, "DefaultThresholds")
-
-        thresholdsColumn, warningColumn, runColumn = st.columns([1, 1, 0.3])
-
-        warningColumn.text("")
-        warningColumn.warning(f"Job has not yet been run")
-
-        thresholds = thresholdsColumn.selectbox("Specify Thresholds File", thresholdsFiles, key=f"{jobName}-new")
-
-        openThresholdsFileColumn.text("")  # vertical padding
-        openThresholdsFileColumn.text("")  # vertical padding
-
-        if openThresholdsFileColumn.button(f"Open Thresholds File", key=f"{jobName}-thresholds"):
-            file_path = f"input/thresholds/{thresholds}.json" if isDocker() else f"../input/thresholds/{thresholds}.json"
-            if os.path.exists(file_path):
-                with st.expander(f"📂 {thresholds}.json", expanded=True):
-                    try:
-                        with open(file_path) as f:
-                            data = json.load(f)
-                        formatted = json.dumps(data, indent=2)
-                        st.markdown(
-                            f"""
-                            <div style="max-height: 240px; overflow-y: scroll; border: 1px solid #ccc; padding: 8px; background-color: #f9f9f9;">
-                            <pre>{formatted}</pre>
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-                    except Exception as e:
-                        st.error(f"Failed to load thresholds file: {e}")
-            else:
-                st.warning(f"File not found: {file_path}")
-
+    # --- START: Moved Dynamic credentials section here ---
     # Dynamic credentials section (common to both cases)
     dynamicCredentials = st.expander("Pass credentials dynamically (optional)")
     dynamicCredentials.write("Credentials will be changed for all jobs in the job file.")
@@ -247,17 +104,113 @@ def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnectio
     dynChckCol.text("")
     dynChckCol.text("")
     dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-chckCol")
+    # --- END: Moved Dynamic credentials section here ---
 
-    # Run button logic (common)
-    runColumn = st.columns([0.3])[0]
 
-    runColumn.text("")  # vertical padding
-    if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
-        username = newUsrName if dynamicCheck else None
-        password = newPwd if dynamicCheck else None
-        auth_method = authType if dynamicCheck else None
-        runConfigAssessmentTool(
-            client, jobName, thresholds, debug,
-            concurrentConnections, username, password,
-            auth_method, platformStr, tag
+    # If job was previously executed, add last run info and thresholds selectbox
+    if job_executed:
+        # Load info.json for last run and thresholds
+        info = json.loads(open(info_path).read())
+
+        thresholdsFiles = [f[: -5] for f in os.listdir("../input/thresholds")]
+        if info["thresholds"] in thresholdsFiles:
+            default_idx = thresholdsFiles.index(info["thresholds"])
+        else:
+            default_idx = 0
+
+        # Row for Thresholds Selectbox, Last Run Info, and Run button
+        thresholdsColumn, lastRunColumn, runColumn = st.columns([1, 1, 0.3])
+
+        lastRunColumn.text("")  # vertical padding
+        lastRunColumn.info(f'Last Run: {datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")}')
+
+        thresholds = thresholdsColumn.selectbox(
+            "Specify Thresholds File",
+            thresholdsFiles,
+            index=default_idx,
+            key=f"{jobName}-new",
         )
+
+        # Logic for "Open Thresholds File" button (using col_thresholds_file defined above)
+        if col_thresholds_file.button(f"Open Thresholds File", key=f"{jobName}-thresholds"):
+            file_path = f"input/thresholds/{thresholds}.json" if isDocker() else f"../input/thresholds/{thresholds}.json"
+            if os.path.exists(file_path):
+                with st.expander(f"📂 {thresholds}.json", expanded=True):
+                    with open(file_path) as f:
+                        data = json.load(f)
+                        formatted = json.dumps(data, indent=2)
+                        st.markdown(
+                            f"""
+                            <div style="max-height: 240px; overflow-y: scroll; border: 1px solid #ccc; padding: 8px; background-color: #f9f9f9;">
+                            <pre>{formatted}</pre>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+            else:
+                st.warning(f"File not found: {file_path}")
+
+        # Run button logic for executed job
+        runColumn.text("")  # vertical padding
+        if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
+            username = newUsrName if dynamicCheck else None
+            password = newPwd if dynamicCheck else None
+            auth_method = authType if dynamicCheck else None
+            runConfigAssessmentTool(
+                client, jobName, thresholds, debug,
+                concurrentConnections, username, password,
+                auth_method, platformStr, tag,
+                run_with_car # Pass the new parameter
+            )
+
+    else:
+        # Job not yet executed
+        thresholdsFiles = [f[: -5] for f in os.listdir("../input/thresholds")]
+
+        # Prioritize jobName or DefaultThresholds at top of list
+        if jobName in thresholdsFiles:
+            thresholdsFiles.remove(jobName)
+            thresholdsFiles.insert(0, jobName)
+        elif "DefaultThresholds" in thresholdsFiles:
+            thresholdsFiles.remove("DefaultThresholds")
+            thresholdsFiles.insert(0, "DefaultThresholds")
+
+        # Row for Thresholds Selectbox, Warning, and Run button
+        thresholdsColumn, warningColumn, runColumn = st.columns([1, 1, 0.3])
+
+        warningColumn.text("")
+        warningColumn.warning(f"Job has not yet been run")
+
+        thresholds = thresholdsColumn.selectbox("Specify Thresholds File", thresholdsFiles, key=f"{jobName}-new")
+
+        # Logic for "Open Thresholds File" button (using col_thresholds_file defined above)
+        if col_thresholds_file.button(f"Open Thresholds File", key=f"{jobName}-thresholds"):
+            file_path = f"input/thresholds/{thresholds}.json" if isDocker() else f"../input/thresholds/{thresholds}.json"
+            if os.path.exists(file_path):
+                with st.expander(f"📂 {thresholds}.json", expanded=True):
+                    with open(file_path) as f:
+                        data = json.load(f)
+                        formatted = json.dumps(data, indent=2)
+                        st.markdown(
+                            f"""
+                            <div style="max-height: 240px; overflow-y: scroll; border: 1px solid #ccc; padding: 8px; background-color: #f9f9f9;">
+                            <pre>{formatted}</pre>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+            else:
+                st.warning(f"File not found: {file_path}")
+
+        # Run button logic for non-executed job
+        runColumn.text("")  # vertical padding
+        if runColumn.button(f"Run", key=f"JobFile:{jobName}-Thresholds:{thresholds}-JobType:extract"):
+            username = newUsrName if dynamicCheck else None
+            password = newPwd if dynamicCheck else None
+            auth_method = authType if dynamicCheck else None
+            runConfigAssessmentTool(
+                client, jobName, thresholds, debug,
+                concurrentConnections, username, password,
+                auth_method, platformStr, tag,
+                run_with_car # Pass the new parameter
+            )

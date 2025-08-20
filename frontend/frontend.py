@@ -5,13 +5,11 @@ from pathlib import Path
 from platform import uname
 
 import docker
-import requests
 import streamlit as st
+
 from utils.docker_utils import getImage, isDocker
 from views.header import header
 from views.jobHandler import jobHandler
-from views.jobNotYetExecuted import jobNotYetExecuted
-from views.jobPreviouslyExecuted import jobPreviouslyExecuted
 
 
 def main():
@@ -58,7 +56,7 @@ def main():
     # does docker image 'config_assessment_tool:latest' exist
     if getImage(client, f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}") is None:
         st.write(f"Image config-assessment-tool-backend-{platformStr}:{tag} not found")
-        st.write(f"Please either build from source with --build")
+        st.write(f"Please build from source with --build or use 'make' with included Makefile. ")
         st.write(f"In order to --build you will need to download the full source")
     else:
         # order jobs which have already been ran at the top
