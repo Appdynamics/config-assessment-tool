@@ -14,6 +14,7 @@ streamlit = "==1.10.0"
 deepdiff = "==5.5.0"
 requests = "==2.26.0"
 python-pptx = "==0.6.21"
+pyinstaller = "*"
 
 [dev-packages]
 black = "==21.8b0"

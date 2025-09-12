@@ -49,11 +49,10 @@ from util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, user_name: str, password: str, auth_method : str, car: bool):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, user_name: str, password: str, auth_method : str):
 
         # should we run the configuration analysis report in post-processing?
         self.controllers = []
-        self.car = car
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as executable bundle
@@ -424,10 +423,7 @@ class Engine:
          """
         logging.info(f"----------Post Process----------")
         commands = []
-
-
-        if self.car:
-            commands.append(ConfigurationAnalysisReport())
+        commands.append(ConfigurationAnalysisReport())
 
         # after ALL reports generated archive a copy for safekeeping
         commands.append(Archiver())

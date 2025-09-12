@@ -1,3 +1,4 @@
+# backend/Dockerfile-github-workflow-bundle
 # This Dockerfile is used exclusively for github actions workflow to
 # build a linux bundle that runs on most linux distros
 
@@ -31,7 +32,8 @@ COPY VERSION .
 COPY Pipfile .
 COPY Pipfile.lock .
 
-RUN BUNDLE_VERSION=`cat VERSION`
+# Get bundle version from VERSION file
+RUN BUNDLE_VERSION=$(cat VERSION)
 
 RUN pipx install pipenv
 RUN pipx install pyinstaller
@@ -44,5 +46,8 @@ WORKDIR /root
 
 # tar up the bundle as part of the image for subsequent copy to hosted runner env.
 RUN ls -altrh
-RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION).tgz -C /root/config-assessment-tool/dist/appdynamics .
+# CHANGED: Archive the 'appdynamics' directory itself from the 'dist' directory
+# This ensures the tarball contains 'appdynamics/your-app-bundle' at its root,
+# matching the structure of the Windows and macOS zip files.
+RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION).tgz -C /root/config-assessment-tool/dist/ appdynamics
 RUN ls -altrh /root/config-assessment-tool/dist/appdynamics

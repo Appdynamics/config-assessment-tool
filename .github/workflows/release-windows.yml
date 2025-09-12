@@ -1,0 +1,71 @@
+# .github/workflows/release-windows.yml
+name: Create Windows Bundle
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-win:
+    name: Build Windows Executable Bundle
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv pyinstaller
+          # Install to global namespace and then clean up, no need for venv setup
+          pipenv install --dev --system
+
+      - name: Build and bundle with PyInstaller
+        id: build_bundle # ID for accessing outputs
+        shell: pwsh # Use PowerShell for Windows-specific commands
+        run: |
+          # Generate requirements.txt from Pipfile for pip installation
+          pipenv requirements --dev > requirements.txt
+          pip install -r requirements.txt
+
+          # Run PyInstaller to create the executable bundle
+          pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+
+          # Navigate to dist directory
+          Set-Location dist
+
+          # Determine the name of the PyInstaller created directory (e.g., 'config-assessment-tool')
+          # Assumes PyInstaller creates a single top-level directory inside appdynamics/
+          $bundleFileDirName = (Get-ChildItem ./appdynamics | Where-Object { $_.PSIsContainer } | Select-Object -First 1).Name
+          echo "PyInstaller created directory: $bundleFileDirName"
+
+          # Get version from VERSION file for consistent naming
+          $versionTag = Get-Content ../VERSION
+          echo "Version tag: $versionTag"
+
+          # Define the output bundle filename
+          $bundleFilename = "config-assessment-tool-windows-$versionTag.zip"
+          echo "Bundle filename: $bundleFilename"
+
+          # Use 7z for compression, including the appdynamics directory and excluding logs
+          7z a "$bundleFilename" ./appdynamics -xr!logs
+          echo "::set-output name=bundle_name::$bundleFilename"
+
+      - name: Release the bundle for Windows
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/${{ steps.build_bundle.outputs.bundle_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Keep workflow artifact within the current workflow namespace
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.build_bundle.outputs.bundle_name }}
+          path: dist/${{ steps.build_bundle.outputs.bundle_name }}
+          if-no-files-found: ignore

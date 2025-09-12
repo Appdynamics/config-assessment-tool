@@ -17,9 +17,6 @@ def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnectio
 
     st.header(f"{jobName}")
 
-    # Initialize run_with_car flag
-    run_with_car = False
-
     # Define columns for the main button row: Open JobFile, Open Thresholds File, Open Output Folder
     # Adjust column weights as needed for desired spacing
     col_job_file, col_thresholds_file, col_output_folder = st.columns([1, 1, 1])
@@ -53,13 +50,6 @@ def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnectio
                 payload = {"type": "folder", "path": f"output/{jobName}"}
                 payload = parse.urlencode(payload)
                 requests.get(f"http://host.docker.internal:16225?{payload}")
-
-    # Define a separate column for the "Run with CAR" checkbox on the next row
-    col_run_with_car = st.columns([1])[0] # Use a single column for the checkbox
-
-    # Place the "Run with CAR" checkbox here. Its value will be used in the runConfigAssessmentTool call.
-    col_run_with_car.text("") # vertical padding for the checkbox row
-    run_with_car = col_run_with_car.checkbox("Generate ConfigurationAnalysisReport(CAR).xlsx report used mainly for Professional Services teams", key=f"{jobName}-run-with-car-checkbox")
 
     # --- START: Moved Dynamic credentials section here ---
     # Dynamic credentials section (common to both cases)
@@ -159,8 +149,7 @@ def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnectio
             runConfigAssessmentTool(
                 client, jobName, thresholds, debug,
                 concurrentConnections, username, password,
-                auth_method, platformStr, tag,
-                run_with_car # Pass the new parameter
+                auth_method, platformStr, tag
             )
 
     else:
@@ -211,6 +200,5 @@ def jobHandler(client: APIClient, jobName: str, debug: bool, concurrentConnectio
             runConfigAssessmentTool(
                 client, jobName, thresholds, debug,
                 concurrentConnections, username, password,
-                auth_method, platformStr, tag,
-                run_with_car # Pass the new parameter
+                auth_method, platformStr, tag
             )

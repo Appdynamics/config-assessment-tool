@@ -18,8 +18,7 @@ def runConfigAssessmentTool(
     password: str,
     auth_method: str,
     platformStr: str,
-    tag: str,
-    run_with_car: bool
+    tag: str
 ):
     if not isDocker():
         root = os.path.abspath("..")
@@ -44,8 +43,6 @@ def runConfigAssessmentTool(
         command.extend(["-p", password])
     if auth_method:
         command.extend(["-m", auth_method])
-    if run_with_car:
-        command.append("--car")
 
     container = client.create_container(
         image=f"ghcr.io/appdynamics/config-assessment-tool-backend-{platformStr}:{tag}",

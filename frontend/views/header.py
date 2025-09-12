@@ -63,7 +63,7 @@ def header() -> tuple[bool, bool]:
             payload = parse.urlencode(payload)
             requests.get(f"http://host.docker.internal:16225?{payload}")
 
-    open_archive = st.button("Open Archive Folder")
+    open_archive = st.button("Open Archive Folder - All previously generated reports date stamped")
     if open_archive:
         if not isDocker():
             openFolder("../output/archive")
