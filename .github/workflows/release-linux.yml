@@ -2,8 +2,12 @@
 name: Create Linux Bundle
 on:
   release:
-    types: [published]
+    types: [ published ]
   workflow_dispatch: # Allows manual triggering
+    inputs:
+      env:
+        required: false
+        description: trigger linux build
 
 jobs:
   build-linux:
