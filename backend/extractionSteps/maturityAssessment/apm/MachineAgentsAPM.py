@@ -124,15 +124,17 @@ class MachineAgentsAPM(JobStepBase):
                 application["machineAgentVersions"] = []
 
                 for node in application["nodes"]:
-                    if node["machineAgentVersion"] in nodeVersionMap:
+                    machine_agent_present = node.get("machineAgentPresent") is True
+                    app_agent_present = node.get("appAgentPresent") is True
+                    if machine_agent_present and node["machineAgentVersion"] in nodeVersionMap:
                         nodeVersionMap[node["machineAgentVersion"]] += 1
-                    else:
+                    elif machine_agent_present:
                         nodeVersionMap[node["machineAgentVersion"]] = 1
 
-                    if node["appAgentPresent"] and node["machineAgentPresent"]:
+                    if machine_agent_present and app_agent_present:
                         numberMachineAgentsInstalledAlongsideAppAgents += 1
 
-                    if node["machineAgentPresent"]:
+                    if machine_agent_present:
                         numberNodesWithMachineAgentInstalled += 1
                     else:
                         continue
