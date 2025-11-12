@@ -2,7 +2,10 @@
 # This Dockerfile is used exclusively for github actions workflow to
 # build an ubuntu-compatible linux bundle that runs on Ubuntu 20.x+
 
-FROM ubuntu:22.04
+# Changed base image to Ubuntu 20.04 to ensure compatibility with older glibc versions.
+# Building on an older OS ensures the generated executable links against an older glibc,
+# which is backward compatible with newer Ubuntu systems.
+FROM ubuntu:20.04
 
 # Set non-interactive mode for apt-get to prevent prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
