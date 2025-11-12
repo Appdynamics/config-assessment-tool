@@ -8,6 +8,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists and install build tools and dependencies for Python
+# ADDED 'ca-certificates' to the install list
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -22,6 +23,7 @@ RUN apt-get update -y && \
     tk-dev \
     libffi-dev \
     liblzma-dev \
+    ca-certificates \
     # Clean up apt cache to keep image size down
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -37,6 +39,8 @@ RUN make
 RUN make altinstall
 # Ensure the newly built Python is found and its libraries are linked
 RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+
 
 WORKDIR /root/config-assessment-tool
 COPY backend ./backend
