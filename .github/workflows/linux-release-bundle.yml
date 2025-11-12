@@ -1,0 +1,49 @@
+# .github/workflows/linux-release-bundle.yml
+name: Create Linux Bundle
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: build linux binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install dependencies and Build Bundle
+        id: get_bundle_name # Added an ID to this step to capture output
+        run: |
+          # build image which builds the bundle for glibc 2.15+
+          docker build --file backend/Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
+          echo "finished building docker image with bundle included"
+          # copy bundle out of built image
+          tarball_path=$(docker run --rm config-assessment-tool-linux:latest find /root/config-assessment-tool/dist/ -name *.tgz)
+          echo "copying bundle out of image using $tarball_path"
+          docker cp $(docker create --name temp_image config-assessment-tool-linux:latest):$tarball_path ./ && docker rm temp_image
+          echo "finished copying bundle onto hosted runner at $(pwd)"
+          echo "files in current directory $(ls -altr)"
+          # Capture the exact bundle filename
+          BUNDLE_NAME=$(ls -1 *.tgz | head -n 1)
+          echo "BUNDLE_NAME=$BUNDLE_NAME" >> $GITHUB_ENV # Set as an environment variable
+          echo "bundle_name=$BUNDLE_NAME" >> $GITHUB_OUTPUT # Set as step output for clarity
+
+      - name: Release the bundle for linux
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.BUNDLE_NAME }} # Use the exact bundle name from environment variable
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Keep workflow artifact within the current workflow namespace
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BUNDLE_NAME }} # Use the exact bundle name for the artifact
+          path: ./${{ env.BUNDLE_NAME }} # Specify the full path to the bundle
+          if-no-files-found: ignore

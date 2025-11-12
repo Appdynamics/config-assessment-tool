@@ -9,7 +9,9 @@ RUN yum update -y
 RUN yum groupinstall -y 'Development Tools'
 RUN yum install -y wget zlib-devel bzip2 bzip2-devel \
     readline-devel sqlite sqlite-devel openssl-devel \
-    tk-devel libffi-devel xz-devel openssl openssl-devel
+    tk-devel libffi-devel xz-devel openssl openssl-devel \
+    # Add coreutils for tr if not already present, though it usually is
+    yum install -y coreutils
 
 WORKDIR /root
 
@@ -42,7 +44,15 @@ RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pyinstaller --distpa
 
 WORKDIR /root
 
-# tar up the bundle as part of the image for subsequent copy to hosted runner env.
+# Define OS and Architecture dynamically
+# Use /etc/os-release for OS ID, convert to uppercase, and remove quotes
+RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:lower:]' '[:upper:]') && \
+    ARCH=$(uname -m) && \
+    export OS_ID ARCH && \
+    echo "Detected OS: $OS_ID, Architecture: $ARCH"
+
+# tar up the bundle as part of the image for subsequent copy to  hosted runner env.
 RUN ls -altrh
-RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION).tgz -C /root/config-assessment-tool/dist/appdynamics .
+# MODIFIED LINE: Using dynamically derived OS_ID and ARCH
+RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics .
 RUN ls -altrh /root/config-assessment-tool/dist/appdynamics
