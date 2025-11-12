@@ -1,0 +1,66 @@
+# backend/Dockerfile-github-workflow-bundle-ubuntu
+# This Dockerfile is used exclusively for github actions workflow to
+# build an ubuntu-compatible linux bundle that runs on Ubuntu 20.x+
+
+FROM ubuntu:22.04
+
+# Set non-interactive mode for apt-get to prevent prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update package lists and install build tools and dependencies for Python
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    wget \
+    zlib1g-dev \
+    bzip2 \
+    libbz2-dev \
+    libreadline-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    libssl-dev \
+    tk-dev \
+    libffi-dev \
+    liblzma-dev \
+    # Clean up apt cache to keep image size down
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root
+
+# build python from source with required flag as pyinstaller needs it
+RUN wget https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tar.xz
+RUN tar -xf Python-3.9.13.tar.xz
+WORKDIR /root/Python-3.9.13
+RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared
+RUN make
+RUN make altinstall
+# Ensure the newly built Python is found and its libraries are linked
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+WORKDIR /root/config-assessment-tool
+COPY backend ./backend
+COPY input ./input
+COPY VERSION .
+COPY Pipfile .
+COPY Pipfile.lock .
+
+RUN BUNDLE_VERSION=`cat VERSION`
+
+# Use the newly built python3.9 explicitly for pipx, pipenv, and pyinstaller
+RUN /usr/local/bin/pipx install pipenv
+RUN /usr/local/bin/pipx install pyinstaller
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; /usr/local/bin/python3.9 -m pip install --upgrade pip
+RUN /usr/local/bin/pipenv requirements --dev > requirements.txt
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; /usr/local/bin/pip install -r requirements.txt
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; /usr/local/bin/pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+
+WORKDIR /root
+
+# Define OS and Architecture dynamically AND tar up the bundle in a single RUN instruction
+RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:lower:]' '[:upper:]') && \
+    ARCH=$(uname -m) && \
+    echo "Detected OS: $OS_ID, Architecture: $ARCH" && \
+    ls -altrh && \
+    tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics . && \
+    ls -altrh /root/config-assessment-tool/dist/appdynamics
