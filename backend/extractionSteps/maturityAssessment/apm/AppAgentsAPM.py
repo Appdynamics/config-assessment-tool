@@ -180,14 +180,15 @@ class AppAgentsAPM(JobStepBase):
                 application["appAgentVersions"] = []
 
                 for node in application["nodes"]:
-                    if node["appAgentVersion"] in nodeVersionMap:
+                    app_agent_present = node.get("appAgentPresent") is True
+                    if app_agent_present and node["appAgentVersion"] in nodeVersionMap:
                         nodeVersionMap[node["appAgentVersion"]] += 1
-                    else:
+                    elif app_agent_present:
                         nodeVersionMap[node["appAgentVersion"]] = 1
 
                     # Calculate version age
                     numberNodesWithAppAgentInstalled += 1
-                    if "" == node["appAgentVersion"]:  # No agent installed
+                    if not app_agent_present:
                         continue
 
                     version = semanticVersionRegex.search(node["appAgentVersion"])[0].split(".")  # e.g. 'Server Agent v21.6.1.2 GA ...'
