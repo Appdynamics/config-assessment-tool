@@ -12,6 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists and install build tools and dependencies for Python
 # Added 'ca-certificates' to the install list for secure downloads
+# Added libcrypt1 to resolve "Unable to find /usr/local/lib/libcrypt.so.2" error
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -27,6 +28,7 @@ RUN apt-get update -y && \
     libffi-dev \
     liblzma-dev \
     ca-certificates \
+    libcrypt1 \
     # Clean up apt cache to keep image size down
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
