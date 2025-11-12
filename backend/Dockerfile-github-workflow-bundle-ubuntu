@@ -33,6 +33,12 @@ RUN apt-get update -y && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a symlink for libcrypt.so.2 to point to libcrypt.so.1
+# This addresses the PyInstaller error "Unable to find /usr/local/lib/libcrypt.so.2"
+# On Ubuntu 20.04, libcrypt.so.1 is typically found in /lib/x86_64-linux-gnu/.
+RUN ln -s /lib/x86_64-linux-gnu/libcrypt.so.1 /usr/local/lib/libcrypt.so.2 || \
+    (echo "Failed to create symlink for libcrypt.so.2. Check if libcrypt.so.1 exists at /lib/x86_64-linux-gnu/libcrypt.so.1" && exit 1)
+
 WORKDIR /root
 
 # build python from source with required flag as pyinstaller needs it
