@@ -7,11 +7,10 @@ FROM quay.io/pypa/manylinux2014_x86_64
 # get toolchain necessary to build python from source
 RUN yum update -y
 RUN yum groupinstall -y 'Development Tools'
+# Corrected line: Combined all packages into one yum install command
 RUN yum install -y wget zlib-devel bzip2 bzip2-devel \
     readline-devel sqlite sqlite-devel openssl-devel \
-    tk-devel libffi-devel xz-devel openssl openssl-devel \
-    # Add coreutils for tr if not already present, though it usually is
-    yum install -y coreutils
+    tk-devel libffi-devel xz-devel coreutils
 
 WORKDIR /root
 
@@ -53,6 +52,6 @@ RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:lowe
 
 # tar up the bundle as part of the image for subsequent copy to  hosted runner env.
 RUN ls -altrh
-# MODIFIED LINE: Using dynamically derived OS_ID and ARCH
+# Using dynamically derived OS_ID and ARCH
 RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics .
 RUN ls -altrh /root/config-assessment-tool/dist/appdynamics
