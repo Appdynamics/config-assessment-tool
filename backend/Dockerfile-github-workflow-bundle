@@ -43,15 +43,10 @@ RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pyinstaller --distpa
 
 WORKDIR /root
 
-# Define OS and Architecture dynamically
-# Use /etc/os-release for OS ID, convert to uppercase, and remove quotes
+# MODIFIED: Define OS and Architecture dynamically AND tar up the bundle in a single RUN instruction
 RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:lower:]' '[:upper:]') && \
     ARCH=$(uname -m) && \
-    export OS_ID ARCH && \
-    echo "Detected OS: $OS_ID, Architecture: $ARCH"
-
-# tar up the bundle as part of the image for subsequent copy to  hosted runner env.
-RUN ls -altrh
-# Using dynamically derived OS_ID and ARCH
-RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics .
-RUN ls -altrh /root/config-assessment-tool/dist/appdynamics
+    echo "Detected OS: $OS_ID, Architecture: $ARCH" && \
+    ls -altrh && \
+    tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics . && \
+    ls -altrh /root/config-assessment-tool/dist/appdynamics
