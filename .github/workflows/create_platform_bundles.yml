@@ -73,6 +73,7 @@ jobs:
         $bundleFileDirName = $bundleFileDir.Name
         7z a "$bundleFileDirName.zip" ./appdynamics -xr!logs
         "bundle_name=$bundleFileDir.zip" >> $env:GITHUB_OUTPUT
+        "bundle_name=${bundleFileDirName}.zip" >> $env:GITHUB_OUTPUT
 
     - name: Release the bundle for Windows
       uses: softprops/action-gh-release@v2
