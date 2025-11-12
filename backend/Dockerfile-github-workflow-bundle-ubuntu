@@ -8,7 +8,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists and install build tools and dependencies for Python
-# ADDED 'ca-certificates' to the install list
+# Added 'ca-certificates' to the install list for secure downloads
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -37,10 +37,12 @@ WORKDIR /root/Python-3.9.13
 RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared
 RUN make
 RUN make altinstall
-# Ensure the newly built Python is found and its libraries are linked
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-
+# Set persistent environment variables for LD_LIBRARY_PATH and PATH
+# LD_LIBRARY_PATH is crucial for dynamically linked Python libraries
+# PATH is needed for pipx and the tools it installs (pipenv, pyinstaller)
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /root/config-assessment-tool
 COPY backend ./backend
@@ -51,13 +53,18 @@ COPY Pipfile.lock .
 
 RUN BUNDLE_VERSION=`cat VERSION`
 
-# Use the newly built python3.9 explicitly for pipx, pipenv, and pyinstaller
-RUN /usr/local/bin/pipx install pipenv
-RUN /usr/local/bin/pipx install pyinstaller
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; /usr/local/bin/python3.9 -m pip install --upgrade pip
-RUN /usr/local/bin/pipenv requirements --dev > requirements.txt
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; /usr/local/bin/pip install -r requirements.txt
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; /usr/local/bin/pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+# Install pipx, then use it to install pipenv and pyinstaller
+# All Python-related commands now use the specific /usr/local/bin/python3.9 path
+# and rely on the ENV PATH for pipx to find pipenv/pyinstaller.
+RUN /usr/local/bin/python3.9 -m pip install --upgrade pip && \
+    /usr/local/bin/python3.9 -m pip install pipx && \
+    pipx install pipenv && \
+    pipx install pyinstaller
+
+# Now use pipenv and pyinstaller (which are now in PATH due to pipx installation)
+RUN pipenv requirements --dev > requirements.txt
+RUN /usr/local/bin/pip install -r requirements.txt
+RUN /usr/local/bin/pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
 
 WORKDIR /root
 
