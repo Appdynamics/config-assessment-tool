@@ -1,0 +1,89 @@
+# backend/Dockerfile-github-workflow-bundle-ubuntu
+# This Dockerfile is used exclusively for github actions workflow to
+# build an ubuntu-compatible linux bundle that runs on Ubuntu 20.x+
+
+# Changed base image to Ubuntu 20.04 to ensure compatibility with older glibc versions.
+# Building on an older OS ensures the generated executable links against an older glibc,
+# which is backward compatible with newer Ubuntu systems.
+FROM ubuntu:20.04
+
+# Set non-interactive mode for apt-get to prevent prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update package lists and install build tools and dependencies for Python
+# Added 'ca-certificates' to the install list for secure downloads
+# Added libcrypt1 to resolve "Unable to find /usr/local/lib/libcrypt.so.2" error
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    wget \
+    zlib1g-dev \
+    bzip2 \
+    libbz2-dev \
+    libreadline-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    libssl-dev \
+    tk-dev \
+    libffi-dev \
+    liblzma-dev \
+    ca-certificates \
+    libcrypt1 \
+    # Clean up apt cache to keep image size down
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a symlink for libcrypt.so.2 to point to libcrypt.so.1
+# This addresses the PyInstaller error "Unable to find /usr/local/lib/libcrypt.so.2"
+# On Ubuntu 20.04, libcrypt.so.1 is typically found in /lib/x86_64-linux-gnu/.
+RUN ln -s /lib/x86_64-linux-gnu/libcrypt.so.1 /usr/local/lib/libcrypt.so.2 || \
+    (echo "Failed to create symlink for libcrypt.so.2. Check if libcrypt.so.1 exists at /lib/x86_64-linux-gnu/libcrypt.so.1" && exit 1)
+
+WORKDIR /root
+
+# build python from source with required flag as pyinstaller needs it
+RUN wget https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tar.xz
+RUN tar -xf Python-3.9.13.tar.xz
+WORKDIR /root/Python-3.9.13
+RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared
+RUN make
+RUN make altinstall
+
+# Set persistent environment variables for LD_LIBRARY_PATH and PATH
+# LD_LIBRARY_PATH is crucial for dynamically linked Python libraries
+# PATH is needed for pipx and the tools it installs (pipenv, pyinstaller)
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+ENV PATH="/root/.local/bin:${PATH}"
+
+WORKDIR /root/config-assessment-tool
+COPY backend ./backend
+COPY input ./input
+COPY VERSION .
+COPY Pipfile .
+COPY Pipfile.lock .
+
+RUN BUNDLE_VERSION=`cat VERSION`
+
+# Install pipx, then use it to install pipenv and pyinstaller
+# All Python-related commands now use the specific /usr/local/bin/python3.9 path
+# and rely on the ENV PATH for pipx to find pipenv/pyinstaller.
+RUN /usr/local/bin/python3.9 -m pip install --upgrade pip && \
+    /usr/local/bin/python3.9 -m pip install pipx && \
+    pipx install pipenv && \
+    pipx install pyinstaller
+
+# Now use pipenv and pyinstaller (which are now in PATH due to pipx installation)
+RUN pipenv requirements --dev > requirements.txt
+RUN /usr/local/bin/pip install -r requirements.txt
+RUN /usr/local/bin/pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+
+WORKDIR /root
+
+# Define OS and Architecture dynamically AND tar up the bundle in a single RUN instruction
+# Changed '[:upper:]' to '[:lower:]' to make the OS_ID lowercase.
+RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:upper:]' '[:lower:]') && \
+    ARCH=$(uname -m) && \
+    echo "Detected OS: $OS_ID, Architecture: $ARCH" && \
+    ls -altrh && \
+    tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics . && \
+    ls -altrh /root/config-assessment-tool/dist/appdynamics
