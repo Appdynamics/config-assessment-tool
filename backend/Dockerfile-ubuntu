@@ -80,7 +80,8 @@ RUN /usr/local/bin/pyinstaller --distpath=./dist/appdynamics backend/config-asse
 WORKDIR /root
 
 # Define OS and Architecture dynamically AND tar up the bundle in a single RUN instruction
-RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:lower:]' '[:upper:]') && \
+# Changed '[:upper:]' to '[:lower:]' to make the OS_ID lowercase.
+RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:upper:]' '[:lower:]') && \
     ARCH=$(uname -m) && \
     echo "Detected OS: $OS_ID, Architecture: $ARCH" && \
     ls -altrh && \
