@@ -21,7 +21,7 @@ jobs:
         id: get_bundle_name # Added an ID to this step to capture output
         run: |
           # build image which builds the bundle for glibc 2.15+
-          docker build --file backend/Dockerfile-github-workflow-bundle --tag config-assessment-tool-linux .
+          docker build --file backend/Dockerfile-centos --tag config-assessment-tool-linux .
           echo "finished building docker image with bundle included"
           # copy bundle out of built image
           tarball_path=$(docker run --rm config-assessment-tool-linux:latest find /root/config-assessment-tool/dist/ -name *.tgz)

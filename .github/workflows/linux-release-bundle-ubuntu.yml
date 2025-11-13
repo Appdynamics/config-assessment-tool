@@ -22,7 +22,7 @@ jobs:
         run: |
           # build image which builds the bundle for Ubuntu 20.x+
           # IMPORTANT: Use the new Dockerfile for Ubuntu
-          docker build --file backend/Dockerfile-github-workflow-bundle-ubuntu --tag config-assessment-tool-ubuntu-linux .
+          docker build --file backend/Dockerfile-ubuntu --tag config-assessment-tool-ubuntu-linux .
           echo "finished building docker image with bundle included"
           # copy bundle out of built image
           # The `find` command is more robust for dynamically named files
