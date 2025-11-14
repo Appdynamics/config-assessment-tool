@@ -180,71 +180,72 @@ class AppAgentsAPM(JobStepBase):
                 application["appAgentVersions"] = []
 
                 for node in application["nodes"]:
-                    if node["appAgentVersion"] in nodeVersionMap:
+                    app_agent_present = node.get("appAgentPresent") is True
+                    if app_agent_present and node["appAgentVersion"] in nodeVersionMap:
                         nodeVersionMap[node["appAgentVersion"]] += 1
-                    else:
+                    elif app_agent_present:
                         nodeVersionMap[node["appAgentVersion"]] = 1
 
                     # Calculate version age
-                    numberNodesWithAppAgentInstalled += 1
-                    if "" == node["appAgentVersion"]:  # No agent installed
-                        continue
+                numberNodesWithAppAgentInstalled += 1
+                    if not app_agent_present:
+                    continue
 
-                    version = semanticVersionRegex.search(node["appAgentVersion"])[0].split(".")  # e.g. 'Server Agent v21.6.1.2 GA ...'
-                    majorVersion = int(version[0])
-                    minorVersion = int(version[1])
+                version = semanticVersionRegex.search(node["appAgentVersion"])[0].split(".")  # e.g. 'Server Agent v21.6.1.2 GA ...'
+                majorVersion = int(version[0])
+                minorVersion = int(version[1])
 
                     hostInfo["appAgentVersions"].add((majorVersion, minorVersion, node["agentType"]))
                     application["appAgentVersions"].append(f"{node['agentType']}:{version[0]}.{version[1]}")
 
-                    if majorVersion == 4:  # Agents with version 4 and below will always fail.
-                        node["appAgentAge"] = 3
-                    else:
-                        years = currYear - majorVersion
-                        if minorVersion < currMonth:
-                            years += 1
-                        node["appAgentAge"] = years
+                if majorVersion == 4:  # Agents with version 4 and below will always fail.
+                    node["appAgentAge"] = 3
+                else:
+                    years = currYear - majorVersion
+                    if minorVersion < currMonth:
+                        years += 1
+                    node["appAgentAge"] = years
 
-                        if years <= 2:
-                            numberAppAgentsLessThan2YearsOld += 1
-                        if years == 1:
-                            numberAppAgentsLessThan1YearOld += 1
+                    if years <= 2:
+                        numberAppAgentsLessThan2YearsOld += 1
+                    if years == 1:
+                        numberAppAgentsLessThan1YearOld += 1
 
-                    # Determine application load
-                    if node["appAgentAvailability"] != 0:
-                        numberAppAgentsReportingData += 1
+                # Determine application load
+                if node["appAgentAvailability"] != 0:
+                    numberAppAgentsReportingData += 1
 
-                    if node["nodeMetricsUploadRequestsExceedingLimit"] != 0:
-                        analysisDataEvaluatedMetrics["metricLimitNotHit"] = False
+                if node["nodeMetricsUploadRequestsExceedingLimit"] != 0:
+                    analysisDataEvaluatedMetrics["metricLimitNotHit"] = False
 
-                # In the case of multiple versions, will return the largest common agent count regardless of version.
-                try:
+            # In the case of multiple versions, will return the largest common agent count regardless of version.
+            try:
                     numberAppAgentsRunningSameVersion = nodeVersionMap[max(nodeVersionMap, key=nodeVersionMap.get)]
-                except ValueError:
-                    logging.debug(
-                        f'{hostInfo["controller"].host} - No app agents returned for application {application["name"]}, unable to parse agent versions.'
-                    )
+            except ValueError:
+                logging.debug(
+                    f'{hostInfo["controller"].host} - No app agents returned for application {application["name"]}, unable to parse agent versions.'
+                )
 
-                # Calculate percents of compliant nodes.
-                if numberNodesWithAppAgentInstalled != 0.0:
+            # Calculate percents of compliant nodes.
+            if numberNodesWithAppAgentInstalled != 0.0:
                     analysisDataEvaluatedMetrics["percentAgentsLessThan1YearOld"] = (
                         numberAppAgentsLessThan1YearOld / numberNodesWithAppAgentInstalled * 100
-                    )
+                )
                     analysisDataEvaluatedMetrics["percentAgentsLessThan2YearsOld"] = (
                         numberAppAgentsLessThan2YearsOld / numberNodesWithAppAgentInstalled * 100
-                    )
+                )
                     analysisDataEvaluatedMetrics["percentAgentsReportingData"] = numberAppAgentsReportingData / numberNodesWithAppAgentInstalled * 100
                     analysisDataEvaluatedMetrics["percentAgentsRunningSameVersion"] = (
                         numberAppAgentsRunningSameVersion / numberNodesWithAppAgentInstalled * 100
-                    )
-                else:
+                )
+            else:
                     analysisDataEvaluatedMetrics["percentAgentsLessThan1YearOld"] = 0
                     analysisDataEvaluatedMetrics["percentAgentsLessThan2YearsOld"] = 0
-                    analysisDataEvaluatedMetrics["percentAgentsReportingData"] = 0
+                analysisDataEvaluatedMetrics["percentAgentsReportingData"] = 0
                     analysisDataEvaluatedMetrics["percentAgentsRunningSameVersion"] = 0
 
-                analysisDataRawMetrics["numberOfNodes"] = len(application["nodes"])
-                analysisDataRawMetrics["numberOfTiers"] = len(application["tiers"])
+            analysisDataRawMetrics["numberOfNodes"] = len(application["nodes"])
+            analysisDataRawMetrics["numberOfTiers"] = len(application["tiers"])
                 analysisDataRawMetrics["numberNodesWithAppAgentInstalled"] = numberNodesWithAppAgentInstalled
                 analysisDataRawMetrics["numberAppAgentsLessThan1YearOld"] = numberAppAgentsLessThan1YearOld
                 analysisDataRawMetrics["numberAppAgentsLessThan2YearsOld"] = numberAppAgentsLessThan2YearsOld

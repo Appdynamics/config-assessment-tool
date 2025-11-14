@@ -561,12 +561,6 @@ class AppDService:
 
     async def getDashboards(self) -> Result:
 
-        # self.controller.jsessionid = "c618719074f568d36fa97fca95c7"
-        # self.controller.xcsrftoken= "8c6b20c6ee1128ae47b8c4c782a6a28b55b5dc3d"
-        # self.controller.session.headers["X-CSRF-TOKEN"] = ( self.controller.xcsrftoken)
-        # self.controller.session.headers["Set-Cookie"] = (f"JSESSIONID="
-        #                                                  f"{self.controller.jsessionid};X-CSRF-TOKEN={self.controller.xcsrftoken};")
-
         debugString = f"Gathering Dashboards"
         logging.debug(f"{self.host} - {debugString}")
         response = await self.controller.getAllDashboardsMetadata()

@@ -138,7 +138,6 @@ Options:
   -c, --concurrent-connections INTEGER
   -u, --username TEXT             Adds the option to put username dynamically
   -p, --password TEXT             Adds the option to put password dynamically
-  --car                           Generate the configration analysis report as part of the output
   --help                          Show this help message and exit.
 ```
 
@@ -198,7 +197,6 @@ Options:
   -c, --concurrent-connections INTEGER
   -u, --username TEXT             Adds the option to put username dynamically
   -p, --password TEXT             Adds the option to put password dynamically
-  --car                           Generate the configration analysis report as part of the output
   --help                          Show this help message and exit
 ```
 
@@ -326,3 +324,19 @@ Debug logs can be taken by either:
 
 - checking the `debug` checkbox in the UI
 - running the backend with the `--debug` or `-d` flag
+
+
+
+release notes:
+-CAR report generated automically now as part of the artifacts generated.
+- UI enhancements (#160):
+  - UI now supports Dynamic Credentials for API client secret and token entries. Previously only  basic auth was supported. 
+  - You can view job file/threshhold files in-line rather than popup OS editor
+- #157 - Archive function added to keep a copy of all generated reports, timestamped in the "output/archive" diretory
+- Makefile added to ease building artifacts, docker images, running CAT from source, bundling, etc. 
+- bug fixes 
+  - #156
+
+
+
+
