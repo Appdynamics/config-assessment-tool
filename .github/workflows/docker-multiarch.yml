@@ -168,3 +168,54 @@ jobs:
           else
              echo "  Skipping 'latest' tag update (pre-release or not a tag)."
           fi
+
+  # Create source code bundle with hardcoded repo owner for standalone distribution
+  build-source-bundle:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Modify config-assessment-tool.sh with current repo owner
+        run: |
+          # Use the repository owner who triggered the workflow/release
+          OWNER="${{ github.repository_owner }}"
+          
+          echo "Patching config-assessment-tool.sh to default to owner: $OWNER"
+          
+          # Replace the default fallback REPO_OWNER="appdynamics" with current owner
+          # This ensures that when run from these specific zip files (without git), it uses the correct repo.
+          sed -i "s/REPO_OWNER=\"appdynamics\"/REPO_OWNER=\"$OWNER\"/g" config-assessment-tool.sh
+          
+          # Verify the change
+          grep "REPO_OWNER=" config-assessment-tool.sh
+
+      - name: Create Archives
+        run: |
+          VERSION="${{ github.ref_name }}"
+          DIR_NAME="config-assessment-tool-$VERSION"
+          
+          # Create a temporary directory for the archive content
+          mkdir -p "$DIR_NAME"
+          
+          # Copy all files to the temp dir, excluding hidden files except those explicitly needed
+          # rsync is good for this
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.idea' --exclude='dist' --exclude='build' --exclude='__pycache__' --exclude='*.pyc' . "$DIR_NAME/"
+          
+          # Create Zip and Tar.gz
+          zip -r "config-assessment-tool-${VERSION}.zip" "$DIR_NAME"
+          tar -czvf "config-assessment-tool-${VERSION}.tar.gz" "$DIR_NAME"
+          
+          echo "Created archives:"
+          ls -lh config-assessment-tool-${VERSION}.*
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            config-assessment-tool-*.zip
+            config-assessment-tool-*.tar.gz

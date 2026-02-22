@@ -108,7 +108,7 @@ $ docker run ghcr.io/alexafshar/config-assessment-tool:1.8.0-beta.1 --help
 
 # 2. Platform Executable (Standalone Binary)
 
-Download the executable bundle for your platform from the [Release Page](https://github.com/alexafshar/config-assessment-tool/releases/tag/1.8.0-beta.1)
+Download the executable bundle for your platform from the [Release Page](../../releases/tag/1.8.0-beta.1)
 
 ## UI Mode
 *Note: Beta binaries contain the Web UI. You can launch it using `--ui` command line option 

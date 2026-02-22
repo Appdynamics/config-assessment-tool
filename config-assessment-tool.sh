@@ -30,8 +30,10 @@ if command -v git &> /dev/null; then
   fi
 fi
 
-# Use appdynamics if no owner detected
-if [[ -z "$DETECTED_OWNER" ]]; then
+# Use appdynamics if no owner detected, or honor CAT_REPO_OWNER env var
+if [[ -n "$CAT_REPO_OWNER" ]]; then
+  REPO_OWNER="$CAT_REPO_OWNER"
+elif [[ -z "$DETECTED_OWNER" ]]; then
   REPO_OWNER="appdynamics"
 else
   REPO_OWNER="$DETECTED_OWNER"
