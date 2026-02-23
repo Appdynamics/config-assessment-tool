@@ -13,8 +13,8 @@ There are multiple ways to run the tool
         - [Run Headless](#run-headless-backend-only)
         - [Getting Help](#getting-help)
 - [2. Platform Executable (Standalone Binary)](#2-platform-executable-standalone-binary)
-    - [Headless Mode](#headless-mode)
     - [UI Mode](#ui-mode)
+    - [Headless Mode](#headless-mode)
     - [Getting Help](#getting-help-1)
 - [3. Running from source (`config-assessment-tool.sh`)](#3-running-from-source-config-assessment-toolsh)
     - [Prerequisites](#prerequisites)
@@ -38,18 +38,18 @@ This is the easiest way to run the tool using Docker. The only prerequisite is a
 
 2.  **Unzip the source if downloaded. In a shell Terminal, navigate to the directory:**
     ```bash
-    $ cd config-assessment-tool
+    cd config-assessment-tool
     ```
 
 **Run the Tool using the provided shell script in the downloaded/cloned source:**
 
 **UI mode: Start the UI:**
 ```bash
-$ ./config-assessment-tool.sh docker --ui
+./config-assessment-tool.sh docker --ui
 ```
 **Headless mode: Run Headless:**
 ```bash
-$ ./config-assessment-tool.sh docker -j DefaultJob
+./config-assessment-tool.sh docker -j DefaultJob
 ```
 
 ## Option B: Manual Docker Command (Advanced)
@@ -71,10 +71,10 @@ configuration-assessment-tool/
 ### Run the UI (Frontend + Backend)
 Assuming the above directory structure:
    ```bash
-   $ cd config-assessment-tool
+   cd config-assessment-tool
    ```
 ```bash
-$ docker run \
+docker run \
   --name "cat-tool-beta" \
   --rm \
   -p 8501:8501 \
@@ -88,7 +88,7 @@ $ docker run \
 ### Run Headless (Backend Only)
 Pass backend arguments directly (e.g., `-j`).
 ```bash
-$ docker run \
+docker run \
   --name "cat-tool-beta-backend" \
   --rm \
   -v "$(pwd)/input":/app/input \
@@ -101,7 +101,7 @@ $ docker run \
 ### Getting Help
 Display the help menu for the container.
 ```bash
-$ docker run ghcr.io/alexafshar/config-assessment-tool:1.8.0-beta.1 --help
+docker run ghcr.io/alexafshar/config-assessment-tool:1.8.0-beta.1 --help
 ```
 
 ---
@@ -118,23 +118,23 @@ Download the executable bundle for your platform from the [Release Page](../../r
         1. Unzip the downloaded bundle and open a Terminal and navigate to the directory containing the extracted files.
         2. Navigate into the directory if you haven't already:
             ```bash
-            $ cd config-assessment-tool-macosx-*
+            cd config-assessment-tool-macosx-*
             ```
         2.  Run the following command to allow the application to run:
             ```bash
-            $ sudo xattr -rd com.apple.quarantine .     # this removes quarantine attribute for all files in current directory
+            sudo xattr -rd com.apple.quarantine .     # this removes quarantine attribute for all files in current directory
             ```
 2.  Navigate into the directory of extracted bundle if you haven't already:
     ```bash
-    $ cd config-assessment-tool-<platform>-1.8.0-beta.1  # platform is specific to your OS
+    cd config-assessment-tool-<platform>-1.8.0-beta.1  # platform is specific to your OS
     ```
 3.  Look for the executable file ```config-assessment-tool``` and run the tool with the UI flag:
     ```bash
-      $ ./config-assessment-tool --ui
+      ./config-assessment-tool --ui
     ```
     For example:
-       *   **macOS**: `$ ./config-assessment-tool --ui`
-       *   **Linux**: `$ ./config-assessment-tool --ui`
+       *   **macOS**: `./config-assessment-tool --ui`
+       *   **Linux**: `./config-assessment-tool --ui`
        *   **Windows**: `PS> .\config-assessment-tool.exe --ui`
 <br><br> 
 4. Open your browser to the URL displayed in the console (typically `http://localhost:8501`). If running on a remote server, replace `localhost` with the server's IP address.
@@ -147,15 +147,15 @@ Download the executable bundle for your platform from the [Release Page](../../r
         1.  Open a Terminal and navigate to the directory containing the unzipped folder.
         2.  Run the following command to allow the application to run:
             ```bash
-            $ sudo xattr -rd com.apple.quarantine .     # this removes quarantine attribute for all files in current directory
+            sudo xattr -rd com.apple.quarantine .     # this removes quarantine attribute for all files in current directory
             ```
         3.  Navigate into the directory:
             ```bash
-            $ cd config-assessment-tool-macosx-*
+            cd config-assessment-tool-macosx-*
             ```
         4.  Run the tool:
             ```bash
-            $ ./config-assessment-tool -j DefaultJob
+            ./config-assessment-tool -j DefaultJob
             ```
     For example:
     *   **macOS**: `./config-assessment-tool -j <job-file>`
@@ -186,7 +186,7 @@ The `config-assessment-tool.sh` script is the recommended way to run the tool on
 **Unzip the source if necessary. In a shell Terminal, navigate to the directory of expanded source**
 
 ```bash
-$ cd config-assessment-tool
+cd config-assessment-tool
 ```
 
 **Start the User Interface (UI):**
@@ -198,39 +198,39 @@ $ cd config-assessment-tool
 ./config-assessment-tool.sh docker
 
 # From Source
-$ ./config-assessment-tool.sh --ui
+./config-assessment-tool.sh --ui
 ```
 
 **Run Headless (no Web UI):** 
    - Run the assessment directly without the UI. This will run CAT and output the generated report files to the output directory and terminate once done. 
 ```bash
 # Using Docker
-$ ./config-assessment-tool.sh docker -j <job-file-name>   # dont include the .json extension 
+./config-assessment-tool.sh docker -j <job-file-name>   # dont include the .json extension 
 # Example: ./config-assessment-tool.sh docker -j MyJob
 
 # From Source
-$ ./config-assessment-tool.sh -j <job-file-name>   # dont include the .json extension
+./config-assessment-tool.sh -j <job-file-name>   # dont include the .json extension
 ```
 
 ## Plugin Management
 ```bash
 # List available plugins
-$ ./config-assessment-tool.sh --plugin list
+./config-assessment-tool.sh --plugin list
 
 # Start a specific plugin
-$ ./config-assessment-tool.sh --plugin start <plugin_name>
+./config-assessment-tool.sh --plugin start <plugin_name>
 ```
 
 ## Shutdown
 Stops running containers and cleanup processes.
 ```bash
-$ ./config-assessment-tool.sh shutdown
+./config-assessment-tool.sh shutdown
 ```
 
 ## Getting Help
 Display the help menu with all available arguments.
 ```bash
-$ ./config-assessment-tool.sh --help
+./config-assessment-tool.sh --help
 ```
 
 ---
