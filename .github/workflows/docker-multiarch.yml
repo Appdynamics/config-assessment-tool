@@ -172,7 +172,8 @@ jobs:
   # Create source code bundle with hardcoded repo owner for standalone distribution
   build-source-bundle:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: false # disable for now
+    # if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
     steps:
