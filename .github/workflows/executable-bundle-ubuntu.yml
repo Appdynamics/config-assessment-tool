@@ -42,9 +42,8 @@ jobs:
           # converting to config-assessment-tool-ubuntu-linux-executable-1.8.0-beta.1.tgz
           # OR just append -executable before extension if regex is too complex
           
-          # Using sed to insert -executable before the version number (which starts with a digit)
-          # Or cleaner: replace "linux" with "linux-executable" if it exists, else just append.
-          NEW_BUNDLE_NAME=$(echo "$ORIGINAL_BUNDLE_NAME" | sed 's/\(config-assessment-tool-ubuntu-linux\)/\1-executable/')
+          # Using sed to append -executable before the .tgz extension
+          NEW_BUNDLE_NAME=$(echo "$ORIGINAL_BUNDLE_NAME" | sed 's/\.tgz$/-executable.tgz/')
           
           # fallback if substitution didn't happen (e.g. name format changed)
           if [[ "$NEW_BUNDLE_NAME" == "$ORIGINAL_BUNDLE_NAME" ]]; then

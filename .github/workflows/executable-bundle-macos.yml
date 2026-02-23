@@ -44,12 +44,18 @@ jobs:
           BUNDLE_DIR_NAME=$(basename "$BUNDLE_DIR_PATH")
           echo "PyInstaller created directory: ${BUNDLE_DIR_NAME}"
 
-          # Get version from VERSION file for consistent naming
-          VERSION_TAG=$(cat ../VERSION)
-          echo "Version tag: ${VERSION_TAG}"
-
           # Define the output bundle filename
-          BUNDLE_FILENAME="config-assessment-tool-macos-executable-${VERSION_TAG}.zip"
+          # Consistent naming: config-assessment-tool-macos-<version>-executable.zip
+          # We check if 'macosx' is present and replace it with 'macos', then append '-executable'
+          
+          if [[ "$BUNDLE_DIR_NAME" == *"macosx"* ]]; then
+             BASE_NAME="${BUNDLE_DIR_NAME/macosx/macos}"
+          else
+             BASE_NAME="$BUNDLE_DIR_NAME"
+          fi
+          
+          BUNDLE_FILENAME="${BASE_NAME}-executable.zip"
+          
           echo "Bundle filename: ${BUNDLE_FILENAME}"
 
           # Create the zip archive, including the appdynamics directory and excluding logs

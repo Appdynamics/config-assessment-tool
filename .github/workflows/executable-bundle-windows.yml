@@ -55,7 +55,8 @@ jobs:
           $sourcePathFor7z = Join-Path -Path "./dist/appdynamics" -ChildPath $pyinstallerOutputDirName
 
           # Define the desired name for the output zip file
-          # Inject '-executable' into the name
+          # format: config-assessment-tool-windows-<version>-executable.zip
+          # We append '-executable' to the end of the base name.
           $zipFileName = "${pyinstallerOutputDirName}-executable.zip"
           # Define the full path where the zip file should be created (in the ./dist folder)
           $zipFilePath = Join-Path -Path "./dist" -ChildPath $zipFileName
