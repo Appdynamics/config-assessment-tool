@@ -153,10 +153,17 @@ run_docker() {
         IS_UI_MODE=true
     fi
 
+    # Only add host.docker.internal mapping on Linux.
+    # macOS/Windows Docker Desktop handles this natively and overriding it can break connectivity.
+    ADD_HOST_FLAG=""
+    if [[ "$OS" == "linux" ]]; then
+        ADD_HOST_FLAG="--add-host=host.docker.internal:host-gateway"
+    fi
+
     if [[ "$IS_UI_MODE" == "true" ]]; then
       echo "Starting container in UI mode..."
       # Pass --ui explicitly to trigger UI mode in entrypoint
-      CONTAINER_ID=$(docker run --add-host=host.docker.internal:host-gateway -d --name $CONTAINER_NAME -e FILE_HANDLER_HOST=$FILE_HANDLER_HOST -p $PORT:$PORT $MOUNTS $IMAGE --ui)
+      CONTAINER_ID=$(docker run $ADD_HOST_FLAG -d --name $CONTAINER_NAME -e FILE_HANDLER_HOST=$FILE_HANDLER_HOST -p $PORT:$PORT $MOUNTS $IMAGE --ui)
       if [ $? -eq 0 ]; then
         echo "Container started successfully with ID: $CONTAINER_ID"
         echo "UI available at http://localhost:$PORT"
@@ -168,7 +175,7 @@ run_docker() {
     else
       echo "Starting container in backend mode with args: $@"
       # Pass arguments directly without prepending 'backend'
-      docker run --add-host=host.docker.internal:host-gateway --rm --name $CONTAINER_NAME -e FILE_HANDLER_HOST=$FILE_HANDLER_HOST -p $PORT:$PORT $MOUNTS $IMAGE "$@"
+      docker run $ADD_HOST_FLAG --rm --name $CONTAINER_NAME -e FILE_HANDLER_HOST=$FILE_HANDLER_HOST -p $PORT:$PORT $MOUNTS $IMAGE "$@"
       EXIT_CODE=$?
       if [ $EXIT_CODE -ne 0 ]; then
         echo "Container failed with exit code: $EXIT_CODE"
@@ -179,7 +186,7 @@ run_docker() {
 
 # Helper function to run source logic
 run_source() {
-    export PYTHONPATH="$(pwd):$(pwd)/backend"
+    export PYTHONPATH="$(pwd)"
 
     if ! command -v pipenv &> /dev/null; then
       echo "pipenv not found. Attempting to install via pip..."
@@ -257,12 +264,12 @@ case "$1" in
 
   --help|help|"")
     echo "Usage:"
-    echo "  config-assessment-tool [--ui]                   # Starts CAT UI from source (Default). Requires Python 3.12 and pipenv."
-    echo "  config-assessment-tool [OPTIONS]                # Starts CAT headless mode from source with [OPTIONS]."
-    echo "  config-assessment-tool docker [--ui]            # Starts CAT UI using Docker. Docker install required."
-    echo "  config-assessment-tool docker [OPTIONS]         # Starts CAT headless mode using Docker with [OPTIONS]. Docker required."
-    echo "  config-assessment-tool --plugin <list|start|docs> [name]    # Manage plugins"
-    echo "  config-assessment-tool shutdown                 # Stop and remove the running container and FileHandler"
+    echo "  config-assessment-tool.sh [--ui]                   # Starts CAT UI from source (Default). Requires Python 3.12 and pipenv."
+    echo "  config-assessment-tool.sh [OPTIONS]                # Starts CAT headless mode from source with [OPTIONS]. Requires "
+    echo "  config-assessment-tool.sh docker [--ui]            # Starts CAT UI using Docker. Docker install required."
+    echo "  config-assessment-tool.sh docker [OPTIONS]         # Starts CAT headless mode using Docker with [OPTIONS]. Docker required."
+    echo "  config-assessment-tool.sh --plugin <list|start|docs> [name]    # Manage plugins"
+    echo "  config-assessment-tool.sh shutdown                 # Stop and remove the running container and FileHandler"
     echo ""
     echo "[OPTIONS]:"
     echo "  -j, --job-file <name>             Job file name (default: DefaultJob)"

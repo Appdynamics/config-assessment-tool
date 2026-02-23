@@ -62,6 +62,6 @@ class FolderOpenHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(content).encode('utf-8'))
 
 if __name__ == "__main__":
-    with socketserver.TCPServer(("", PORT), FolderOpenHandler) as httpd:
+    with socketserver.TCPServer(("0.0.0.0", PORT), FolderOpenHandler) as httpd:
         logging.info(f"FileHandler server started on port {PORT}")
         httpd.serve_forever()

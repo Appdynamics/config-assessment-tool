@@ -36,7 +36,7 @@ This is the easiest way to run the tool using Docker. The only prerequisite is a
     *   Download the Source Code (zip/tar.gz) from the **[Releases Page](https://github.com/alexafshar/config-assessment-tool/releases/tag/1.8.0-beta.1)**.
     *   *OR* if you have git installed, clone the repository: `git clone https://github.com/alexafshar/config-assessment-tool.git`
 
-2.  **Unzip the source if downloaded. In a shell Terminal, navigate to the directory:**
+2.  **Unzip the source if downloaded. In a shell Terminal, navigate to the directory. For example:**
     ```bash
     cd config-assessment-tool
     ```
@@ -47,6 +47,8 @@ This is the easiest way to run the tool using Docker. The only prerequisite is a
 ```bash
 ./config-assessment-tool.sh docker --ui
 ```
+*Access the UI at http://localhost:8501*
+
 **Headless mode: Run Headless:**
 ```bash
 ./config-assessment-tool.sh docker -j DefaultJob
