@@ -202,7 +202,7 @@ run_source() {
     else
       echo "PYTHONPATH is: $PYTHONPATH"
       echo "Running application in backend mode from source with args: $@"
-      pipenv run python backend/backend.py "$@"
+      pipenv run python -m backend.backend "$@"
     fi
 }
 
@@ -215,7 +215,7 @@ case "$1" in
   --plugin)
     if [[ "$2" == "list" ]]; then
        export PYTHONPATH="$(pwd):$(pwd)/backend"
-       pipenv run python backend/plugin_manager.py list
+       pipenv run python -m backend.plugin_manager list
        exit 0
     elif [[ "$2" == "docs" ]]; then
        PLUGIN_NAME="$3"
@@ -224,7 +224,7 @@ case "$1" in
          exit 1
        fi
        export PYTHONPATH="$(pwd):$(pwd)/backend"
-       pipenv run python backend/plugin_manager.py docs "$PLUGIN_NAME"
+       pipenv run python -m backend.plugin_manager docs "$PLUGIN_NAME"
        exit 0
     elif [[ "$2" == "start" ]]; then
        PLUGIN_NAME="$3"
@@ -234,7 +234,7 @@ case "$1" in
        fi
        export PYTHONPATH="$(pwd):$(pwd)/backend"
        # Pass remaining args to the plugin manager
-       pipenv run python backend/plugin_manager.py start "$PLUGIN_NAME" "${@:4}"
+       pipenv run python -m backend.plugin_manager start "$PLUGIN_NAME" "${@:4}"
        exit 0
     fi
     ;;
