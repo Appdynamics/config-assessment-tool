@@ -96,7 +96,7 @@ if __name__ == "__main__":
     elif "--help" in sys.argv:
         print("Config Assessment Tool Bundle")
         print("Usage:")
-        print("  Launch UI Mode:     config-assessment-tool --ui (or --run)")
+        print("  Launch UI Mode:     config-assessment-tool --ui")
         print("  Launch Backend CLI: config-assessment-tool [OPTIONS]")
         print("\nBackend CLI Help:")
         run_backend()

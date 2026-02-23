@@ -257,7 +257,7 @@ case "$1" in
 
   --help|help|"")
     echo "Usage:"
-    echo "  config-assessment-tool [--ui|--run]             # Starts CAT UI from source (Default). Requires Python 3.12 and pipenv."
+    echo "  config-assessment-tool [--ui]                   # Starts CAT UI from source (Default). Requires Python 3.12 and pipenv."
     echo "  config-assessment-tool [OPTIONS]                # Starts CAT headless mode from source with [OPTIONS]."
     echo "  config-assessment-tool docker [--ui]            # Starts CAT UI using Docker. Docker install required."
     echo "  config-assessment-tool docker [OPTIONS]         # Starts CAT headless mode using Docker with [OPTIONS]. Docker required."

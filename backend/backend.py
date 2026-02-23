@@ -13,6 +13,9 @@ from backend.util.logging_utils import initLogging
 @click.option("-t", "--thresholds-file", default="DefaultThresholds")
 @click.option("-d", "--debug", is_flag=True)
 @click.option("-c", "--concurrent-connections", type=int)
+@click.option("-u", "--username", default=None, hidden=True)
+@click.option("-p", "--password", default=None, hidden=True)
+@click.option("-a", "--auth-method", default=None, hidden=True)
 @coro
 async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, username: str, password: str, auth_method: str):
     initLogging(debug)
