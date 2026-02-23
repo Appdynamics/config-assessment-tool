@@ -49,7 +49,7 @@ jobs:
           echo "Version tag: ${VERSION_TAG}"
 
           # Define the output bundle filename
-          BUNDLE_FILENAME="config-assessment-tool-macos-${VERSION_TAG}.zip"
+          BUNDLE_FILENAME="config-assessment-tool-macos-executable-${VERSION_TAG}.zip"
           echo "Bundle filename: ${BUNDLE_FILENAME}"
 
           # Create the zip archive, including the appdynamics directory and excluding logs

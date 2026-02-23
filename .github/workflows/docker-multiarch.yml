@@ -206,8 +206,8 @@ jobs:
           rsync -av --exclude='.git' --exclude='.github' --exclude='.idea' --exclude='dist' --exclude='build' --exclude='__pycache__' --exclude='*.pyc' . "$DIR_NAME/"
           
           # Create Zip and Tar.gz
-          zip -r "config-assessment-tool-${VERSION}-source.zip" "$DIR_NAME"
-          tar -czvf "config-assessment-tool-${VERSION}-source.tar.gz" "$DIR_NAME"
+          zip -r "config-assessment-tool-${VERSION}-source-code.zip" "$DIR_NAME"
+          tar -czvf "config-assessment-tool-${VERSION}-source-code.tar.gz" "$DIR_NAME"
           
           echo "Created archives:"
           ls -lh config-assessment-tool-${VERSION}-source.*
@@ -217,5 +217,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            config-assessment-tool-*-source.zip
-            config-assessment-tool-*-source.tar.gz
+            config-assessment-tool-*-source-code.zip
+            config-assessment-tool-*-source-code.tar.gz
