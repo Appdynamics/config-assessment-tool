@@ -120,7 +120,7 @@ IMAGE="$IMAGE_NAME:$VERSION"
 PORT="8501"
 LOG_DIR="logs"
 LOG_FILE="$LOG_DIR/config-assessment-tool.log"
-MOUNTS="-v $(pwd)/input/jobs:/app/input/jobs -v $(pwd)/input/thresholds:/app/input/thresholds -v $(pwd)/output/archive:/app/output/archive -v $(pwd)/$LOG_DIR:/app/$LOG_DIR"
+MOUNTS="-v $(pwd)/input:/app/input -v $(pwd)/output:/app/output -v $(pwd)/$LOG_DIR:/app/$LOG_DIR"
 CONTAINER_NAME="cat-tool-container"
 
 mkdir -p "$LOG_DIR"
