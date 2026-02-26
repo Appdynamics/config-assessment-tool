@@ -2,8 +2,11 @@ import logging
 from collections import OrderedDict
 from datetime import datetime
 
-from extractionSteps.JobStepBase import JobStepBase
+from backend.extractionSteps.JobStepBase import JobStepBase
 from util.stdlib_utils import get_recursively
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class DashboardsAPM(JobStepBase):
@@ -18,7 +21,7 @@ class DashboardsAPM(JobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
 
             for dashboard in hostInfo["exportedDashboards"]:
                 dashboard["applicationNames"] = get_recursively(dashboard, "applicationName")
@@ -55,7 +58,7 @@ class DashboardsAPM(JobStepBase):
         now = datetime.now()
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

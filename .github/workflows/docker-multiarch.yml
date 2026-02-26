@@ -1,0 +1,222 @@
+name: docker-multiarch
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-linux-multiarch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Generate ONLY platform-specific tags here.
+          # We do NOT push 'latest' or the bare version 'v1.2.3' in this job.
+          # Those are reserved for the final merge step to avoid race conditions.
+          tags: |
+            type=semver,pattern={{version}},suffix=-linux
+            type=ref,event=branch,suffix=-linux
+
+      # We build directly into the multi-arch tag here.
+      - name: Build and push Linux image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          provenance: false
+          outputs: type=image,rewrite-timestamp=false
+
+  # Windows build is separate and less frequent, keeping it here but isolated
+  build-windows:
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Normalize Image Name (Windows)
+        run: |
+          echo "IMAGE_NAME_LOWER=${{ env.IMAGE_NAME }}".ToLower() >> $env:GITHUB_ENV
+
+      # Standardize on -windows suffix for consistent intermediary tags
+      # Ensure IMAGE_NAME is lowercase primarily for the manual docker build command
+      - name: Build and push Windows image
+        run: |
+          docker build -f Dockerfile-windows -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:${{ steps.meta.outputs.version }}-windows .
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:${{ steps.meta.outputs.version }}-windows
+
+  # Manifest creation: This is the ONLY place where user-facing tags (v1.2.3, latest) are pushed.
+  merge-manifest:
+    needs: [build-linux-multiarch, build-windows]
+    if: success() && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Create and push manifest list
+        run: |
+          # Define image references
+          # Ensure repository name is lowercase
+          IMAGE_NAME_LOWER=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ROOT="${{ env.REGISTRY }}/${IMAGE_NAME_LOWER}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          
+          # The linux image is already a multi-arch manifest list (amd64/arm64)
+          LINUX_IMAGE="${IMAGE_ROOT}:${VERSION}-linux"
+          
+          # NOTE: The windows image tag might have a different suffix or structure depending on build-windows job.
+          # In the build-windows job, we push: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}-windows
+          WINDOWS_IMAGE="${IMAGE_ROOT}:${VERSION}-windows"
+          
+          # Tags to generate (v1.8.1 and latest)
+          TARGET_TAG="${IMAGE_ROOT}:${VERSION}"
+          LATEST_TAG="${IMAGE_ROOT}:latest"
+          
+          echo "Creating manifest list..."
+          echo "  Primary: $TARGET_TAG"
+          echo "  Sources: $LINUX_IMAGE, $WINDOWS_IMAGE"
+          
+          # Check if source images exist before attempting to create the manifest
+          # This helps diagnose 'not found' errors clearly or skip if windows failed silently?
+          # Actually, if build-windows job ran successfully, the image should be there.
+          # Use docker manifest inspect to verify existence (optional but robust)
+          
+          echo "Using docker buildx imagetools create to merge manifests..."
+          
+          docker buildx imagetools create -t "$TARGET_TAG" \
+            "$LINUX_IMAGE" \
+            "$WINDOWS_IMAGE"
+          
+          # Create and Push 'latest' if this is a tag push AND not a pre-release
+          # We assume any tag with a hyphen (e.g. v1.8.0-beta) is a pre-release
+          if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" != *"-"* ]]; then
+             echo "  Also updating 'latest' tag..."
+             docker buildx imagetools create -t "$LATEST_TAG" \
+               "$LINUX_IMAGE" \
+               "$WINDOWS_IMAGE"
+          else
+             echo "  Skipping 'latest' tag update (pre-release or not a tag)."
+          fi
+
+  # Create source code bundle with hardcoded repo owner for standalone distribution
+  build-source-bundle:
+    runs-on: ubuntu-latest
+    if: false # disable for now
+    # if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Modify config-assessment-tool.sh with current repo owner
+        run: |
+          # Use the repository owner who triggered the workflow/release
+          OWNER="${{ github.repository_owner }}"
+          
+          echo "Patching config-assessment-tool.sh to default to owner: $OWNER"
+          
+          # Replace the default fallback REPO_OWNER="appdynamics" with current owner
+          # This ensures that when run from these specific zip files (without git), it uses the correct repo.
+          sed -i "s/REPO_OWNER=\"appdynamics\"/REPO_OWNER=\"$OWNER\"/g" config-assessment-tool.sh
+          
+          # Verify the change
+          grep "REPO_OWNER=" config-assessment-tool.sh
+
+      - name: Create Archives
+        run: |
+          VERSION="${{ github.ref_name }}"
+          DIR_NAME="config-assessment-tool-$VERSION"
+          
+          # Create a temporary directory for the archive content
+          mkdir -p "$DIR_NAME"
+          
+          # Copy all files to the temp dir, excluding hidden files except those explicitly needed
+          # rsync is good for this
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.idea' --exclude='dist' --exclude='build' --exclude='__pycache__' --exclude='*.pyc' . "$DIR_NAME/"
+          
+          # Create Zip and Tar.gz
+          zip -r "config-assessment-tool-${VERSION}-source-code.zip" "$DIR_NAME"
+          tar -czvf "config-assessment-tool-${VERSION}-source-code.tar.gz" "$DIR_NAME"
+          
+          echo "Created archives:"
+          ls -lh config-assessment-tool-${VERSION}-source.*
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            config-assessment-tool-*-source-code.zip
+            config-assessment-tool-*-source-code.tar.gz

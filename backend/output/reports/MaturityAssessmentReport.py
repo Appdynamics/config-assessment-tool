@@ -1,12 +1,13 @@
 import logging
+import os
 
 from openpyxl import Workbook
-from output.ReportBase import ReportBase
-from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
+from backend.output.ReportBase import ReportBase
+from backend.util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow
 
 
 class MaturityAssessmentReport(ReportBase):
-    def createWorkbook(self, jobs, controllerData, jobFileName):
+    def createWorkbook(self, jobs, controllerData, jobFileName, output_dir="output"):
         for reportType in ["apm", "brum", "mrum"]:
             logging.info(f"Creating {reportType} Maturity Assessment Report Workbook")
 
@@ -73,4 +74,4 @@ class MaturityAssessmentReport(ReportBase):
             writeSummarySheet(summarySheet)
 
             logging.debug(f"Saving MaturityAssessment-{reportType} Workbook")
-            workbook.save(f"output/{jobFileName}/{jobFileName}-MaturityAssessment-{reportType}.xlsx")
+            workbook.save(os.path.join(output_dir, jobFileName, f"{jobFileName}-MaturityAssessment-{reportType}.xlsx"))

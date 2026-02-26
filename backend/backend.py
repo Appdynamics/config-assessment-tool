@@ -1,10 +1,11 @@
 import asyncio
+import logging
 import sys
 
 import click
-from core.Engine import Engine
-from util.click_utils import coro
-from util.logging_utils import initLogging
+from backend.core.Engine import Engine
+from backend.util.click_utils import coro
+from backend.util.logging_utils import initLogging
 
 
 @click.command()
@@ -12,13 +13,13 @@ from util.logging_utils import initLogging
 @click.option("-t", "--thresholds-file", default="DefaultThresholds")
 @click.option("-d", "--debug", is_flag=True)
 @click.option("-c", "--concurrent-connections", type=int)
-@click.option("-u", "--username", default=None, help="Adds the option to put username dynamically")
-@click.option("-p", "--password", default=None, help="Adds the option to put password dynamically")
-@click.option("--car", is_flag=True, help="Generate the configration analysis report as part of the output")
+@click.option("-u", "--username", default=None, hidden=True)
+@click.option("-p", "--password", default=None, hidden=True)
+@click.option("-a", "--auth-method", default=None, hidden=True)
 @coro
-async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, username: str, password: str, car: bool):
+async def main(job_file: str, thresholds_file: str, debug, concurrent_connections: int, username: str, password: str, auth_method: str):
     initLogging(debug)
-    engine = Engine(job_file, thresholds_file, concurrent_connections, username, password, car)
+    engine = Engine(job_file, thresholds_file, concurrent_connections, username, password, auth_method)
     await engine.run()
 
 

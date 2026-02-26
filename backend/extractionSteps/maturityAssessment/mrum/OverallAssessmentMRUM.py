@@ -1,7 +1,10 @@
 import logging
 from collections import OrderedDict
 
-from extractionSteps.JobStepBase import JobStepBase
+from backend.extractionSteps.JobStepBase import JobStepBase
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class OverallAssessmentMRUM(JobStepBase):
@@ -26,7 +29,7 @@ class OverallAssessmentMRUM(JobStepBase):
         jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
 

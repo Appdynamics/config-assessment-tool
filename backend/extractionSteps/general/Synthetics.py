@@ -1,10 +1,11 @@
 import logging
 from collections import OrderedDict
 
-from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import JobStepBase
+from backend.api.appd.AppDService import AppDService
+from backend.extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
 
+logger = logging.getLogger(__name__.split('.')[-1])
 
 class Synthetics(JobStepBase):
     def __init__(self):
@@ -18,7 +19,7 @@ class Synthetics(JobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             getSyntheticJobFutures = []
@@ -76,7 +77,7 @@ class Synthetics(JobStepBase):
                     try:
                         job["averageDuration"] = syntheticSessionData[idx].data["AVG_DURATION"][job["config"]["id"]]
                     except (KeyError, IndexError, TypeError):
-                        logging.warning(f"{host} - {applicationName} - {job['config']['description']} - No average duration")
+                        logger.debug(f"{host} - {applicationName} - {job['config']['description']} - No average duration")
                         job["averageDuration"] = 0
 
     def analyze(self, controllerData, thresholds):

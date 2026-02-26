@@ -2,9 +2,12 @@ import logging
 from collections import OrderedDict
 from itertools import count
 
-from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import JobStepBase
+from backend.api.appd.AppDService import AppDService
+from backend.extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class NetworkRequestsMRUM(JobStepBase):
@@ -19,7 +22,7 @@ class NetworkRequestsMRUM(JobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             getMRUMNetworkRequestConfigFutures = []
@@ -57,7 +60,7 @@ class NetworkRequestsMRUM(JobStepBase):
         jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.

@@ -1,9 +1,12 @@
 import logging
 from collections import OrderedDict
 
-from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import JobStepBase
+from backend.api.appd.AppDService import AppDService
+from backend.extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class ServiceEndpointsAPM(JobStepBase):
@@ -19,7 +22,7 @@ class ServiceEndpointsAPM(JobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -59,7 +62,7 @@ class ServiceEndpointsAPM(JobStepBase):
         jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             # Service endpoint limit is global
             totalServiceEndpoints = sum(len(application["serviceEndpoints"]) for application in hostInfo[self.componentType].values())
@@ -68,7 +71,7 @@ class ServiceEndpointsAPM(JobStepBase):
                 None,
             )
             if serviceEndpointLimit is None:
-                logging.warning(f'{hostInfo["controller"].host} - Unable to find property sep.ADD.registration.limit for controller.')
+                logger.warning(f'{hostInfo["controller"].host} - Unable to find property sep.ADD.registration.limit for controller.')
                 serviceEndpointLimit = 0
             else:
                 serviceEndpointLimit = int(serviceEndpointLimit["value"])

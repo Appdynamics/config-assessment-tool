@@ -12,26 +12,31 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists and install build tools and dependencies for Python
 # Added 'ca-certificates' to the install list for secure downloads
-# Added libcrypt1 to resolve "Unable to find /usr/local/lib/libcrypt.so.2" error
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    wget \
-    zlib1g-dev \
-    bzip2 \
-    libbz2-dev \
-    libreadline-dev \
-    sqlite3 \
-    libsqlite3-dev \
-    libssl-dev \
-    tk-dev \
-    libffi-dev \
-    liblzma-dev \
-    ca-certificates \
-    libcrypt1 \
-    # Clean up apt cache to keep image size down
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Added retry logic to handle transient network failures on package mirrors
+RUN set -e; \
+    for i in 1 2 3; do \
+        echo "Attempt $i to install dependencies..."; \
+        apt-get update -y && \
+        apt-get install -y --fix-missing --no-install-recommends \
+            build-essential \
+            wget \
+            zlib1g-dev \
+            bzip2 \
+            libbz2-dev \
+            libreadline-dev \
+            sqlite3 \
+            libsqlite3-dev \
+            libssl-dev \
+            tk-dev \
+            libffi-dev \
+            liblzma-dev \
+            ca-certificates \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* \
+        && exit 0 || echo "Attempt $i failed! Retrying in 10s..."; \
+        sleep 10; \
+    done; \
+    exit 1
 
 # Create a symlink for libcrypt.so.2 to point to libcrypt.so.1
 # This addresses the PyInstaller error "Unable to find /usr/local/lib/libcrypt.so.2"
@@ -42,9 +47,9 @@ RUN ln -s /lib/x86_64-linux-gnu/libcrypt.so.1 /usr/local/lib/libcrypt.so.2 || \
 WORKDIR /root
 
 # build python from source with required flag as pyinstaller needs it
-RUN wget https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tar.xz
-RUN tar -xf Python-3.9.13.tar.xz
-WORKDIR /root/Python-3.9.13
+RUN wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tar.xz
+RUN tar -xf Python-3.12.3.tar.xz
+WORKDIR /root/Python-3.12.3
 RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared
 RUN make
 RUN make altinstall
@@ -52,30 +57,38 @@ RUN make altinstall
 # Set persistent environment variables for LD_LIBRARY_PATH and PATH
 # LD_LIBRARY_PATH is crucial for dynamically linked Python libraries
 # PATH is needed for pipx and the tools it installs (pipenv, pyinstaller)
-ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/lib"
 ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /root/config-assessment-tool
 COPY backend ./backend
 COPY input ./input
+COPY plugins ./plugins
+COPY frontend ./frontend
+COPY bin ./bin
 COPY VERSION .
 COPY Pipfile .
 COPY Pipfile.lock .
 
 RUN BUNDLE_VERSION=`cat VERSION`
 
-# Install pipx, then use it to install pipenv and pyinstaller
-# All Python-related commands now use the specific /usr/local/bin/python3.9 path
-# and rely on the ENV PATH for pipx to find pipenv/pyinstaller.
-RUN /usr/local/bin/python3.9 -m pip install --upgrade pip && \
-    /usr/local/bin/python3.9 -m pip install pipx && \
-    pipx install pipenv && \
-    pipx install pyinstaller
+# Force cache invalidation to ensure we don't use old layers with pipx pyinstaller
+ENV CACHE_BUSTER=20260204
 
-# Now use pipenv and pyinstaller (which are now in PATH due to pipx installation)
-RUN pipenv requirements --dev > requirements.txt
-RUN /usr/local/bin/pip install -r requirements.txt
-RUN /usr/local/bin/pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+# Install pipx, then use it to install pipenv and pyinstaller
+# All Python-related commands now use the specific /usr/local/bin/python3.12 path
+# and rely on the ENV PATH for pipx to find pipenv/pyinstaller.
+RUN /usr/local/bin/python3.12 -m pip install --upgrade pip && \
+    /usr/local/bin/python3.12 -m pip install pipx && \
+    pipx install pipenv
+
+# We need the makefile to be present before we run make exec-bundle
+COPY Makefile .
+
+# Run make exec-bundle to build the executable
+# This uses the same target as development, ensuring consistency
+# We need to explicitly set PYTHON to the one we built
+RUN make exec-bundle PYTHON=/usr/local/bin/python3.12
 
 WORKDIR /root
 

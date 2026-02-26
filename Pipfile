@@ -4,25 +4,34 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-click = "==7.1.2"
-openpyxl = "==3.0.9"
-uplink = "==0.9.4"
-aiohttp = "==3.7.4.post0"
-docker = "==5.0.2"
-tzlocal = "==4.0b1"
-streamlit = "==1.10.0"
-deepdiff = "==5.5.0"
-requests = "==2.26.0"
-python-pptx = "==0.6.21"
+# CHANGED: Upgraded to 8.x to satisfy Black 24.x
+click = ">=8.0.0"
+colorama = "*"
+openpyxl = ">=3.1.0"
+# CHANGED: Relaxed to allow newer versions compatible with Py3.12
+uplink = ">=0.9.7"
+# CHANGED: 3.13.3 doesn't exist. Setting to * allows the latest compatible version.
+aiohttp = "*"
+# docker = ">=5.0.3"
+docker = "*"
+# CHANGED: 4.0b1 is a beta. 5.x is stable and better for 3.12
+tzlocal = ">=4.2"
+streamlit = "1.37.0"
+streamlit-modal = "*"
+deepdiff = ">=6.7.0"
+requests = ">=2.26.0"
+python-pptx = ">=1.0.2"
+altair = "==4.2.2"
 
 [dev-packages]
-black = "==21.8b0"
-pytest-asyncio = "==0.15.1"
-pytest = "==6.2.5"
-pytest-cov = "==2.12.1"
-coverage = "==5.5"
+black = "24.3.0"
+# CHANGED: Old versions below do not support Python 3.12.
+pytest-asyncio = "*"
+pytest = ">=7.0.0"
+pytest-cov = "*"
+coverage = "*"
 isort = "==5.10.1"
-pyinstaller = "==5.1"
+pyinstaller = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.12"

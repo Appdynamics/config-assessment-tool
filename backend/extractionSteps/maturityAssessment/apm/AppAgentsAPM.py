@@ -3,10 +3,13 @@ import re
 import time
 from collections import OrderedDict
 
-from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import JobStepBase
+from backend.api.appd.AppDService import AppDService
+from backend.extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
 from util.stdlib_utils import substringBetween
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class AppAgentsAPM(JobStepBase):
@@ -25,7 +28,7 @@ class AppAgentsAPM(JobStepBase):
         nodeIdToAppAgentAvailabilityMap = {}
         nodeIdToMetricLimitMap = {}
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -121,7 +124,7 @@ class AppAgentsAPM(JobStepBase):
                         node["appAgentAvailability"] = nodeIdToAppAgentAvailabilityMap[node["tierName"] + "|" + node["name"]]
                     except (KeyError, TypeError):
                         node["appAgentAvailability"] = 0
-                        logging.debug(
+                        logger.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Agent Availability.'
                         )
                     hostInfo["nodeIdAppAgentAvailabilityMap"][node["id"]] = node["appAgentAvailability"] / controller.timeRangeMins * 100
@@ -131,7 +134,7 @@ class AppAgentsAPM(JobStepBase):
                         node["nodeMetricsUploadRequestsExceedingLimit"] = nodeIdToMetricLimitMap[node["tierName"] + "|" + node["name"]]
                     except (KeyError, TypeError):
                         node["nodeMetricsUploadRequestsExceedingLimit"] = 0
-                        logging.debug(
+                        logger.debug(
                             f'{hostInfo["controller"].host} - Node: {node["tierName"]}|{node["name"]} returned no metric data for Metrics Upload Requests Exceeding Limit.'
                         )
 
@@ -157,7 +160,7 @@ class AppAgentsAPM(JobStepBase):
         jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             hostInfo["appAgentVersions"] = set()
 
@@ -229,7 +232,7 @@ class AppAgentsAPM(JobStepBase):
                 try:
                     numberAppAgentsRunningSameVersion = nodeVersionMap[max(nodeVersionMap, key=nodeVersionMap.get)]
                 except ValueError:
-                    logging.debug(
+                    logger.debug(
                         f'{hostInfo["controller"].host} - No app agents returned for application {application["name"]}, unable to parse agent versions.'
                     )
 

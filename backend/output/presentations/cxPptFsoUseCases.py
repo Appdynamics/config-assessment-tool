@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+from datetime import datetime
 from enum import Enum
 from typing import Dict, Optional
 
@@ -522,39 +523,71 @@ def markRaceTrackFailures(root, uc: UseCase):
             logging.error(f"Shape with name '{pitstop}' not found in the slide. This prevents properly marking the race track with visual markers. ")
 
 
-def createCxHamUseCasePpt(folder: str):
-    logging.info(f"Creating CX HAM Use Case PPT for {folder}")
-    directory = f"output/{folder}"
-    file_prefix = f"{folder}"
-    apm_wb = load_workbook(f"{directory}/{file_prefix}-MaturityAssessment-apm.xlsx")
-    db_wb = load_workbook(f"{directory}/{file_prefix}-AgentMatrix.xlsx")
+def createCxHamUseCasePpt(folder, output_dir="output"):
+    logging.info(f"Creating HAM use case presentation from template for output folder: {folder}")
 
-    excels = ExcelSheets(directory,
+    # UseCase Template
+    template_path = "backend/resources/pptAssets/HybridApplicationMonitoringUseCase_template.pptx"
+    try:
+        root = Presentation(template_path)
+    except Exception as e:
+        logging.error(f"Failed to load template {template_path}: {e}")
+        return
+
+    # UseCase Criteria Map
+    use_case_path = "backend/resources/pptAssets/HybridApplicationMonitoringUseCase.json"
+    try:
+        useCase = UseCase(use_case_path)
+    except Exception as e:
+        logging.error(f"Failed to load use case {use_case_path}: {e}")
+        return
+
+    job_dir = os.path.join(output_dir, folder)
+    info_path = os.path.join(job_dir, "info.json")
+    if not os.path.exists(info_path):
+        logging.warning(f"Info file {info_path} does not exist. Skipping HAM PPT generation.")
+        return
+
+    info = json.loads(open(info_path).read())
+
+    # Load spreadsheets
+    ma_apm_path = os.path.join(job_dir, f"{folder}-MaturityAssessment-apm.xlsx")
+    ma_raw_apm_path = os.path.join(job_dir, f"{folder}-MaturityAssessmentRaw-apm.xlsx")
+    agent_matrix_path = os.path.join(job_dir, f"{folder}-AgentMatrix.xlsx")
+
+    if not (os.path.exists(ma_apm_path) and os.path.exists(ma_raw_apm_path) and os.path.exists(agent_matrix_path)):
+        logging.warning(f"One or more required Excel files for HAM PPT are missing in {job_dir}. Skipping.")
+        return
+
+    wb_ma_apm = load_workbook(filename=ma_apm_path)
+    wb_ma_raw_apm = load_workbook(filename=ma_raw_apm_path)
+    wb_agent_matrix = load_workbook(filename=agent_matrix_path)
+
+    excels = ExcelSheets(job_dir,
                          (
-                             f"{file_prefix}-AgentMatrix.xlsx",
-                             f"{file_prefix}-CustomMetrics.xlsx",
-                             f"{file_prefix}-Dashboards.xlsx",
-                             f"{file_prefix}-License.xlsx",
-                             f"{file_prefix}-MaturityAssessment-apm.xlsx",
-                             f"{file_prefix}-MaturityAssessment-brum.xlsx",
-                             f"{file_prefix}-MaturityAssessment-mrum.xlsx",
-                             f"{file_prefix}-MaturityAssessmentRaw-apm.xlsx",
-                             f"{file_prefix}-MaturityAssessmentRaw-brum.xlsx",
-                             f"{file_prefix}-MaturityAssessmentRaw-mrum.xlsx",
-                             f"{file_prefix}-Synthetics.xlsx"
+                             f"{folder}-AgentMatrix.xlsx",
+                             f"{folder}-CustomMetrics.xlsx",
+                             f"{folder}-Dashboards.xlsx",
+                             f"{folder}-License.xlsx",
+                             f"{folder}-MaturityAssessment-apm.xlsx",
+                             f"{folder}-MaturityAssessment-brum.xlsx",
+                             f"{folder}-MaturityAssessment-mrum.xlsx",
+                             f"{folder}-MaturityAssessmentRaw-apm.xlsx",
+                             f"{folder}-MaturityAssessmentRaw-brum.xlsx",
+                             f"{folder}-MaturityAssessmentRaw-mrum.xlsx",
+                             f"{folder}-Synthetics.xlsx"
                          ))
 
     assert len(excels.getWorkBooks()) >= 10
 
     # currently only 1st controller in the job file is examined.
-    controller = getValuesInColumn(apm_wb["Analysis"], "controller")[0]
+    controller = getValuesInColumn(wb_ma_apm["Analysis"], "controller")[0]
 
-    json_file = search("HybridApplicationMonitoringUseCase.json", "../")
-    uc = UseCase(json_file)
-    _ = calculate_kpis(apm_wb, db_wb, uc)
+    # Use already initialized objects
+    uc = useCase
+    _ = calculate_kpis(wb_ma_apm, wb_agent_matrix, uc)
 
-    template_file = search("HybridApplicationMonitoringUseCase_template.pptx", "../")
-    root = Presentation(template_file)
+    # Note: 'root' (Presentation) is already initialized at the beginning of the function
 
     ############################# Onboard ###########################
     generatePitstopHealthCheckTable(controller, root, uc, "onboard")
@@ -586,7 +619,9 @@ def createCxHamUseCasePpt(folder: str):
     # cleanup_slides(root, uc)
     markRaceTrackFailures(root, uc)
 
-    root.save(f"output/{folder}/{folder}-cx-HybridApplicationMonitoringUseCaseMaturityAssessment-presentation.pptx")
+    output_path = os.path.join(job_dir, f"{folder}-cx-HybridApplicationMonitoringUseCaseMaturityAssessment-presentation.pptx")
+    logging.info(f"Saving presentation to {output_path}")
+    root.save(output_path)
 
 
 def generatePitstopHealthCheckTable(folder, root, uc, pitstop):

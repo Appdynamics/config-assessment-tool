@@ -2,10 +2,13 @@ import json
 import logging
 from collections import OrderedDict
 
-from api.appd.AppDService import AppDService
+from backend.api.appd.AppDService import AppDService
 from deepdiff import DeepDiff
-from extractionSteps.JobStepBase import JobStepBase
+from backend.extractionSteps.JobStepBase import JobStepBase
 from util.asyncio_utils import AsyncioUtils
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class HealthRulesAndAlertingBRUM(JobStepBase):
@@ -22,7 +25,7 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
         jobStepName = type(self).__name__
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Extracting {jobStepName}')
             controller: AppDService = hostInfo["controller"]
 
             # Gather necessary metrics.
@@ -70,7 +73,7 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
         jobStepThresholds = thresholds[self.componentType][jobStepName]
 
         for host, hostInfo in controllerData.items():
-            logging.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
+            logger.info(f'{hostInfo["controller"].host} - Analyzing {jobStepName}')
 
             for application in hostInfo[self.componentType].values():
                 # Root node of current application for current JobStep.
@@ -92,7 +95,7 @@ class HealthRulesAndAlertingBRUM(JobStepBase):
                             for action in policy["actions"]:
                                 actionsInEnabledPolicies.add(action["actionName"])
                         else:
-                            logging.warning(f"Policy {policy['name']} is enabled but has no actions bound to it.")
+                            logger.warning(f"Policy {policy['name']} is enabled but has no actions bound to it.")
                 analysisDataEvaluatedMetrics["numberOfActionsBoundToEnabledPolicies"] = len(actionsInEnabledPolicies)
 
                 # numberOfCustomHealthRules

@@ -6,5 +6,6 @@
 *.iml
 *.iws
 *.DS_Store
+.venv
 .git-bitbucket
 __pycache__
