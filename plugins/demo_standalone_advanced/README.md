@@ -4,7 +4,7 @@ This plugin serves as a demonstration of how to integrate a Flask web applicatio
 
 ## Overview
 
-- **Name**: `demo_flask_cli`
+- **Name**: `demo_standalone_advanced`
 - **Type**: Python Plugin (with Virtual Environment support)
 - **Entry Point**: `main.py`
 
@@ -20,11 +20,11 @@ The purpose of this plugin is to show developers how to:
 You can start this plugin using the main `config-assessment-tool.sh` script from the project root:
 
 ```bash
-./config-assessment-tool.sh --plugin start demo_flask_cli
+./config-assessment-tool.sh --plugin start demo_standalone_advanced
 ```
 
 Or, if passing arguments is supported by the plugin's `main.py`:
 
 ```bash
-./config-assessment-tool.sh --plugin start demo_flask_cli --port 5000
+./config-assessment-tool.sh --plugin start demo_standalone_advanced --port 5000
 ```

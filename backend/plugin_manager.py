@@ -130,10 +130,34 @@ def start(name, args):
     current_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = f"{plugin_path}:{current_pythonpath}"
 
+    prefix = f"plugin ({name}): "
+
     try:
-        subprocess.run(cmd, env=env)
+        # Use Popen to capture output line by line
+        with subprocess.Popen(
+            cmd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # Merge stderr into stdout
+            text=True,
+            bufsize=1,  # Line buffered
+            universal_newlines=True
+        ) as process:
+            # Print output with prefix
+            for line in process.stdout:
+                print(f"{prefix}{line}", end='')
+
+            # Wait for process to finish
+            process.wait()
+
+            if process.returncode != 0:
+                print(f"\nPlugin exited with error code {process.returncode}")
+                # We don't necessarily exit here, just report it
+
     except KeyboardInterrupt:
         print("\nPlugin execution interrupted.")
+    except Exception as e:
+        print(f"Error executing plugin: {e}")
 
 @cli.command(name="docs")
 @click.argument('name')

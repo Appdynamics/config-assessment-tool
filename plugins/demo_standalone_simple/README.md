@@ -4,7 +4,7 @@ This plugin demonstrates a purely standalone tool that does not participate in t
 
 ## Overview
 
-- **Name**: `demo_standalone_cli`
+- **Name**: `demo_standalone_simple`
 - **Type**: Standalone CLI
 - **Entry Point**: `main.py`
 
@@ -18,10 +18,10 @@ This plugin demonstrates a purely standalone tool that does not participate in t
 
 Run via the main script:
 ```bash
-./config-assessment-tool.sh --plugin start demo_standalone_cli
+./config-assessment-tool.sh --plugin start demo_standalone_simple
 ```
 
 Pass arguments:
 ```bash
-./config-assessment-tool.sh --plugin start demo_standalone_cli arg1 arg2
+./config-assessment-tool.sh --plugin start demo_standalone_simple arg1 arg2
 ```
