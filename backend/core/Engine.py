@@ -276,7 +276,8 @@ class Engine:
         context = {
             "jobFileName": self.jobFileName,
             "outputDir": os.path.join(self.output_dir, self.jobFileName),
-            "controllerData": self.controllerData
+            "controllerData": self.controllerData,
+            "controllers": self.controllers
         }
 
         for plugin_name in plugin_folders:
@@ -319,7 +320,22 @@ class Engine:
                     if sys.path[0] == plugin_path:
                         sys.path.pop(0)
 
-                if hasattr(module, "run_plugin"):
+                # Add a logging filter to prefix plugin logs
+                class PluginLogFilter(logging.Filter):
+                    def __init__(self, plugin_name):
+                        super().__init__()
+                        self.prefix = f"({plugin_name}): "
+
+                    def filter(self, record):
+                        # Avoid double prefixing if the plugin name is already in the message (unlikely but safe)
+                        if not str(record.msg).startswith(self.prefix):
+                            record.msg = self.prefix + str(record.msg)
+                        return True
+
+                plugin_filter = PluginLogFilter(plugin_name)
+                logging.getLogger().addFilter(plugin_filter)
+
+                try:
                     logger.info(f"Executing plugin: {plugin_name}")
                     try:
                         # Check if the function is a coroutine (async)
@@ -332,8 +348,9 @@ class Engine:
                     except Exception as e:
                         logger.error(f"Error running plugin {plugin_name}: {e}")
                         logger.debug(traceback.format_exc())
-                else:
-                    logger.debug(f"Plugin {plugin_name} (in {main_file}) does not have a 'run_plugin' function. Assuming standalone or library plugin.")
+                finally:
+                    logging.getLogger().removeFilter(plugin_filter)
+
             except Exception as e:
                 logger.error(f"Failed to load plugin {plugin_name}: {e}")
                 logger.debug(traceback.format_exc())
