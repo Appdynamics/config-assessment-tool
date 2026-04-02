@@ -1,15 +1,16 @@
 import logging
+import os
 import re
 from datetime import datetime
 from math import floor, ceil
 
 from openpyxl import Workbook
-from output.ReportBase import ReportBase
-from util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow, Color
+from backend.output.ReportBase import ReportBase
+from backend.util.excel_utils import addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeSummarySheet, writeUncoloredRow, Color
 
 
 class SyntheticsReport(ReportBase):
-    def createWorkbook(self, jobs, controllerData, jobFileName):
+    def createWorkbook(self, jobs, controllerData, jobFileName, output_dir="output"):
         logging.info(f"Creating Synthetics Report Workbook")
 
         # Create Report with Raw Data
@@ -44,7 +45,7 @@ class SyntheticsReport(ReportBase):
                         numberOfWebDriverCalls = 0
                     else:
                         script = syntheticJob["config"]["script"]["script"]
-                        result = re.findall("driver\..+\(.+\)", script)
+                        result = re.findall(r"driver\..+\(.+\)", script)
                         numberOfWebDriverCalls = len(result)
 
                     allSyntheticJobs.append(
@@ -100,4 +101,5 @@ class SyntheticsReport(ReportBase):
         resizeColumnWidth(summarySheet)
 
         logging.debug(f"Saving Synthetics Workbook")
-        workbook.save(f"output/{jobFileName}/{jobFileName}-Synthetics.xlsx")
+        save_path = os.path.join(output_dir, jobFileName, f"{jobFileName}-Synthetics.xlsx")
+        workbook.save(save_path)

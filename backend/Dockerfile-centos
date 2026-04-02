@@ -1,3 +1,4 @@
+# backend/Dockerfile-github-workflow-bundle
 # This Dockerfile is used exclusively for github actions workflow to
 # build a linux bundle that runs on most linux distros
 
@@ -7,18 +8,30 @@ FROM quay.io/pypa/manylinux2014_x86_64
 # get toolchain necessary to build python from source
 RUN yum update -y
 RUN yum groupinstall -y 'Development Tools'
-# Corrected line: Combined all packages into one yum install command
 RUN yum install -y wget zlib-devel bzip2 bzip2-devel \
     readline-devel sqlite sqlite-devel openssl-devel \
-    tk-devel libffi-devel xz-devel coreutils
+    tk-devel libffi-devel xz-devel openssl openssl-devel
+
+WORKDIR /root
+
+# build openssl 1.1.1w from source as python 3.10+ requires it (centos 7 has 1.0.2)
+RUN wget https://www.openssl.org/source/openssl-1.1.1w.tar.gz
+RUN tar -zxf openssl-1.1.1w.tar.gz
+WORKDIR /root/openssl-1.1.1w
+RUN ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
+RUN make
+RUN make install
+RUN echo "/usr/local/ssl/lib" > /etc/ld.so.conf.d/openssl-1.1.1.conf
+RUN ldconfig
 
 WORKDIR /root
 
 # build python from source with required flag as as pyinstaller needs it
-RUN wget https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tar.xz
-RUN tar -xf Python-3.9.13.tar.xz
-WORKDIR /root/Python-3.9.13
-RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared
+RUN wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tar.xz
+RUN tar -xf Python-3.12.3.tar.xz
+WORKDIR /root/Python-3.12.3
+# configure python to use the custom openssl
+RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared --with-openssl=/usr/local/ssl --with-openssl-rpath=auto
 RUN make
 RUN make altinstall
 RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
@@ -28,26 +41,35 @@ RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 WORKDIR /root/config-assessment-tool
 COPY backend ./backend
 COPY input ./input
+COPY plugins ./plugins
+COPY bin ./bin
 COPY VERSION .
 COPY Pipfile .
-COPY Pipfile.lock .
+# COPY Pipfile.lock .
 
-RUN BUNDLE_VERSION=`cat VERSION`
+# Get bundle version from VERSION file
+RUN BUNDLE_VERSION=$(cat VERSION)
+
+# Force cache invalidation
+ENV CACHE_BUSTER=20260204-fix-pyarrow
 
 RUN pipx install pipenv
-RUN pipx install pyinstaller
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.9 -m pip install --upgrade pip
+# RUN pipx install pyinstaller
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.12 -m pip install --upgrade pip
 RUN pipenv requirements --dev > requirements.txt
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pip install -r requirements.txt
-RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; pyinstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.12 -m pip install --upgrade wheel
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.12 -m pip install --prefer-binary -r requirements.txt
+RUN export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; python3.12 -m PyInstaller --distpath=./dist/appdynamics backend/config-assessment-tool.spec
+
+# Copy plugins into the generated bundle directory (which is inside dist/appdynamics/)
+RUN cp -r plugins dist/appdynamics/*/
 
 WORKDIR /root
 
-# MODIFIED: Define OS and Architecture dynamically AND tar up the bundle in a single RUN instruction
-# Changed '[:upper:]' to '[:lower:]' to make the OS_ID lowercase.
-RUN OS_ID=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | tr '[:upper:]' '[:lower:]') && \
-    ARCH=$(uname -m) && \
-    echo "Detected OS: $OS_ID, Architecture: $ARCH" && \
-    ls -altrh && \
-    tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION)-${OS_ID}-${ARCH}.tgz -C /root/config-assessment-tool/dist/appdynamics . && \
-    ls -altrh /root/config-assessment-tool/dist/appdynamics
+# tar up the bundle as part of the image for subsequent copy to hosted runner env.
+RUN ls -altrh
+# CHANGED: Archive the 'appdynamics' directory itself from the 'dist' directory
+# This ensures the tarball contains 'appdynamics/your-app-bundle' at its root,
+# matching the structure of the Windows and macOS zip files.
+RUN tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat config-assessment-tool/VERSION).tgz -C /root/config-assessment-tool/dist/ appdynamics
+RUN ls -altrh /root/config-assessment-tool/dist/appdynamics

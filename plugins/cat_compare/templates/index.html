@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Compare Config Assessment Tool Results</title>
+    <style>
+        :root {
+            --bg: #0b0f16;
+            --panel: #121a24;
+            --card: #0f1620;
+            --text: #e8eef7;
+            --muted: #9fb3c8;
+            --accent: #00bceb;
+            --accent-2: #35c56d;
+            --border: rgba(255,255,255,0.12);
+            --shadow: 0 10px 30px rgba(0,0,0,0.35);
+            --radius: 14px;
+            --radius-sm: 10px;
+            --focus: 0 0 0 3px rgba(0,188,235,0.35);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 800px at 20% -10%, rgba(0,188,235,0.12), transparent 60%),
+                        radial-gradient(1200px 800px at 120% 10%, rgba(53,197,109,0.10), transparent 60%),
+                        var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+            line-height: 1.45;
+            padding: 32px 16px 48px;
+            display: grid;
+            place-items: center;
+        }
+
+        .shell { width: 100%; max-width: 1100px; }
+
+        .header {
+            background: linear-gradient(135deg, rgba(0,188,235,0.18), rgba(53,197,109,0.12));
+            border: 1px solid var(--border);
+            border-bottom: none;
+            padding: 26px 28px 22px;
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
+            backdrop-filter: blur(4px);
+        }
+        .title { margin: 0 0 6px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.2px; }
+        .subtitle { margin: 0; color: var(--muted); font-size: 15px; }
+
+        .card {
+            background: linear-gradient(180deg, var(--panel), var(--card));
+            border: 1px solid var(--border);
+            border-top: none;
+            border-bottom-left-radius: var(--radius);
+            border-bottom-right-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 0 24px 24px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            padding: 18px 0 8px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .tab {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: #0f1722;
+            color: var(--text);
+            padding: 10px 14px;
+            font-size: 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all .18s ease;
+            white-space: nowrap;
+        }
+        .tab:hover { transform: translateY(-1px); }
+        .tab:focus-visible { outline: none; box-shadow: var(--focus); }
+        .tab.active {
+            background: linear-gradient(135deg, rgba(0,188,235,0.18), rgba(53,197,109,0.10));
+            border-color: rgba(0,188,235,0.35);
+        }
+
+        .panel { display: none; padding-top: 18px; }
+        .panel.active { display: block; }
+
+        .section {
+            background: #0c1320;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 18px;
+        }
+        .section + .section { margin-top: 16px; }
+        .section h2 { margin: 0 0 12px 0; font-size: 18px; letter-spacing: 0.2px; }
+
+        .field { margin: 12px 0 14px; }
+        .label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+
+        .drop {
+            position: relative;
+            border: 1px dashed rgba(255,255,255,0.28);
+            background: #0b1120;
+            border-radius: 12px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            transition: border-color .18s ease, background .18s ease;
+        }
+        .drop:hover { border-color: rgba(0,188,235,0.6); background: #0c1526; }
+        .file-label { font-size: 14px; color: var(--text); }
+        .file-name { font-size: 13px; color: var(--muted); }
+        .browse-btn {
+            appearance: none;
+            border: 1px solid rgba(0,188,235,0.5);
+            background: linear-gradient(135deg, rgba(0,188,235,0.18), rgba(0,188,235,0.08));
+            color: var(--text);
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .18s ease;
+        }
+        .browse-btn:hover { transform: translateY(-1px); }
+        .browse-btn:focus-visible { outline: none; box-shadow: var(--focus); }
+
+        input[type="file"] { display: none; }
+
+        .actions { margin-top: 16px; display: flex; gap: 10px; }
+        .btn {
+            appearance: none;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), #0aa2c7);
+            color: #061017;
+            font-weight: 700;
+            padding: 11px 16px;
+            font-size: 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease;
+            box-shadow: 0 6px 14px rgba(0,188,235,0.18);
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:focus-visible { outline: none; box-shadow: var(--focus); }
+        .btn.secondary { background: linear-gradient(135deg, rgba(53,197,109,0.9), rgba(53,197,109,0.8)); color: #06140c; }
+
+        .message { margin: 18px 0 0; border: 1px solid rgba(53,197,109,0.35); background: linear-gradient(180deg, rgba(53,197,109,0.15), rgba(53,197,109,0.06)); color: var(--text); padding: 12px 14px; border-radius: 10px; font-size: 14px; }
+
+        .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+        .footer { text-align: center; margin-top: 22px; color: var(--muted); font-size: 12px; }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <div class="header">
+        <h1 class="title">Compare Config Assessment Tool</h1>
+        <p class="subtitle">Upload previous and current workbooks to generate comparison results and presentation.</p>
+    </div>
+
+    <div class="card">
+        {% if message %}
+            <div class="message">{{ message | safe }}</div>
+        {% endif %}
+
+        <div class="tabs" role="tablist" aria-label="Data domains">
+            <button class="tab active" role="tab" aria-selected="true" data-target="apm">APM</button>
+            <button class="tab" role="tab" aria-selected="false" data-target="brum">BRUM</button>
+            <button class="tab" role="tab" aria-selected="false" data-target="mrum">MRUM</button>
+        </div>
+
+        <!-- APM -->
+        <section id="apm" class="panel active" role="tabpanel" aria-labelledby="tab-apm">
+            <div class="section">
+                <h2>APM (Application Performance Monitoring)</h2>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    <div class="field">
+                        <label class="label" for="previous_file">Previous APM Workbook (.xlsx)</label>
+                        <div class="drop" data-drop="previous_file">
+                            <div>
+                                <div class="file-label">Drag & drop or browse to select file.</div>
+                                <div class="file-name" id="previous_file_name">No file selected.</div>
+                            </div>
+                            <button class="browse-btn" type="button" data-browse="previous_file">Browse</button>
+                            <input type="file" id="previous_file" name="previous_file" accept=".xlsx" required />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="current_file">Current APM Workbook (.xlsx)</label>
+                        <div class="drop" data-drop="current_file">
+                            <div>
+                                <div class="file-label">Drag & drop or browse to select file.</div>
+                                <div class="file-name" id="current_file_name">No file selected.</div>
+                            </div>
+                            <button class="browse-btn" type="button" data-browse="current_file">Browse</button>
+                            <input type="file" id="current_file" name="current_file" accept=".xlsx" required />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn" type="submit">Upload and Compare APM</button>
+                    </div>
+                    <div class="note">Supported format: .xlsx. Data stays local to your session.</div>
+                </form>
+            </div>
+        </section>
+
+        <!-- BRUM -->
+        <section id="brum" class="panel" role="tabpanel" aria-labelledby="tab-brum" hidden>
+            <div class="section">
+                <h2>BRUM (Browser Real User Monitoring)</h2>
+                <form action="/upload_brum" method="post" enctype="multipart/form-data">
+                    <div class="field">
+                        <label class="label" for="previous_brum">Previous BRUM Workbook (.xlsx)</label>
+                        <div class="drop" data-drop="previous_brum">
+                            <div>
+                                <div class="file-label">Drag & drop or browse to select file.</div>
+                                <div class="file-name" id="previous_brum_name">No file selected.</div>
+                            </div>
+                            <button class="browse-btn" type="button" data-browse="previous_brum">Browse</button>
+                            <input type="file" id="previous_brum" name="previous_brum" accept=".xlsx" required />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="current_brum">Current BRUM Workbook (.xlsx)</label>
+                        <div class="drop" data-drop="current_brum">
+                            <div>
+                                <div class="file-label">Drag & drop or browse to select file.</div>
+                                <div class="file-name" id="current_brum_name">No file selected.</div>
+                            </div>
+                            <button class="browse-btn" type="button" data-browse="current_brum">Browse</button>
+                            <input type="file" id="current_brum" name="current_brum" accept=".xlsx" required />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn" type="submit">Upload and Compare BRUM</button>
+                    </div>
+                    <div class="note">Supported format: .xlsx.</div>
+                </form>
+            </div>
+        </section>
+
+        <!-- MRUM -->
+        <section id="mrum" class="panel" role="tabpanel" aria-labelledby="tab-mrum" hidden>
+            <div class="section">
+                <h2>MRUM (Mobile Real User Monitoring)</h2>
+                <form action="/upload_mrum" method="post" enctype="multipart/form-data">
+                    <div class="field">
+                        <label class="label" for="previous_mrum">Previous MRUM Workbook (.xlsx)</label>
+                        <div class="drop" data-drop="previous_mrum">
+                            <div>
+                                <div class="file-label">Drag & drop or browse to select file.</div>
+                                <div class="file-name" id="previous_mrum_name">No file selected.</div>
+                            </div>
+                            <button class="browse-btn" type="button" data-browse="previous_mrum">Browse</button>
+                            <input type="file" id="previous_mrum" name="previous_mrum" accept=".xlsx" required />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="current_mrum">Current MRUM Workbook (.xlsx)</label>
+                        <div class="drop" data-drop="current_mrum">
+                            <div>
+                                <div class="file-label">Drag & drop or browse to select file.</div>
+                                <div class="file-name" id="current_mrum_name">No file selected.</div>
+                            </div>
+                            <button class="browse-btn" type="button" data-browse="current_mrum">Browse</button>
+                            <input type="file" id="current_mrum" name="current_mrum" accept=".xlsx" required />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn" type="submit">Upload and Compare MRUM</button>
+                    </div>
+                    <div class="note">Supported format: .xlsx.</div>
+                </form>
+            </div>
+        </section>
+
+        <div class="footer">
+            Need help? Open an issue or contact your administrator. Built for local use; no files leave your machine.
+        </div>
+        <div>
+          <p style="text-align:center;margin-top:12px;">
+            <a id="openInsightsLink" href="/insights" style="color:#00bceb;">Open Insights</a>
+          </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tabs
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+    const insightsLink = document.getElementById('openInsightsLink');
+
+    function updateInsightsHref() {
+        const active = document.querySelector('.tab.active');
+        const domain = active ? active.dataset.target.toUpperCase() : 'APM';
+        insightsLink.href = `/insights?domain=${encodeURIComponent(domain)}`;
+    }
+
+    tabs.forEach(t => {
+        t.addEventListener('click', () => {
+            tabs.forEach(x => x.classList.remove('active'));
+            panels.forEach(p => { p.classList.remove('active'); p.hidden = true; });
+            t.classList.add('active');
+            const id = t.dataset.target;
+            const panel = document.getElementById(id);
+            if (panel) { panel.classList.add('active'); panel.hidden = false; }
+            updateInsightsHref();
+        });
+    });
+
+    // File inputs: browse buttons, filename display, drag & drop
+    function wireFile(id) {
+        const input = document.getElementById(id);
+        const nameEl = document.getElementById(id + "_name");
+        const drop = document.querySelector(`.drop[data-drop="${id}"]`);
+        const browse = document.querySelector(`.browse-btn[data-browse="${id}"]`);
+
+        function showName() {
+            if (!input.files || input.files.length === 0) {
+                nameEl.textContent = "No file selected.";
+            } else {
+                nameEl.textContent = Array.from(input.files).map(f => f.name).join(", ");
+            }
+        }
+        browse?.addEventListener('click', () => input.click());
+        input.addEventListener('change', showName);
+
+        // Drag & drop
+        ["dragenter","dragover"].forEach(evt =>
+            drop?.addEventListener(evt, e => { e.preventDefault(); drop.style.borderColor = "rgba(0,188,235,0.8)"; })
+        );
+        ["dragleave","drop"].forEach(evt =>
+            drop?.addEventListener(evt, e => { e.preventDefault(); drop.style.borderColor = "rgba(255,255,255,0.28)"; })
+        );
+        drop?.addEventListener("drop", e => {
+            if (e.dataTransfer?.files?.length) {
+                input.files = e.dataTransfer.files;
+                showName();
+            }
+        });
+    }
+
+    ["previous_file","current_file","previous_brum","current_brum","previous_mrum","current_mrum"].forEach(wireFile);
+
+    // Initial set of the Insights link
+    updateInsightsHref();
+</script>
+</body>
+</html>

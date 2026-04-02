@@ -4,9 +4,9 @@ from distutils.util import strtobool
 
 import pytest
 import logging
-from api.appd.AppDService import AppDService
-from api.appd.AuthMethod import AuthMethod
-from util.logging_utils import initLogging
+from backend.api.appd.AppDService import AppDService
+from backend.api.appd.AuthMethod import AuthMethod
+from backend.util.logging_utils import initLogging
 
 APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_APPLICATION_ID"))
 EUM_APPLICATION_ID = int(os.getenv("TEST_CONTROLLER_EUM_APPLICATION_ID"))

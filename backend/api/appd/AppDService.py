@@ -7,11 +7,11 @@ from json import JSONDecodeError
 from math import ceil
 from typing import List
 
-from api.Result import Result
-from api.appd.AppDController import AppdController
-from api.appd.AuthMethod import AuthMethod
-from util.asyncio_utils import AsyncioUtils
-from util.stdlib_utils import get_recursively
+from backend.api.Result import Result
+from backend.api.appd.AppDController import AppdController
+from backend.api.appd.AuthMethod import AuthMethod
+from backend.util.asyncio_utils import AsyncioUtils
+from backend.util.stdlib_utils import get_recursively
 
 
 class AppDService:
