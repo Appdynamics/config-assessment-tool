@@ -1,9 +1,10 @@
 import logging
 from collections import OrderedDict
 
-from api.appd.AppDService import AppDService
-from extractionSteps.JobStepBase import JobStepBase
+from backend.api.appd.AppDService import AppDService
+from backend.extractionSteps.JobStepBase import JobStepBase
 
+logger = logging.getLogger(__name__.split('.')[-1])
 
 class ControllerLevelDetails(JobStepBase):
     def __init__(self):
@@ -25,30 +26,30 @@ class ControllerLevelDetails(JobStepBase):
             hostInfo["mrum"] = OrderedDict()
             hostInfo["analytics"] = OrderedDict()
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting APM Applications')
+            logger.info(f'{hostInfo["controller"].host} - Extracting APM Applications')
             for apmApplication in (await controller.getApmApplications()).data:
                 hostInfo["apm"][apmApplication["name"]] = apmApplication
-            logging.info(f'{hostInfo["controller"].host} - EUM Applications')
+            logger.info(f'{hostInfo["controller"].host} - EUM Applications')
             for brumApplication in (await controller.getEumApplications()).data:
                 hostInfo["brum"][brumApplication["name"]] = brumApplication
-            logging.info(f'{hostInfo["controller"].host} - MRUM Applications')
+            logger.info(f'{hostInfo["controller"].host} - MRUM Applications')
             for mrumApplication in (await controller.getMRUMApplications()).data:
                 hostInfo["mrum"][mrumApplication["taggedName"]] = mrumApplication
-            logging.info(f'{hostInfo["controller"].host} - Extracting Servers')
+            logger.info(f'{hostInfo["controller"].host} - Extracting Servers')
             hostInfo["servers"] = (await controller.getServers()).data
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting Controller Configurations')
+            logger.info(f'{hostInfo["controller"].host} - Extracting Controller Configurations')
             hostInfo["configurations"] = (await controller.getConfigurations()).data
             hostInfo["analyticsEnabledStatus"] = (await controller.getAnalyticsEnabledStatusForAllApplications()).data
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting Dashboards')
+            logger.info(f'{hostInfo["controller"].host} - Extracting Dashboards')
             hostInfo["exportedDashboards"] = (await controller.getDashboards()).data
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting Licenses')
+            logger.info(f'{hostInfo["controller"].host} - Extracting Licenses')
             hostInfo["accountLicenseUsage"] = (await controller.getAccountUsageSummary()).data
             hostInfo["eumLicenseUsage"] = (await controller.getEumLicenseUsage()).data
 
-            logging.info(f'{hostInfo["controller"].host} - Extracting Agent Details')
+            logger.info(f'{hostInfo["controller"].host} - Extracting Agent Details')
             hostInfo["appServerAgents"] = (await controller.getAppServerAgents()).data
             hostInfo["machineAgents"] = (await controller.getMachineAgents()).data
             hostInfo["dbAgents"] = (await controller.getDBAgents()).data

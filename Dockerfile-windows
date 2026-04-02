@@ -1,0 +1,68 @@
+# escape=`
+
+# Stage 1: Base image with Python installed
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS base
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+LABEL org.opencontainers.image.description ="Configuration Assessment Tool (CAT Windows version) is a comprehensive solution designed to evaluate and enhance the security of your software configurations. By analyzing configuration files, CAT identifies potential vulnerabilities and provides actionable recommendations to mitigate risks. With support for various configuration formats and integration capabilities, CAT empowers organizations to maintain secure and compliant configurations across their software ecosystems."
+
+ENV PYTHON_VERSION=3.12.3
+ENV PYTHON_HOME=C:\Python312
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONFAULTHANDLER=1
+ENV PATH="C:\Python312;C:\Python312\Scripts;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;"
+
+# Install Python manually
+RUN Invoke-WebRequest -Uri "https://www.python.org/ftp/python/$($env:PYTHON_VERSION)/python-$($env:PYTHON_VERSION)-amd64.exe" -OutFile python-installer.exe ; `
+    Start-Process python-installer.exe -ArgumentList '/quiet', 'InstallAllUsers=1', 'PrependPath=1', "TargetDir=$($env:PYTHON_HOME)" -Wait ; `
+    Remove-Item python-installer.exe -Force
+
+
+# Stage 2: Builder - Generate requirements.txt
+FROM base AS builder
+
+WORKDIR /app
+
+COPY Pipfile .
+# COPY Pipfile.lock .
+
+RUN pip install --no-cache-dir pipenv
+RUN pipenv requirements > requirements.txt
+
+
+# Stage 3: Final runtime image
+FROM base AS runtime
+
+WORKDIR /app
+
+COPY --from=builder /app/requirements.txt .
+
+# 1. Upgrade pip using 'python -m' to avoid locking the 'pip.exe' wrapper executable
+RUN python -m pip install --no-cache-dir --upgrade pip
+
+# 2. Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 3. Copy application code
+COPY backend /app/backend
+COPY frontend /app/frontend
+COPY plugins /app/plugins
+COPY VERSION .
+
+# 4. Set PYTHONPATH
+ENV PYTHONPATH="C:\app;C:\app\backend"
+
+# 5. Create entrypoint
+RUN Set-Content entrypoint.bat '@echo off' ; `
+    Add-Content entrypoint.bat 'if /i "%1" == "backend" (' ; `
+    Add-Content entrypoint.bat '  shift' ; `
+    Add-Content entrypoint.bat '  python backend\backend.py %*' ; `
+    Add-Content entrypoint.bat ') else (' ; `
+    Add-Content entrypoint.bat '  python -m streamlit run frontend\frontend.py %*' ; `
+    Add-Content entrypoint.bat ')'
+
+EXPOSE 8501
+
+ENTRYPOINT ["cmd", "/c", "entrypoint.bat"]
+CMD ["frontend"]

@@ -5,7 +5,7 @@
         "ssl": true,
         "account": "acme",
         "username": "foo",
-        "pwd": "hunter1",
+        "pwd": "Q0FULUVOQ09ERUQtaHVudGVyMQ==",
         "verifySsl": true,
         "useProxy": true,
         "applicationFilter": {

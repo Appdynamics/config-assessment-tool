@@ -1,7 +1,10 @@
 import logging
 from abc import ABC, abstractmethod
 
-from util.excel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeUncoloredRow
+from backend.util.excel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeUncoloredRow
+
+
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
 class JobStepBase(ABC):
@@ -39,13 +42,13 @@ class JobStepBase(ABC):
         No data analysis in this step.
         """
         """Create report sheet for raw analysis data."""
-        logging.debug(f"Creating workbook sheet for raw details of {jobStepName}")
+        logger.debug(f"Creating workbook sheet for raw details of {jobStepName}")
 
         metricFolder = "evaluated" if useEvaluatedMetrics else "raw"
 
         rawDataSheet = workbook.create_sheet(f"{jobStepName}")
         if len(list(controllerData.values())[0][self.componentType]) == 0:
-            logging.warning(f"No data found for {jobStepName}")
+            logger.warning(f"No data found for {jobStepName}")
             return
 
         rawDataHeaders = list(list(controllerData.values())[0][self.componentType].values())[0][jobStepName][metricFolder].keys()
