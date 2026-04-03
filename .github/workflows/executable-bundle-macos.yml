@@ -1,0 +1,82 @@
+# .github/workflows/release-mac-os-x.yml
+name: executable-bundle-macos
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    name: Build macOS Executable Bundle
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+
+      - name: Build and bundle with PyInstaller
+        id: build_bundle # ID for accessing outputs
+        run: |
+          # Use Makefile to build the bundle
+          make exec-bundle
+
+          # Navigate to dist directory
+          cd dist
+
+          # Fix code signing for macOS (Ad-hoc signing with entitlements)
+          # This is critical for Apple Silicon (M1/M2) support
+          echo "Applying ad-hoc code signature to bundled binaries..."
+          find appdynamics -name "*.so" -o -name "*.dylib" -o -name "Python" | xargs codesign --force -s - --preserve-metadata=identifier,entitlements
+          # The directory name is dynamic (includes version), so wildcard matching is used
+          codesign --force --deep -s - appdynamics/config-assessment-tool-*/config-assessment-tool
+
+          # Determine the name of the PyInstaller created directory (e.g., 'config-assessment-tool-macosx-1.8.0')
+          # Assumes PyInstaller creates a single top-level directory inside appdynamics/
+          BUNDLE_DIR_PATH=$(find appdynamics -maxdepth 1 -mindepth 1 -type d)
+          BUNDLE_DIR_NAME=$(basename "$BUNDLE_DIR_PATH")
+          echo "PyInstaller created directory: ${BUNDLE_DIR_NAME}"
+
+          # Define the output bundle filename
+          # Consistent naming: config-assessment-tool-macos-<version>-executable.zip
+          # We check if 'macosx' is present and replace it with 'macos', then append '-executable'
+          
+          if [[ "$BUNDLE_DIR_NAME" == *"macosx"* ]]; then
+             BASE_NAME="${BUNDLE_DIR_NAME/macosx/macos}"
+          else
+             BASE_NAME="$BUNDLE_DIR_NAME"
+          fi
+          
+          BUNDLE_FILENAME="${BASE_NAME}-executable.zip"
+          
+          echo "Bundle filename: ${BUNDLE_FILENAME}"
+
+          # Create the zip archive, including the appdynamics directory and excluding logs
+          # The -x "appdynamics/*/logs/*" pattern excludes any 'logs' directory within the bundled application.
+          zip -r "${BUNDLE_FILENAME}" appdynamics -x "appdynamics/*/logs/*"
+
+          # Set output variable for subsequent steps
+          echo "::set-output name=bundle_name::${BUNDLE_FILENAME}"
+          echo "Current directory contents after zipping:"
+          ls -altr
+
+      - name: Release the bundle for macOS
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/${{ steps.build_bundle.outputs.bundle_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Keep workflow artifact within the current workflow namespace
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build_bundle.outputs.bundle_name }}
+          path: dist/${{ steps.build_bundle.outputs.bundle_name }}
+          if-no-files-found: ignore

@@ -4,86 +4,101 @@ import math
 import os
 import sys
 import time
+import asyncio
 import traceback
 from collections import OrderedDict
 from pathlib import Path
+import importlib.util
 
 import requests
 
-from api.appd.AppDService import AppDService
-from api.appd.AuthMethod import AuthMethod
-from extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
-from extractionSteps.general.CustomMetrics import CustomMetrics
-from extractionSteps.general.Synthetics import Synthetics
-from extractionSteps.maturityAssessment.apm.AppAgentsAPM import AppAgentsAPM
-from extractionSteps.maturityAssessment.apm.BackendsAPM import BackendsAPM
-from extractionSteps.maturityAssessment.apm.BusinessTransactionsAPM import BusinessTransactionsAPM
-from extractionSteps.maturityAssessment.apm.DashboardsAPM import DashboardsAPM
-from extractionSteps.maturityAssessment.apm.DataCollectorsAPM import DataCollectorsAPM
-from extractionSteps.maturityAssessment.apm.ErrorConfigurationAPM import ErrorConfigurationAPM
-from extractionSteps.maturityAssessment.apm.HealthRulesAndAlertingAPM import HealthRulesAndAlertingAPM
-from extractionSteps.maturityAssessment.apm.MachineAgentsAPM import MachineAgentsAPM
-from extractionSteps.maturityAssessment.apm.OverallAssessmentAPM import OverallAssessmentAPM
-from extractionSteps.maturityAssessment.apm.OverheadAPM import OverheadAPM
-from extractionSteps.maturityAssessment.apm.ServiceEndpointsAPM import ServiceEndpointsAPM
-from extractionSteps.maturityAssessment.brum.HealthRulesAndAlertingBRUM import HealthRulesAndAlertingBRUM
-from extractionSteps.maturityAssessment.brum.NetworkRequestsBRUM import NetworkRequestsBRUM
-from extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import OverallAssessmentBRUM
-from extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
-from extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
-from extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
-from output.PostProcessReport import PostProcessReport
-from output.presentations.cxPpt import createCxPpt
-from output.presentations.cxPptFsoUseCases import createCxHamUseCasePpt
-from output.reports.AgentMatrixReport import AgentMatrixReport
-from output.reports.ConfigurationAnalysisReport import ConfigurationAnalysisReport
-from output.reports.CustomMetricsReport import CustomMetricsReport
-from output.reports.DashboardReport import DashboardReport
-from output.reports.LicenseReport import LicenseReport
-from output.reports.MaturityAssessmentReport import MaturityAssessmentReport
-from output.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
-from output.reports.SyntheticsReport import SyntheticsReport
-from util.asyncio_utils import AsyncioUtils
-from util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
+from backend.api.appd.AppDService import AppDService
+from backend.api.appd.AuthMethod import AuthMethod
+from backend.extractionSteps.general.ControllerLevelDetails import ControllerLevelDetails
+from backend.extractionSteps.general.CustomMetrics import CustomMetrics
+from backend.extractionSteps.general.Synthetics import Synthetics
+from backend.extractionSteps.maturityAssessment.apm.AppAgentsAPM import AppAgentsAPM
+from backend.extractionSteps.maturityAssessment.apm.BackendsAPM import BackendsAPM
+from backend.extractionSteps.maturityAssessment.apm.BusinessTransactionsAPM import BusinessTransactionsAPM
+from backend.extractionSteps.maturityAssessment.apm.DashboardsAPM import DashboardsAPM
+from backend.extractionSteps.maturityAssessment.apm.DataCollectorsAPM import DataCollectorsAPM
+from backend.extractionSteps.maturityAssessment.apm.ErrorConfigurationAPM import ErrorConfigurationAPM
+from backend.extractionSteps.maturityAssessment.apm.HealthRulesAndAlertingAPM import HealthRulesAndAlertingAPM
+from backend.extractionSteps.maturityAssessment.apm.MachineAgentsAPM import MachineAgentsAPM
+from backend.extractionSteps.maturityAssessment.apm.OverallAssessmentAPM import OverallAssessmentAPM
+from backend.extractionSteps.maturityAssessment.apm.OverheadAPM import OverheadAPM
+from backend.extractionSteps.maturityAssessment.apm.ServiceEndpointsAPM import ServiceEndpointsAPM
+from backend.extractionSteps.maturityAssessment.brum.HealthRulesAndAlertingBRUM import HealthRulesAndAlertingBRUM
+from backend.extractionSteps.maturityAssessment.brum.NetworkRequestsBRUM import NetworkRequestsBRUM
+from backend.extractionSteps.maturityAssessment.brum.OverallAssessmentBRUM import OverallAssessmentBRUM
+from backend.extractionSteps.maturityAssessment.mrum.HealthRulesAndAlertingMRUM import HealthRulesAndAlertingMRUM
+from backend.extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import NetworkRequestsMRUM
+from backend.extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
+from backend.output.Archiver import Archiver
+from backend.output.PostProcessReport import PostProcessReport
+# from output.presentations.cxPpt import createCxPpt
+from backend.output.presentations.cxPptTemplate import createCxPpt as createCxPptTemplate
+from backend.output.reports.AgentMatrixReport import AgentMatrixReport
+from backend.output.reports.ConfigurationAnalysisReport import ConfigurationAnalysisReport
+from backend.output.reports.CustomMetricsReport import CustomMetricsReport
+from backend.output.reports.DashboardReport import DashboardReport
+from backend.output.reports.LicenseReport import LicenseReport
+from backend.output.reports.MaturityAssessmentReport import MaturityAssessmentReport
+from backend.output.reports.MaturityAssessmentReportRaw import RawMaturityAssessmentReport
+from backend.output.reports.SyntheticsReport import SyntheticsReport
+from backend.util.asyncio_utils import AsyncioUtils
+from backend.util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
+logger = logging.getLogger(__name__.split('.')[-1])
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, username: str, password: str, car: bool):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, user_name: str, password: str, auth_method : str):
 
         # should we run the configuration analysis report in post-processing?
         self.controllers = []
-        self.car = car
 
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             # running as executable bundle
             path = sys._MEIPASS
-            logging.info(f"Running as executable bundle, using {path} as root directory")
+            logger.info(f"Running as executable bundle, using {path} as root directory")
+            # When frozen, input/output are adjacent to the executable, outside _internal
+            # But sys.executable usually points to the bundle main executable
+            self.user_data_dir = os.path.dirname(sys.executable)
         else:
             # running from source/docker
             # cd to config-assessment-tool root directory
             path = os.path.realpath(f"{__file__}/../../..")
-            logging.info(f"Running from source/docker, using {path} as root directory")
+            logger.info(f"Running from source/docker, using {path} as root directory")
+            self.user_data_dir = path
 
         os.chdir(path)
 
-        logging.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
-        self.codebaseVersion = open(f"VERSION").read()
-        logging.info(f"Running Software Version: {self.codebaseVersion}")
+        self.input_dir = os.path.join(self.user_data_dir, "input")
+        self.output_dir = os.path.join(self.user_data_dir, "output")
+
+        logger.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
+        self.codebaseVersion = open(f"VERSION").read().strip()
+        logger.info(f"Running Software Version: {self.codebaseVersion}")
 
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
         self.thresholdsFileName = thresholdsFileName
-        if not Path(f"input/jobs/{self.jobFileName}.json").exists():
-            logging.error(f"Job file input/jobs/{self.jobFileName}.json does not exit. Aborting.")
+
+        job_file_path = os.path.join(self.input_dir, "jobs", f"{self.jobFileName}.json")
+        thresholds_file_path = os.path.join(self.input_dir, "thresholds", f"{self.thresholdsFileName}.json")
+        job_output_dir = os.path.join(self.output_dir, self.jobFileName)
+
+        if not Path(job_file_path).exists():
+            logger.error(f"Job file {job_file_path} does not exit. Aborting.")
             sys.exit(1)
-        if not Path(f"input/thresholds/{self.thresholdsFileName}.json").exists():
-            logging.error(f"Job file input/thresholds/{self.thresholdsFileName}.json does not exit. Aborting.")
+        if not Path(thresholds_file_path).exists():
+            logger.error(f"Job file {thresholds_file_path} does not exit. Aborting.")
             sys.exit(1)
-        if not os.path.exists(f"output/{self.jobFileName}"):
-            os.makedirs(f"output/{self.jobFileName}")
-        self.job = json.loads(open(f"input/jobs/{self.jobFileName}.json").read())
-        self.thresholds = json.loads(open(f"input/thresholds/{self.thresholdsFileName}.json").read())
+        if not os.path.exists(job_output_dir):
+            os.makedirs(job_output_dir)
+        self.job = json.loads(open(job_file_path).read())
+        self.thresholds = json.loads(open(thresholds_file_path).read())
 
         try:
             response = requests.request(
@@ -94,21 +109,21 @@ class Engine:
             )
             latestTag = None
             if not response.ok:
-                logging.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
+                logger.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
             else:
                 latestTag = json.loads(response.text)[0]["name"]
                 if latestTag != self.codebaseVersion:
-                    logging.warning(f"You are using an outdated version of the software. Current {self.codebaseVersion} Latest {latestTag}")
-                    logging.warning("You can get the latest version from https://github.com/Appdynamics/config-assessment-tool/releases")
+                    logger.warning(f"You are using an outdated version of the software. Current {self.codebaseVersion} Latest {latestTag}")
+                    logger.warning("You can get the latest version from https://github.com/Appdynamics/config-assessment-tool/releases")
         except requests.exceptions.RequestException:
-            logging.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
+            logger.warning(f"Unable to get latest tag from https://api.github.com/repos/appdynamics/config-assessment-tool/tags")
 
         # Default concurrent connections to 10 for On-Premise controllers
         if any(job for job in self.job if "saas.appdynamics.com" not in job["host"]):
-            logging.info(f"On-Premise controller detected. It is recommended to use a maximum of 10 concurrent connections.")
+            logger.info(f"On-Premise controller detected. It is recommended to use a maximum of 10 concurrent connections.")
             concurrentConnections = 10 if concurrentConnections is None else concurrentConnections
         else:
-            logging.info(f"SaaS controller detected. It is recommended to use a maximum of 50 concurrent connections.")
+            logger.info(f"SaaS controller detected. It is recommended to use a maximum of 50 concurrent connections.")
             concurrentConnections = 50 if concurrentConnections is None else concurrentConnections
         AsyncioUtils.init(concurrentConnections)
 
@@ -132,7 +147,7 @@ class Engine:
                 controller["timeRangeMins"] = 1440
 
         # Save the job back to disk with the updated password
-        with open(f"input/jobs/{jobFileName}.json", "w", encoding="ISO-8859-1") as f:
+        with open(os.path.join(self.input_dir, "jobs", f"{jobFileName}.json"), "w", encoding="ISO-8859-1") as f:
             json.dump(
                 self.job,
                 fp=f,
@@ -143,24 +158,25 @@ class Engine:
         for controller in self.job:
 
             if controller.get("authType") is None:
-                logging.warn(f'\'authType\' is not '
+                logger.warn(f'\'authType\' is not '
                              f'specified for host {controller["host"]} in '
                              f'the input job file. Will '
                              f'default to basic authentication for '
                              f'backward compatibility.')
                 controller["authType"] = "basic"
 
-            logging.debug(
+            logger.debug(
                 f'authenticationMethod: {controller["authType"]} '
                 f'for host {controller["host"]}')
 
             authMethod = AuthMethod(
-                auth_method=controller["authType"],
+                # auth_method=controller["authType"],
+                auth_method=auth_method if auth_method else controller["authType"],
                 host=controller["host"],
                 port=controller["port"],
                 ssl=controller["ssl"],
                 account=controller["account"],
-                username=username if username else controller["username"],
+                username=user_name if user_name else controller["username"],
                 password=password if password else base64Decode(controller[
                                                                     "pwd"])[len("CAT-ENCODED-") :],
                 verifySsl=controller.get("verifySsl", True),
@@ -180,9 +196,9 @@ class Engine:
 
 
         if password:  # I will let it here until it's the final version, so that we will
-            logging.info("Dynamic password change was used!")  # have confirmation, that it's working as intended
+            logger.info("Dynamic password change was used!")  # have confirmation, that it's working as intended
         else:
-            logging.info("Using password from jobfile")
+            logger.info("Using password from jobfile")
 
         self.controllerData = OrderedDict()
         self.otherSteps = [
@@ -230,19 +246,116 @@ class Engine:
             await self.initControllers()
             await self.process()
             await self.postProcess()
+            await self.runPlugins()
             self.finalize(startTime)
         except Exception as e:
             # catch exceptions here, so we can terminate coroutines before program exit
-            logging.error("".join(traceback.TracebackException.from_exception(e).format()))
+            logger.error("".join(traceback.TracebackException.from_exception(e).format()))
 
         await self.abortAndCleanup(
-            "",
+            "JOB FINISHED. IF USING WEB UI, YOU MAY CLOSE THIS MODAL WINDOW.",
             error=False,
         )
 
 
+    async def runPlugins(self):
+        logger.info(f"----------Plugins----------")
+        plugin_dir = os.path.join(self.user_data_dir, "plugins")
+        if not os.path.exists(plugin_dir):
+            logger.info(f"No plugins directory found at {plugin_dir}")
+            return
+
+        # List subdirectories in plugins dir (ignoring files)
+        plugin_folders = [d for d in os.listdir(plugin_dir) if os.path.isdir(os.path.join(plugin_dir, d)) and not d.startswith('__')]
+
+        if not plugin_folders:
+            logger.info("No plugin directories found.")
+            return
+
+        context = {
+            "jobFileName": self.jobFileName,
+            "outputDir": os.path.join(self.output_dir, self.jobFileName),
+            "controllerData": self.controllerData,
+            "controllers": self.controllers
+        }
+
+        for plugin_name in plugin_folders:
+            plugin_path = os.path.join(plugin_dir, plugin_name)
+            main_file = os.path.join(plugin_path, "main.py")
+
+            if not os.path.exists(main_file):
+                logger.debug(f"Plugin directory '{plugin_name}' exists but missing 'main.py'. Skipping.")
+                continue
+
+            requirements_file = os.path.join(plugin_path, "requirements.txt")
+            if os.path.exists(requirements_file):
+                logger.info(f"Loading plugin: {plugin_name}. Standalone plugin detected. Will not run this plugin as its not part of CAT tool lifecycle. You may launch separately.")
+                continue
+
+            try:
+                logger.info(f"Loading plugin: {plugin_name}")
+
+                # Import the module dynamically from the path
+                spec = importlib.util.spec_from_file_location(f"plugins.{plugin_name}.main", main_file)
+                if spec is None or spec.loader is None:
+                     logger.error(f"Could not load spec for plugin {plugin_name}")
+                     continue
+
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[f"plugins.{plugin_name}.main"] = module
+
+                # Temporarily add plugin directory to sys.path to allow internal imports within the plugin
+                sys.path.insert(0, plugin_path)
+                try:
+                    spec.loader.exec_module(module)
+                except SystemExit:
+                    logger.warning(f"Plugin {plugin_name} called sys.exit() during loading. Skipping.")
+                    continue
+                except Exception as e:
+                    logger.error(f"Error loading plugin {plugin_name}: {e}")
+                    continue
+                finally:
+                    # Clean up sys.path
+                    if sys.path[0] == plugin_path:
+                        sys.path.pop(0)
+
+                # Add a logging filter to prefix plugin logs
+                class PluginLogFilter(logging.Filter):
+                    def __init__(self, plugin_name):
+                        super().__init__()
+                        self.prefix = f"({plugin_name}): "
+
+                    def filter(self, record):
+                        # Avoid double prefixing if the plugin name is already in the message (unlikely but safe)
+                        if not str(record.msg).startswith(self.prefix):
+                            record.msg = self.prefix + str(record.msg)
+                        return True
+
+                plugin_filter = PluginLogFilter(plugin_name)
+                logging.getLogger().addFilter(plugin_filter)
+
+                try:
+                    logger.info(f"Executing plugin: {plugin_name}")
+                    try:
+                        # Check if the function is a coroutine (async)
+                        if asyncio.iscoroutinefunction(module.run_plugin):
+                            result = await module.run_plugin(context)
+                        else:
+                            result = module.run_plugin(context)
+
+                        logger.info(f"Plugin {plugin_name} finished. Result: {result}")
+                    except Exception as e:
+                        logger.error(f"Error running plugin {plugin_name}: {e}")
+                        logger.debug(traceback.format_exc())
+                finally:
+                    logging.getLogger().removeFilter(plugin_filter)
+
+            except Exception as e:
+                logger.error(f"Failed to load plugin {plugin_name}: {e}")
+                logger.debug(traceback.format_exc())
+
     async def initControllers(self) -> ([AppDService], str):
-        logging.info(f"Validating Controller Login(s) for Job - {self.jobFileName} ")
+        logger.info(f"Validating Controller Login(s) for Job - {self.jobFileName} ")
         loginFutures = [controller.getAuthMethod().authenticate() for controller in
                         self.controllers]
         loginResults = await AsyncioUtils.gatherWithConcurrency(*loginFutures)
@@ -256,8 +369,8 @@ class Engine:
             hostData["controller"] = controller
 
     async def validateThresholdsFile(self):
-        logging.info(f"----------Input Validation----------")
-        logging.info(f"Validating Thresholds - {self.thresholdsFileName}")
+        logger.info(f"----------Input Validation----------")
+        logger.info(f"Validating Thresholds - {self.thresholdsFileName}")
 
         if "version" not in self.thresholds:
             await self.abortAndCleanup(
@@ -320,11 +433,11 @@ class Engine:
         for componentType, thresholds in self.thresholds.items():
             for jobStep, currThresholdLevels in thresholds.items():
                 if list(currThresholdLevels.keys()) != thresholdLevels:
-                    logging.error(f"Thresholds file does not contains all of {thresholdLevels} on JobStep {jobStep}")
+                    logger.error(f"Thresholds file does not contains all of {thresholdLevels} on JobStep {jobStep}")
                     fail = True
                     break
                 if not (currThresholdLevels["platinum"].keys() == currThresholdLevels["gold"].keys() == currThresholdLevels["silver"].keys()):
-                    logging.error(f"Thresholds file does not contain same evaluation metrics for each threshold level on JobStep {jobStep}")
+                    logger.error(f"Thresholds file does not contain same evaluation metrics for each threshold level on JobStep {jobStep}")
                     fail = True
                     break
                 thresholds[jobStep]["direction"] = {}  # increasing or decreasing
@@ -334,32 +447,35 @@ class Engine:
                     elif thresholdStrictlyDecreasing(jobStep, metric, componentType):
                         thresholds[jobStep]["direction"][metric] = "decreasing"
                     else:
-                        logging.error(
+                        logger.error(
                             f"Thresholds file does not contain strictly increasing/decreasing evaluation metric thresholds for {metric} on JobStep {jobStep}"
                         )
                         fail = True
         if fail:
-            logging.error(f"Invalid thresholds file. Aborting.")
+            logger.error(f"Invalid thresholds file. Aborting.")
             sys.exit(0)
         else:
-            logging.debug(f"Validated thresholds file")
+            logger.debug(f"Validated thresholds file")
 
     async def process(self):
-        logging.info(f"----------Extract----------")
+        logger.info(f"----------Extract----------")
         for jobStep in [*self.otherSteps, *self.maturityAssessmentSteps]:
             await jobStep.extract(self.controllerData)
 
-        logging.info(f"----------Analyze----------")
+        logger.info(f"----------Analyze----------")
         for jobStep in [*self.maturityAssessmentSteps, *self.otherSteps]:
             jobStep.analyze(self.controllerData, self.thresholds)
 
-        logging.info(f"----------Report----------")
+        logger.info(f"----------Report----------")
+        job_output_dir = os.path.join(self.output_dir, self.jobFileName)
         for report in self.reports:
-            report.createWorkbook(self.maturityAssessmentSteps, self.controllerData, self.jobFileName)
+            report.createWorkbook(self.maturityAssessmentSteps, self.controllerData, self.jobFileName, self.output_dir)
 
     def finalize(self, startTime):
         now = int(time.time())
-        with open(f"output/{self.jobFileName}/info.json", "w", encoding="ISO-8859-1") as f:
+        job_output_dir = os.path.join(self.output_dir, self.jobFileName)
+
+        with open(os.path.join(job_output_dir, "info.json"), "w", encoding="utf-8") as f:
             json.dump(
                 {"lastRun": now, "thresholds": self.thresholdsFileName},
                 fp=f,
@@ -367,22 +483,22 @@ class Engine:
                 indent=4,
             )
 
-        with open(f"output/{self.jobFileName}/controllerData.json", "w", encoding="ISO-8859-1") as f:
+        with open(os.path.join(job_output_dir, "controllerData.json"), "w", encoding="utf-8") as f:
             json.dump(
                 self.controllerData,
                 fp=f,
                 default=jsonEncoder,
-                ensure_ascii=False,
                 indent=4,
             )
 
-        createCxPpt(self.jobFileName)
-        createCxHamUseCasePpt(self.jobFileName)
+        # createCxPpt(self.jobFileName)
+        createCxPptTemplate(self.jobFileName, self.output_dir)
 
-        logging.info(f"----------Complete----------")
+        logger.info(f"----------Complete----------")
         # if controllerData.json file exists, delete it
-        if Path(f"output/{self.jobFileName}/controllerData.json").exists():
-            sizeBytes = os.path.getsize(f"output/{self.jobFileName}/controllerData.json")
+        controller_data_path = os.path.join(job_output_dir, "controllerData.json")
+        if Path(controller_data_path).exists():
+            sizeBytes = os.path.getsize(controller_data_path)
             sizeName = ("B", "KB", "MB", "GB")
             i = int(math.floor(math.log(sizeBytes, 1024)))
             p = math.pow(1024, i)
@@ -400,34 +516,30 @@ class Engine:
 
             totalCalls = sum([controller.totalCallsProcessed for controller in self.controllers])
 
-            logging.info(f"Total API calls made: {totalCalls}")
-            logging.info(f"Size of data retrieved: {size} {sizeName[i]}")
-            logging.info(f"Total execution time: {executionTimeString}")
+            logger.info(f"Total API calls made: {totalCalls}")
+            logger.info(f"Size of data retrieved: {size} {sizeName[i]}")
+            logger.info(f"Total execution time: {executionTimeString}")
 
     async def abortAndCleanup(self, msg: str, error=True):
         """Closes open controller connections"""
         await AsyncioUtils.gatherWithConcurrency(*[controller.close() for controller in self.controllers])
         if error:
-            logging.error(msg)
+            logger.error(msg)
             sys.exit(1)
         else:
             if msg:
-                logging.info(msg)
+                logger.info(msg)
             sys.exit(0)
 
     async def postProcess(self):
-        """Post-processing reports that rely on the core generated excel reports.
-        Currently, for CAR(configuration analysis report) that consumes the core
-        reports post process
-         """
-        logging.info(f"----------Post Process----------")
+        logger.info(f"----------Post Process----------")
         commands = []
+        commands.append(ConfigurationAnalysisReport(self.output_dir))
 
-        if self.car:
-            commands.append(ConfigurationAnalysisReport())
+        # after ALL reports generated archive a copy for safekeeping
+        commands.append(Archiver(self.output_dir))
 
         for command in commands:
-            if isinstance(command, PostProcessReport):
-                await command.post_process(self.jobFileName)
+            await command.post_process(self.jobFileName)
 
-        logging.info(f"----------Post Process Done----------")
+        logger.info(f"----------Post Process Done----------")

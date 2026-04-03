@@ -5,22 +5,23 @@ import os
 
 def initLogging(debug: bool):
     """Set up logging."""
-    # cd to config-assessment-tool root directory
-    path = os.path.realpath(f"{__file__}/../../..")
-    os.chdir(path)
-
     if not os.path.exists("logs"):
         os.makedirs("logs")
 
     logging.basicConfig(
+        force=True,  # Override any existing logging configuration
         level=logging.DEBUG if debug else logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s %(funcName)s: %(message)s",
         handlers=[
-            logging.FileHandler("logs/config-assessment-tool-backend.log"),
+            logging.FileHandler("logs/config-assessment-tool.log", mode='a'),
             logging.StreamHandler(),
         ],
     )
-    EventLoopDelayMonitor()
+    try:
+        if asyncio.get_running_loop():
+            EventLoopDelayMonitor()
+    except RuntimeError:  # 'RuntimeError: There is no current event loop...'
+        pass
 
 
 class EventLoopDelayMonitor:

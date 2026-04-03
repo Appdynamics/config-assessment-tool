@@ -1,13 +1,15 @@
 import logging
+import os
 
 from openpyxl import Workbook
-from output.ReportBase import ReportBase
+from backend.output.ReportBase import ReportBase
+from backend.util.excel_utils import addFilterAndFreeze, resizeColumnWidth
 
 
 class RawMaturityAssessmentReport(ReportBase):
-    def createWorkbook(self, jobs, controllerData, jobFileName):
+    def createWorkbook(self, jobs, controllerData, jobFileName, output_dir="output"):
         for reportType in ["apm", "brum", "mrum"]:
-            logging.info(f"Creating {reportType} Maturity Assessment Raw Report")
+            logging.info(f"Creating {reportType} Raw Maturity Assessment Report Workbook")
 
             # Create Report with Raw Maturity Assessment Report
             workbook = Workbook()
@@ -23,5 +25,10 @@ class RawMaturityAssessmentReport(ReportBase):
             for jobStep in filteredJobs:
                 jobStep.reportData(workbook, controllerData, type(jobStep).__name__, False, False)
 
-            logging.debug(f"Saving Raw MaturityAssessment-{reportType} Workbook")
-            workbook.save(f"output/{jobFileName}/{jobFileName}-MaturityAssessmentRaw-{reportType}.xlsx")
+            analysisSheet = workbook.create_sheet("Analysis")
+            addFilterAndFreeze(analysisSheet, "E2")
+            resizeColumnWidth(analysisSheet)
+
+            logging.debug(f"Saving MaturityAssessmentRaw-{reportType} Workbook")
+            save_path = os.path.join(output_dir, jobFileName, f"{jobFileName}-MaturityAssessmentRaw-{reportType}.xlsx")
+            workbook.save(save_path)

@@ -1,0 +1,49 @@
+altgraph @ file:///AppleInternal/Library/BuildRoots/39d9dc1a-2111-11f0-be06-226177e5bb69/Library/Caches/com.apple.xbs/Sources/python3/altgraph-0.17.2-py2.py3-none-any.whl
+appscript==1.4.0
+blinker==1.9.0
+certifi==2023.11.17
+charset-normalizer==3.3.2
+click==8.1.8
+contourpy==1.2.0
+cycler==0.12.1
+DBEvents @ file:///Users/eubreen/Documents/DBEvents
+distlib==0.3.8
+et_xmlfile==2.0.0
+filelock==3.15.4
+Flask==3.1.0
+fonttools==4.49.0
+future @ file:///AppleInternal/Library/BuildRoots/39d9dc1a-2111-11f0-be06-226177e5bb69/Library/Caches/com.apple.xbs/Sources/python3/future-0.18.2-py3-none-any.whl
+idna==3.6
+importlib_metadata==8.6.1
+importlib_resources==6.1.2
+itsdangerous==2.2.0
+Jinja2==3.1.5
+kiwisolver==1.4.5
+lxml==6.0.2
+macholib @ file:///AppleInternal/Library/BuildRoots/39d9dc1a-2111-11f0-be06-226177e5bb69/Library/Caches/com.apple.xbs/Sources/python3/macholib-1.15.2-py2.py3-none-any.whl
+MarkupSafe==3.0.2
+matplotlib==3.8.3
+my-package @ file:///Users/eubreen/Documents/DBEvents
+numpy==1.26.4
+openpyxl==3.1.5
+packaging==23.2
+pandas==2.2.1
+pillow==10.2.0
+pipenv==2024.0.1
+platformdirs==4.2.2
+psutil==7.1.3
+pyparsing==3.1.1
+python-dateutil==2.8.2
+python-pptx==1.0.2
+pytz==2024.1
+requests==2.31.0
+six @ file:///AppleInternal/Library/BuildRoots/39d9dc1a-2111-11f0-be06-226177e5bb69/Library/Caches/com.apple.xbs/Sources/python3/six-1.15.0-py2.py3-none-any.whl
+typing_extensions==4.15.0
+tzdata==2024.1
+urllib3==2.1.0
+virtualenv==20.26.3
+Werkzeug==3.1.3
+XlsxWriter==3.2.0
+xlwings==0.33.16
+xmltodict==0.13.0
+zipp==3.21.0

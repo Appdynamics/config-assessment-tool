@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Insights</title>
+  <style>
+    body { margin:0; background:#0b0f16; color:#e8eef7; font-family:-apple-system, BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+    .wrap { max-width:1100px; margin:28px auto; padding:0 16px; }
+    .row { display:flex; gap:14px; flex-wrap:wrap; }
+    .card { background:#121a24; border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:16px; flex:1; min-width:320px; }
+    h1 { margin:0 0 10px 0; font-size:24px; }
+    h2 { margin:0 0 6px 0; font-size:18px; }
+    label { font-size:14px; color:#9fb3c8; display:block; margin:8px 0 6px; }
+    select { width:100%; padding:8px; border-radius:8px; background:#0f1620; color:#e8eef7; border:1px solid rgba(255,255,255,0.15); }
+    table { width:100%; border-collapse:collapse; margin-top:6px; }
+    th, td { border-bottom:1px solid rgba(255,255,255,0.12); padding:8px; font-size:13px; vertical-align:top; }
+    th { text-align:left; color:#9fb3c8; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; margin-right:6px; }
+    .up { background:rgba(53,197,109,0.15); border:1px solid rgba(53,197,109,0.45); }
+    .down { background:rgba(192,0,0,0.15); border:1px solid rgba(192,0,0,0.45); }
+    .even { background:rgba(241,196,15,0.25); border:1px solid rgba(241,196,15,0.6); }
+    .home-link { color:#00bceb; text-decoration:none; }
+    .home-link:hover { text-decoration:underline; }
+    .small { font-size:12px; color:#9fb3c8; margin-top:6px; }
+    .info { font-size:13px; color:#e8eef7; margin-top:8px; }
+    .info b { color:#ffffff; }
+    .stack { display:flex; flex-direction:column; gap:12px; }
+    .caption { font-size:13px; color:#9fb3c8; margin:0 0 8px 0; }
+
+    /* Metric Transitions row coloring */
+    #metricsTable tbody tr.mt-improved td {
+      background: rgba(53,197,109,0.12);
+      border-left: 3px solid #35c56d;
+    }
+    #metricsTable tbody tr.mt-declined td {
+      background: rgba(192,0,0,0.12);
+      border-left: 3px solid #c00000;
+    }
+
+    /* Taller chart container for the Areas chart */
+    .chartbox { height:500px; }
+    .chartbox canvas { display:block; width:100%; height:100%; background:transparent; }
+
+    /* Context menu used to delete snapshots */
+    .contextmenu {
+      position: fixed;
+      background: #0f1620;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 6px;
+      display: none;
+      min-width: 220px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+    .contextmenu .item {
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #e8eef7;
+    }
+    .contextmenu .item:hover {
+      background: rgba(255,255,255,0.06);
+    }
+    .contextmenu .item.danger:hover {
+      background: rgba(192,0,0,0.15);
+      color: #ffd7d7;
+    }
+
+    /* ---- Export PDF button styling ---- */
+    .btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #0f1620;
+      color: #e8eef7;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(255,255,255,0.06); }
+
+    /* ---- Print to PDF styling (hides UI controls, prints cleanly) ---- */
+    @media print {
+      body { background: #ffffff !important; color: #000000 !important; }
+      .card { background: #ffffff !important; border: 1px solid #ddd !important; }
+      .no-print { display: none !important; }
+      a { color: #000 !important; text-decoration: none !important; }
+      th { color: #000 !important; }
+      canvas { max-width: 100% !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <a class="home-link no-print" href="/">← Home</a>
+      <button class="btn no-print" type="button" onclick="window.print()">Export PDF</button>
+    </div>
+
+    <h1>Insights</h1>
+
+    <div class="row">
+      <div class="card" style="max-width:420px;">
+        <label for="domain">Domain</label>
+        <select id="domain">
+          <option value="APM">APM</option>
+          <option value="BRUM">BRUM</option>
+          <option value="MRUM">MRUM</option>
+        </select>
+
+        <label for="snapshot">Snapshot</label>
+        <select id="snapshot">
+          <option value="LATEST">Latest</option>
+        </select>
+        <div class="small">Pick a specific JSON snapshot or use “Latest” for the most recent run.</div>
+        <div id="snapshotInfo" class="info" aria-live="polite"></div>
+
+        <label for="app" style="margin-top:10px;">Application</label>
+        <select id="app"></select>
+
+        <div id="areaBadges" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="card stack" style="flex:2;">
+        <h2>Improved vs Declined (Areas)</h2>
+        <div id="metricsCaption" class="caption">Counts of metric improvements (green) and declines (red) per area for the selected app, comparing current snapshot to baseline.</div>
+        <div class="chartbox"><canvas id="metricsChart" aria-describedby="metricsCaption"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Top lists for clarity -->
+    <div class="row" style="margin-top:14px;">
+      <div class="card" style="flex:1;">
+        <h2>Top Entities Needing Attention</h2>
+        <div id="attentionCaption" class="caption">Areas with the highest number of declined metrics in this snapshot.</div>
+        <table id="attentionTable">
+          <thead><tr><th>Area</th><th>Declined</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card" style="flex:1;">
+        <h2>Top Entities With Biggest Improvement</h2>
+        <div id="improvementCaption" class="caption">Areas with the highest number of improved metrics in this snapshot.</div>
+        <table id="improvementTable">
+          <thead><tr><th>Area</th><th>Improved</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row" id="trendsRow" style="margin-top:14px;">
+      <div class="card">
+        <h2>Overall Application Improved & Declined Trend</h2>
+        <div id="overallLineCaption" class="caption">Number of Applications improved across recent runs for the current controller.</div>
+        <canvas id="overallLine" height="140" aria-describedby="overallLineCaption"></canvas>
+      </div>
+      <div class="card">
+        <h2>Improved vs Degraded (Runs)</h2>
+        <div id="countsStackedCaption" class="caption">Per-run counts of improved (green) and degraded (red) metrics over time for the current controller.</div>
+        <canvas id="countsStacked" height="160" aria-describedby="countsStackedCaption"></canvas>
+      </div>
+    </div>
+
+    <div class="row" id="fallbackRow" style="margin-top:14px; display:none;">
+      <div class="card" style="flex:1;">
+        <h2>Run KPIs</h2>
+        <div id="fallbackCaption" class="caption">Latest run summary: overall improvement percentage and improved vs degraded counts.</div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:260px;">
+            <canvas id="overallGauge" height="140" aria-describedby="fallbackCaption"></canvas>
+          </div>
+          <div style="flex:1; min-width:260px;">
+            <canvas id="countsBar" height="140" aria-describedby="fallbackCaption"></canvas>
+          </div>
+        </div>
+        <div id="fallbackNote" class="small" style="margin-top:8px;">Add more snapshots for this controller to see trends over time.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h2>Metric Transitions</h2>
+      <div id="metricTransitionsCaption" class="caption">Detailed metric changes for the selected app; neutral metrics are omitted.</div>
+      <table id="metricsTable">
+        <thead>
+          <tr><th>Area</th><th>Metric</th><th>Value</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='js/trends.js') }}"></script>
+  <script>
+    const domainSel   = document.getElementById('domain');
+    const snapshotSel = document.getElementById('snapshot');
+    const snapshotInfo= document.getElementById('snapshotInfo');
+    const appSel      = document.getElementById('app');
+    const areaBadges  = document.getElementById('areaBadges');
+    const trendsRow   = document.getElementById('trendsRow');
+    const fallbackRow = document.getElementById('fallbackRow');
+    const fallbackNote= document.getElementById('fallbackNote');
+
+    // Captions
+    const metricsCaptionEl        = document.getElementById('metricsCaption');
+    const attentionCaptionEl      = document.getElementById('attentionCaption');
+    const improvementCaptionEl    = document.getElementById('improvementCaption');
+    const overallLineCaptionEl    = document.getElementById('overallLineCaption');
+    const countsStackedCaptionEl  = document.getElementById('countsStackedCaption');
+    const fallbackCaptionEl       = document.getElementById('fallbackCaption');
+    const metricTransitionsCaptionEl = document.getElementById('metricTransitionsCaption');
+
+    let metricsChart, overallGaugeChart, countsBarChart;
+    let insightsReqSeq = 0;
+
+    let historyIndex = {};
+    let historyItems = [];
+
+    function changeType(text) {
+      const t = (text || '').toLowerCase();
+      if (t.includes('improved') || t.includes('increased') || t.includes('false → true')) return 'Improved';
+      if (t.includes('declined') || t.includes('decreased') || t.includes('downgraded') || t.includes('true → false')) return 'Declined';
+      return 'Neutral';
+    }
+    function humanTs(ts) {
+      const parts = (ts || '').split('_');
+      if (parts.length !== 2) return ts || '';
+      const d = parts[0], t = parts[1];
+      const y = d.slice(0,4), m = d.slice(4,6), dd = d.slice(6,8);
+      const hh = t.slice(0,2), mi = t.slice(2,4), ss = t.slice(4,6);
+      return `${y}-${m}-${dd} ${hh}:${mi}:${ss} UTC`;
+    }
+    function buildSnapshotLabel(item) {
+      const ctrl = item.controller || 'Controller';
+      const prev = item.prev || item.previous || 'Prev';
+      const curr = item.curr || item.current || 'Curr';
+      const ts   = humanTs(item.timestamp);
+      return `${ctrl} — ${prev} vs ${curr} — ${ts}`;
+    }
+    function updateSnapshotInfo() {
+      if (snapshotSel.value === 'LATEST') {
+        snapshotInfo.textContent = 'Using the most recent JSON output for this domain.';
+        return;
+      }
+      const item = historyIndex[snapshotSel.value];
+      if (!item) {
+        snapshotInfo.textContent = 'Snapshot details unavailable.';
+        return;
+      }
+      const ctrl = item.controller || 'Unknown';
+      const prev = item.prev || item.previous || 'Unknown';
+      const curr = item.curr || item.current || 'Unknown';
+      const ts   = humanTs(item.timestamp);
+      snapshotInfo.innerHTML = `<b>Controller:</b> ${ctrl} &nbsp;|&nbsp; <b>Compared:</b> ${prev} vs ${curr} &nbsp;|&nbsp; <b>Generated:</b> ${ts}`;
+    }
+
+    async function loadHistory() {
+      const domain = domainSel.value.toLowerCase();
+      snapshotSel.innerHTML = '';
+      historyIndex = {};
+      historyItems = [];
+
+      const latestOpt = document.createElement('option');
+      latestOpt.value = 'LATEST';
+      latestOpt.textContent = 'Latest';
+      snapshotSel.appendChild(latestOpt);
+
+      try {
+        const resp = await fetch(`/api/history?domain=${encodeURIComponent(domain)}`);
+        const data = await resp.json();
+        historyItems = (data.items || []);
+        historyItems.forEach(item => {
+          historyIndex[item.file] = item;
+          const opt = document.createElement('option');
+          opt.value = item.file;
+          opt.textContent = buildSnapshotLabel(item);
+          snapshotSel.appendChild(opt);
+        });
+      } catch (e) {
+        console.warn('Failed to load history:', e);
+      }
+
+      snapshotSel.value = 'LATEST';
+      updateSnapshotInfo();
+      refreshTrendsDynamic();
+      updateCaptions(); // initial captions
+    }
+
+    async function loadApps() {
+      const domain = domainSel.value.toLowerCase();  
+      const file = snapshotSel.value !== 'LATEST' ? snapshotSel.value : '';
+      appSel.innerHTML = '';
+
+      const params = new URLSearchParams({ domain });
+      if (file) params.append('file', file);
+
+      const resp = await fetch(`/api/apps?${params.toString()}`);
+      const data = await resp.json();
+
+      (data.apps || []).forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a; opt.textContent = a;
+        appSel.appendChild(opt);
+      });
+
+      if (data.apps && data.apps.length) {
+        appSel.value = data.apps[0];
+        loadInsights();
+      }
+    }
+
+    // Stable sizing matches chartbox
+    function ensureCanvas(id) {
+      const c = document.getElementById(id);
+      if (!c) return null;
+      const box = c.parentElement;
+      const rect = box.getBoundingClientRect();
+      c.style.width = '100%';
+      c.style.height = '100%';
+      c.width  = Math.max(200, Math.round(rect.width));
+      c.height = Math.max(120, Math.round(rect.height));
+      return c;
+    }
+
+    function renderTopLists(labels, counts) {
+      const items = labels.map((area, i) => ({
+        area,
+        imp: counts[i]?.imp || 0,
+        dec: counts[i]?.dec || 0,
+        net: (counts[i]?.imp || 0) - (counts[i]?.dec || 0),
+        total: (counts[i]?.imp || 0) + (counts[i]?.dec || 0)
+      }));
+
+      const attention = items.filter(x => x.dec > 0)
+        .sort((a,b) => (b.dec - a.dec) || (b.total - a.total) || a.area.localeCompare(b.area))
+        .slice(0,5);
+
+      const improvement = items.filter(x => x.imp > 0)
+        .sort((a,b) => (b.imp - a.imp) || (b.net - a.net) || a.area.localeCompare(b.area))
+        .slice(0,5);
+
+      const attBody = document.querySelector('#attentionTable tbody');
+      const impBody = document.querySelector('#improvementTable tbody');
+      attBody.innerHTML = '';
+      impBody.innerHTML = '';
+
+      if (!attention.length) {
+        attBody.innerHTML = '<tr><td colspan="2" style="color:#9fb3c8;">No declines in this snapshot.</td></tr>';
+      } else {
+        attention.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${item.area}</td><td>${item.dec}</td>`;
+          attBody.appendChild(tr);
+        });
+      }
+
+      if (!improvement.length) {
+        impBody.innerHTML = '<tr><td colspan="2" style="color:#9fb3c8;">No improvements in this snapshot.</td></tr>';
+      } else {
+        improvement.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${item.area}</td><td>${item.imp}</td>`;
+          impBody.appendChild(tr);
+        });
+      }
+    }
+
+    function currentControllerForTrends() {
+      if (snapshotSel.value === 'LATEST') {
+        return historyItems.length ? (historyItems[0].controller || '') : '';
+      }
+      const item = historyIndex[snapshotSel.value];
+      return (item && item.controller) ? item.controller : '';
+    }
+
+    function currentCompareLabel() {
+      if (snapshotSel.value === 'LATEST') return 'current vs baseline';
+      const item = historyIndex[snapshotSel.value];
+      const prev = item?.prev || item?.previous || 'baseline';
+      const curr = item?.curr || item?.current || 'current';
+      return `${prev} vs ${curr}`;
+    }
+
+    function updateCaptions() {
+      const app = appSel.value || 'selected app';
+      const controller = currentControllerForTrends() || 'controller';
+      const cmp = currentCompareLabel();
+
+      // Areas chart
+      metricsCaptionEl.textContent = `Counts of metric improvements (green) and declines (red) per area for ${app}, comparing ${cmp}.`;
+
+      // Top lists
+      attentionCaptionEl.textContent   = `Areas with the highest number of declined metrics for ${app} — ${cmp}.`;
+      improvementCaptionEl.textContent = `Areas with the highest number of improved metrics for ${app} — ${cmp}.`;
+
+      // Trends
+      overallLineCaptionEl.textContent   = `Number of improved (green) and degraded (red) applications for controller ${controller}.`;
+      countsStackedCaptionEl.textContent = `Number of improved (green) and degraded (red) applications for controller ${controller}.`;
+
+      // Fallback KPIs
+      fallbackCaptionEl.textContent = `Latest run summary for controller ${controller}: overall improvement percentage and improved vs degraded counts.`;
+
+      // Metric Transitions
+      metricTransitionsCaptionEl.textContent = `Detailed metric changes for ${app} — ${cmp}. Neutral metrics are omitted.`;
+    }
+
+    async function loadInsights() {
+      const seq = ++insightsReqSeq;
+
+      const domain = domainSel.value;
+      const app = appSel.value;
+      const file = snapshotSel.value !== 'LATEST' ? snapshotSel.value : '';
+      const q = new URLSearchParams({ domain, app });
+      if (file) q.append('file', file);
+
+      const resp = await fetch(`/api/insights?${q.toString()}`);
+      const data = await resp.json();
+
+      if (seq !== insightsReqSeq) return;
+
+      // Badges for quick glance
+      areaBadges.innerHTML = '';
+      (data.areas || []).forEach(a => {
+        const b = document.createElement('span');
+        b.className = 'badge ' + (a.status === 'Upgraded' ? 'up' : a.status === 'Downgraded' ? 'down' : 'even');
+        b.textContent = `${a.name}: ${a.status}`;
+        areaBadges.appendChild(b);
+      });
+
+      const labels = (data.areas || []).map(a => a.name);
+
+      const metricsCanvas = ensureCanvas('metricsChart');
+
+      if (!labels.length) {
+        metricsCanvas?.parentElement && (metricsCanvas.parentElement.style.visibility = 'hidden');
+        Chart.getChart(metricsCanvas)?.destroy();
+        metricsChart = null;
+
+        document.querySelector('#attentionTable tbody').innerHTML = '<tr><td colspan="2" style="color:#9fb3c8;">No declines in this snapshot.</td></tr>';
+        document.querySelector('#improvementTable tbody').innerHTML = '<tr><td colspan="2" style="color:#9fb3c8;">No improvements in this snapshot.</td></tr>';
+
+        updateCaptions();
+        return;
+      } else {
+        metricsCanvas.parentElement.style.visibility = 'visible';
+      }
+
+      // Build counts per area
+      const counts = labels.map(area => {
+        const detail = (data.detail && data.detail[area]) || {};
+        let imp = 0, dec = 0;
+        Object.values(detail).forEach(v => {
+          const ct = changeType(v);
+          if (ct === 'Improved') imp++;
+          else if (ct === 'Declined') dec++;
+        });
+        return { imp, dec };
+      });
+
+      // Update/create metrics chart
+      const existingMetrics = Chart.getChart(metricsCanvas);
+      if (existingMetrics) {
+        existingMetrics.resize(metricsCanvas.width, metricsCanvas.height);
+        existingMetrics.data.labels = labels;
+        existingMetrics.data.datasets[0].data = counts.map(x => Number(x.imp) || 0);
+        existingMetrics.data.datasets[1].data = counts.map(x => Number(x.dec) || 0);
+        existingMetrics.update();
+        metricsChart = existingMetrics;
+      } else {
+        metricsChart = new Chart(metricsCanvas, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label:'Improved', data:counts.map(x => Number(x.imp) || 0), backgroundColor:'#35c56d', barPercentage:0.6, categoryPercentage:0.8, maxBarThickness:16 },
+              { label:'Declined', data:counts.map(x => Number(x.dec) || 0), backgroundColor:'#c00000', barPercentage:0.6, categoryPercentage:0.8, maxBarThickness:16 }
+            ]
+          },
+          options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            animation: false,
+            scales: {
+              x: { stacked: true, ticks: { autoSkip: true, maxRotation: 20, font: { size: 11 } } },
+              y: { stacked: true, beginAtZero: true, ticks: { font: { size: 11 } } }
+            },
+            plugins: { legend: { labels: { font: { size: 11 } } } }
+          }
+        });
+      }
+
+      // Fill the top lists
+      renderTopLists(labels, counts);
+
+      // Metric table
+      const tbody = document.querySelector('#metricsTable tbody');
+      tbody.innerHTML = '';
+      let rowsAdded = 0;
+      (data.areas || []).forEach(a => {
+        const detail = (data.detail && data.detail[a.name]) || {};
+        Object.entries(detail).forEach(([metric, value]) => {
+          const key = metric.toLowerCase();
+          if (key === 'controller' || key === 'application' || key === 'name') return;
+
+          const tr = document.createElement('tr');
+          const status = changeType(value);
+          if (status === 'Improved') {
+            tr.classList.add('mt-improved');
+          } else if (status === 'Declined') {
+            tr.classList.add('mt-declined');
+          }
+
+          tr.innerHTML = `<td>${a.name}</td><td>${metric}</td><td>${value}</td>`;
+          tbody.appendChild(tr);
+          rowsAdded++;
+        });
+      });
+      if (rowsAdded === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="3" style="color:#9fb3c8;">No metric transitions found for this app/run.</td>`;
+        tbody.appendChild(tr);
+      }
+
+      updateCaptions();
+    }
+
+    async function refreshTrendsDynamic() {
+      const domain = domainSel.value.toLowerCase();
+      const controller = currentControllerForTrends();
+
+      if (!controller) {
+        trendsRow.style.display = 'none';
+        fallbackRow.style.display = 'none';
+        updateCaptions();
+        return;
+      }
+
+      try {
+        const q = new URLSearchParams({ domain, controller, limit: 20 });
+        const resp = await fetch(`/api/trends/runs?${q.toString()}`);
+        const data = await resp.json();
+        const items = data.items || [];
+
+        if (items.length >= 2) {
+          fallbackRow.style.display = 'none';
+          trendsRow.style.display = 'flex';
+          loadTrends(domain, controller);
+        } else {
+          trendsRow.style.display = 'none';
+          fallbackRow.style.display = 'flex';
+
+          const latest = items[0] || { percentage: 0, improved: 0, degraded: 0, compareDate: '', controller: controller };
+          const pct = latest.percentage || 0;
+          const imp = latest.improved || 0;
+          const dec = latest.degraded || 0;
+
+          fallbackNote.textContent = `Controller: ${controller} — ${items.length ? 'Snapshot ' + latest.compareDate : 'No snapshots found'} — Add more snapshots to see trends over time.`;
+
+          overallGaugeChart?.destroy();
+          overallGaugeChart = new Chart(document.getElementById('overallGauge'), {
+            type: 'doughnut',
+            data: {
+              labels: ['Increase %', 'Remaining'],
+              datasets: [{
+                data: [pct, 100 - pct],
+                backgroundColor: ['#00bceb', '#1b2938'],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: false }, tooltip: { enabled: true } },
+              cutout: '70%'
+            }
+          });
+
+          countsBarChart?.destroy();
+          countsBarChart = new Chart(document.getElementById('countsBar'), {
+            type: 'bar',
+            data: { labels: ['Improved', 'Degraded'], datasets: [{ data: [imp, dec], backgroundColor: ['#35c56d', '#c00000'] }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to refresh trends:', e);
+        trendsRow.style.display = 'none';
+        fallbackRow.style.display = 'none';
+      }
+
+      updateCaptions();
+    }
+
+    function triggerTrendsRefresh() { refreshTrendsDynamic(); }
+
+    domainSel.addEventListener('change', async () => {
+      await loadHistory();
+      await loadApps();
+      triggerTrendsRefresh();
+      updateCaptions();
+    });
+    snapshotSel.addEventListener('change', async () => {
+      updateSnapshotInfo();
+      await loadApps();
+      await loadInsights();
+      triggerTrendsRefresh();
+      updateCaptions();
+    });
+    appSel.addEventListener('change', () => { loadInsights(); updateCaptions(); });
+
+    (async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const qpDomain = (params.get('domain') || '').toUpperCase();
+      if (qpDomain && ['APM','BRUM','MRUM'].includes(qpDomain)) {
+        domainSel.value = qpDomain;
+      }
+      await loadHistory();
+      await loadApps();
+      triggerTrendsRefresh();
+      updateCaptions();
+    })();
+  </script> 
+</body>
+</html>
