@@ -76,7 +76,7 @@ docker run \
   -v <config-assessment-tool-directory>/logs:/app/logs \
   -p 8501:8501 \
   --rm \
-  ghcr.io/Appdynamics/config-assessment-tool:latest --ui
+  ghcr.io/appdynamics/config-assessment-tool:latest --ui
 ```
 
 macOS/Linux (headless run):
@@ -88,7 +88,7 @@ docker run \
   -v <config-assessment-tool-directory>/output:/app/output \
   -v <config-assessment-tool-directory>/logs:/app/logs \
   --rm \
-  ghcr.io/Appdynamics/config-assessment-tool:latest -j DefaultJob -t DefaultThresholds
+  ghcr.io/appdynamics/config-assessment-tool:latest -j DefaultJob -t DefaultThresholds
 ```
 
 Windows PowerShell (UI mode):
@@ -101,13 +101,13 @@ docker run `
   -v <config-assessment-tool-directory>/logs:/app/logs `
   -p 8501:8501 `
   --rm `
-  ghcr.io/Appdynamics/config-assessment-tool:latest --ui
+  ghcr.io/appdynamics/config-assessment-tool:latest --ui
 ```
 
 Get CLI help:
 
 ```bash
-docker run ghcr.io/Appdynamics/config-assessment-tool:latest --help
+docker run ghcr.io/appdynamics/config-assessment-tool:latest --help
 ```
 
 Full details: [`docs/RUNBOOK.md#run-using-docker`](docs/RUNBOOK.md#run-using-docker)
