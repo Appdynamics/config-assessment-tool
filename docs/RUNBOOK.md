@@ -144,7 +144,7 @@ docker run \
   -v <config-assessment-tool-directory>/logs:/app/logs \
   -p 8501:8501 \
   --rm \
-  ghcr.io/Appdynamics/config-assessment-tool:latest --ui
+  ghcr.io/appdynamics/config-assessment-tool:latest --ui
 ```
 
 Windows PowerShell:
@@ -157,7 +157,7 @@ docker run `
   -v <config-assessment-tool-directory>/logs:/app/logs `
   -p 8501:8501 `
   --rm `
-  ghcr.io/Appdynamics/config-assessment-tool:latest --ui
+  ghcr.io/appdynamics/config-assessment-tool:latest --ui
 ```
 
 ### Use headless mode
@@ -169,13 +169,13 @@ docker run \
   -v <config-assessment-tool-directory>/output:/app/output \
   -v <config-assessment-tool-directory>/logs:/app/logs \
   --rm \
-  ghcr.io/Appdynamics/config-assessment-tool:latest -j DefaultJob -t DefaultThresholds
+  ghcr.io/appdynamics/config-assessment-tool:latest -j DefaultJob -t DefaultThresholds
 ```
 
 ### Getting help
 
 ```bash
-docker run ghcr.io/Appdynamics/config-assessment-tool:latest --help
+docker run ghcr.io/appdynamics/config-assessment-tool:latest --help
 ```
 
 ---
@@ -220,7 +220,7 @@ Both options below require the CAT source code. Get it first:
 - Or clone the repository with Git:
 
 ```bash
-git clone https://github.com/Appdynamics/config-assessment-tool.git
+git clone https://github.com/appdynamics/config-assessment-tool.git
 cd config-assessment-tool
 ```
 
