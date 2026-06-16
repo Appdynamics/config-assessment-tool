@@ -871,8 +871,13 @@ class AppDService:
         for serverResult, serverAvailabilityResult in zip(serversResults,
                                                           serversAvailabilityResults):
             machine = serverResult.data
-            value = get_recursively(serverAvailabilityResult.data["data"],
-                                    "value")
+            availabilityData = serverAvailabilityResult.data
+            if isinstance(availabilityData, dict) and "data" in availabilityData:
+                value = get_recursively(availabilityData["data"], "value")
+            else:
+                logging.warning(f"Unexpected server availability response for machineId '{machine.get('hostId', '?')}' "
+                                f"(error={serverAvailabilityResult.error}, type={type(availabilityData).__name__}); defaulting availability to 0")
+                value = None
             if value:
                 availability = next(iter(value))
                 machine["availability"] = availability
