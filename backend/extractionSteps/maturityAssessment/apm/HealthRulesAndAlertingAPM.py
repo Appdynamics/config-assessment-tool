@@ -50,7 +50,11 @@ class HealthRulesAndAlertingAPM(JobStepBase):
             for idx, applicationName in enumerate(hostInfo[self.componentType]):
                 application = hostInfo[self.componentType][applicationName]
 
-                application["eventCounts"] = eventCounts[idx].data
+                if eventCounts[idx].error is not None or not isinstance(eventCounts[idx].data, dict):
+                    logger.warning(f"Failed to retrieve event counts for '{applicationName}': {eventCounts[idx].error}; defaulting to zero violations.")
+                    application["eventCounts"] = {"policyViolationEventCounts": {"totalPolicyViolations": {"warning": 0, "critical": 0}}}
+                else:
+                    application["eventCounts"] = eventCounts[idx].data
                 application["policies"] = policies[idx].data
 
                 trimmedHrs = [healthRule for healthRule in healthRules[idx].data if healthRule.error is None]
