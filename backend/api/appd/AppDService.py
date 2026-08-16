@@ -730,9 +730,10 @@ class AppDService:
                 self.controller.getAppServerAgentsIds(json.dumps(body)))
 
         response = await AsyncioUtils.gatherWithConcurrency(*agentFutures)
-        results = [
-            (await self.getResultFromResponse(response, debugString)).data[
-                "data"] for response in response]
+        results = []
+        for response in response:
+            data = (await self.getResultFromResponse(response, debugString)).data
+            results.append(data if isinstance(data, list) else data["data"])
         out = []
         for result in results:
             out.extend(result)
