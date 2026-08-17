@@ -730,9 +730,10 @@ class AppDService:
                 self.controller.getAppServerAgentsIds(json.dumps(body)))
 
         response = await AsyncioUtils.gatherWithConcurrency(*agentFutures)
-        results = [
-            (await self.getResultFromResponse(response, debugString)).data[
-                "data"] for response in response]
+        results = []
+        for response in response:
+            data = (await self.getResultFromResponse(response, debugString)).data
+            results.append(data if isinstance(data, list) else data["data"])
         out = []
         for result in results:
             out.extend(result)
@@ -871,8 +872,13 @@ class AppDService:
         for serverResult, serverAvailabilityResult in zip(serversResults,
                                                           serversAvailabilityResults):
             machine = serverResult.data
-            value = get_recursively(serverAvailabilityResult.data["data"],
-                                    "value")
+            availabilityData = serverAvailabilityResult.data
+            if isinstance(availabilityData, dict) and "data" in availabilityData:
+                value = get_recursively(availabilityData["data"], "value")
+            else:
+                logging.warning(f"Unexpected server availability response for machineId '{machine.get('hostId', '?')}' "
+                                f"(error={serverAvailabilityResult.error}, type={type(availabilityData).__name__}); defaulting availability to 0")
+                value = None
             if value:
                 availability = next(iter(value))
                 machine["availability"] = availability
