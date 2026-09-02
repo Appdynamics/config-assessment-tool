@@ -47,7 +47,7 @@ jobs:
           # Define the output bundle filename
           # Consistent naming: config-assessment-tool-macos-<version>-arm64-executable.zip
           VERSION="${{ github.ref_name }}"
-          if [[ -z "$VERSION" ]]; then
+          if [[ -z "$VERSION" || ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
             VERSION="$(cat ../VERSION)"
           fi
           BUNDLE_FILENAME="config-assessment-tool-macos-${VERSION}-arm64-executable.zip"
@@ -60,15 +60,18 @@ jobs:
 
           # Set output variable for subsequent steps
           echo "::set-output name=bundle_name::${BUNDLE_FILENAME}"
+          echo "::set-output name=release_tag::${VERSION}"
           echo "Current directory contents after zipping:"
           ls -altr
 
       - name: Release the bundle for macOS
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ steps.build_bundle.outputs.release_tag }}
           files: dist/${{ steps.build_bundle.outputs.bundle_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          overwrite_files: true
 
       - name: Keep workflow artifact within the current workflow namespace
         uses: actions/upload-artifact@v4

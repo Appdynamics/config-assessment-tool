@@ -57,7 +57,7 @@ jobs:
           # Define the desired name for the output zip file
           # format: config-assessment-tool-windows-<version>-x86_64-executable.zip
           $version = "${{ github.ref_name }}"
-          if ([string]::IsNullOrWhiteSpace($version)) {
+          if ([string]::IsNullOrWhiteSpace($version) -or ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$')) {
             $version = Get-Content -Path "VERSION" -Raw
             $version = $version.Trim()
           }
@@ -73,16 +73,18 @@ jobs:
           # Set the output variable with the correct zip file name
           # This variable will be used by subsequent steps to locate the file
           echo "bundle_name=$zipFileName" >> $env:GITHUB_OUTPUT
+          echo "release_tag=$version" >> $env:GITHUB_OUTPUT
 
       - name: Release the bundle for Windows
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           # Reference the output variable correctly using ${{ steps.<step_id>.outputs.<output_name> }}
+          tag_name: ${{ steps.install_it.outputs.release_tag }}
           files: dist/${{ steps.install_it.outputs.bundle_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           overwrite_files: true
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          prerelease: ${{ contains(steps.install_it.outputs.release_tag, '-') }}
 
       - name: Keep workflow artifact within the current workflow namespace
         uses: actions/upload-artifact@v4
