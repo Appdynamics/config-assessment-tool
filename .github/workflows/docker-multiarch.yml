@@ -3,8 +3,8 @@ name: docker-multiarch
 on:
   push:
     tags:
+      - '[0-9]*.[0-9]*.[0-9]*'
       - 'v*.*.*'
-      - '[0-9]+.[0-9]+.[0-9]+*'
   workflow_dispatch:
 
 env:
@@ -40,7 +40,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # Generate ONLY platform-specific tags here.
-          # We do NOT push 'latest' or the bare version 'v1.2.3' in this job.
+          # We do NOT push 'latest' or the bare version '1.2.3' in this job.
           # Those are reserved for the final merge step to avoid race conditions.
           tags: |
             type=semver,pattern={{version}},suffix=-linux
@@ -52,6 +52,54 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          provenance: false
+          outputs: type=image,rewrite-timestamp=false
+
+  build-rhel-linux-multiarch:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ubi_major: [8, 9]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},suffix=-rhel${{ matrix.ubi_major }}-linux
+            type=ref,event=branch,suffix=-rhel${{ matrix.ubi_major }}-linux
+
+      - name: Build and push RHEL ${{ matrix.ubi_major }} Linux image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile-rhel-runtime
+          build-args: |
+            UBI_MAJOR=${{ matrix.ubi_major }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -91,11 +139,21 @@ jobs:
         run: |
           echo "IMAGE_NAME_LOWER=${{ env.IMAGE_NAME }}".ToLower() >> $env:GITHUB_ENV
 
+      - name: Ensure Docker daemon is running (Windows)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not (Get-Service -Name docker -ErrorAction SilentlyContinue)) {
+            throw 'Docker service was not found on the Windows runner.'
+          }
+          Start-Service docker
+          docker version
+
       # Standardize on -windows suffix for consistent intermediary tags
       # Ensure IMAGE_NAME is lowercase primarily for the manual docker build command
       # Note: We use the default docker builder here, not buildx, because setup-buildx-action
       # fails to start the buildkit container on Windows runners (which run in Windows container mode).
-      # The default 'docker build' command works fine for Windows images.
+      # The default 'docker build' command works fine for Windows images once the daemon is running.
       - name: Build and push Windows image
         run: |
           docker build -f Dockerfile-windows -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:${{ steps.meta.outputs.version }}-windows .
@@ -103,7 +161,7 @@ jobs:
 
   # Manifest creation: This is the ONLY place where user-facing tags (v1.2.3, latest) are pushed.
   merge-manifest:
-    needs: [build-linux-multiarch, build-windows]
+    needs: [build-linux-multiarch, build-rhel-linux-multiarch, build-windows]
     if: success() && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
@@ -142,7 +200,7 @@ jobs:
           # In the build-windows job, we push: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}-windows
           WINDOWS_IMAGE="${IMAGE_ROOT}:${VERSION}-windows"
           
-          # Tags to generate (v1.8.1 and latest)
+          # Tags to generate (1.8.1 and latest)
           TARGET_TAG="${IMAGE_ROOT}:${VERSION}"
           LATEST_TAG="${IMAGE_ROOT}:latest"
           

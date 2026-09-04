@@ -1,4 +1,4 @@
-name: executable-bundle-ubuntu
+name: executable-bundle-linux
 
 on:
   release:
@@ -9,56 +9,48 @@ permissions:
   contents: write
 
 jobs:
-  build-ubuntu-linux:
-    name: build ubuntu linux binary
+  build-linux:
+    name: Build Linux Executable Bundle
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies and Build Bundle (Ubuntu)
-        id: get_bundle_name # Added an ID to this step to capture output
+      - name: Install dependencies and Build Bundle (Linux)
+        id: get_bundle_name
         run: |
           # Ensure repository owner is lowercase for Docker tag
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE_TAG="ghcr.io/${REPO_OWNER}/config-assessment-tool-ubuntu-linux:latest"
+          IMAGE_TAG="ghcr.io/${REPO_OWNER}/config-assessment-tool-build:latest"
 
-          # build image which builds the bundle for Ubuntu 20.x+
-          # IMPORTANT: Use the new Dockerfile for Ubuntu
-          make build-image DOCKERFILE=backend/Dockerfile-ubuntu DOCKER_IMAGE_TAG=${IMAGE_TAG}
-          echo "finished building docker image with bundle included"
-          # copy bundle out of built image
+          # Build on a RHEL 8-compatible base so the bundle works on both
+          # RHEL 8.x and RHEL 9.x hosts (and Ubuntu 20+).
+          # Use NO_CACHE=true to avoid buildkit caching issues
+          make build-image DOCKERFILE=backend/Dockerfile-rhel DOCKER_IMAGE_TAG=${IMAGE_TAG} NO_CACHE=true
+          echo "finished building docker image with Linux bundle included"
+          
+          # Copy bundle out of built image
           # The `find` command is more robust for dynamically named files
           tarball_path=$(docker run --rm ${IMAGE_TAG} find /root/config-assessment-tool/dist/ -name "*.tgz")
           echo "copying bundle out of image using $tarball_path"
           docker cp $(docker create --name temp_image ${IMAGE_TAG}):$tarball_path ./ && docker rm temp_image
           echo "finished copying bundle onto hosted runner at $(pwd)"
           echo "files in current directory $(ls -altr)"
-          # Capture the exact bundle filename
+          
           ORIGINAL_BUNDLE_NAME=$(ls -1 *.tgz | head -n 1)
-          
-          # Inject -executable- into the filename
-          # Expecting format like config-assessment-tool-ubuntu-linux-1.8.0-beta.1.tgz
-          # converting to config-assessment-tool-ubuntu-linux-executable-1.8.0-beta.1.tgz
-          # OR just append -executable before extension if regex is too complex
-          
-          # Using sed to append -executable before the .tgz extension
-          NEW_BUNDLE_NAME=$(echo "$ORIGINAL_BUNDLE_NAME" | sed 's/\.tgz$/-executable.tgz/')
-          
-          # fallback if substitution didn't happen (e.g. name format changed)
-          if [[ "$NEW_BUNDLE_NAME" == "$ORIGINAL_BUNDLE_NAME" ]]; then
-             NEW_BUNDLE_NAME="${ORIGINAL_BUNDLE_NAME%.tgz}-executable.tgz"
+          VERSION="${{ github.ref_name }}"
+          if [[ -z "$VERSION" ]]; then
+            VERSION="$(cat VERSION)"
           fi
-          
+          NEW_BUNDLE_NAME="config-assessment-tool-linux-${VERSION}-x86_64-executable.tgz"
           mv "$ORIGINAL_BUNDLE_NAME" "$NEW_BUNDLE_NAME"
-          
           echo "Renamed $ORIGINAL_BUNDLE_NAME to $NEW_BUNDLE_NAME"
           
           BUNDLE_NAME="$NEW_BUNDLE_NAME"
           echo "BUNDLE_NAME=$BUNDLE_NAME" >> $GITHUB_ENV # Set as an environment variable
           echo "bundle_name=$BUNDLE_NAME" >> $GITHUB_OUTPUT # Set as step output for clarity
 
-      - name: Release the bundle for Ubuntu Linux
+      - name: Release the bundle for Linux
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +61,7 @@ jobs:
           fi
           gh release create ${{ github.ref_name }} ${{ env.BUNDLE_NAME }} --generate-notes --title "${{ github.ref_name }}" $PRERELEASE_FLAG || gh release upload ${{ github.ref_name }} ${{ env.BUNDLE_NAME }} --clobber
 
-      - name: Keep workflow artifact within the current workflow namespace (Ubuntu)
+      - name: Keep workflow artifact within the current workflow namespace (Linux)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.BUNDLE_NAME }} # Use the exact bundle name for the artifact

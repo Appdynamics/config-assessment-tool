@@ -1,0 +1,66 @@
+# Build executable bundle on a RHEL 8-compatible base so the resulting
+# Linux executable works on both RHEL 8.x and newer glibc-based distros.
+FROM redhat/ubi8:latest
+
+ENV PYTHON_VERSION=3.12.3
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV PATH=/usr/local/bin:/root/.local/bin:${PATH}
+
+WORKDIR /root
+
+RUN dnf install -y \
+    gcc \
+    gcc-c++ \
+    make \
+    wget \
+    tar \
+    gzip \
+    git \
+    zip \
+    findutils \
+    which \
+    zlib-devel \
+    bzip2 \
+    bzip2-devel \
+    ncurses-devel \
+    sqlite \
+    sqlite-devel \
+    openssl-devel \
+    libffi-devel \
+    xz \
+    xz-devel \
+    ca-certificates \
+    && dnf clean all
+
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
+    tar -xf Python-${PYTHON_VERSION}.tar.xz
+
+WORKDIR /root/Python-${PYTHON_VERSION}
+
+RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared && \
+    make -j"$(nproc)" && \
+    make altinstall
+
+WORKDIR /root/config-assessment-tool
+
+COPY backend ./backend
+COPY input ./input
+COPY plugins ./plugins
+COPY frontend ./frontend
+COPY bin ./bin
+COPY VERSION .
+COPY Pipfile .
+COPY Pipfile.lock .
+COPY Makefile .
+
+RUN /usr/local/bin/python3.12 -m pip install --upgrade pip && \
+    make exec-bundle PYTHON=/usr/local/bin/python3.12
+
+WORKDIR /root
+
+RUN ARCH=$(uname -m) && \
+    tar -zcvf /root/config-assessment-tool/dist/config-assessment-tool-linux-$(cat /root/config-assessment-tool/VERSION)-rhel-${ARCH}.tgz \
+      -C /root/config-assessment-tool/dist/appdynamics . && \
+    ls -altrh /root/config-assessment-tool/dist/
+
+CMD ["find", "/root/config-assessment-tool/dist/", "-name", "*.tgz"]

@@ -1,0 +1,87 @@
+ARG UBI_MAJOR=8
+
+FROM redhat/ubi${UBI_MAJOR}:latest AS python-build
+
+ENV PYTHON_VERSION=3.12.3
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV PATH=/usr/local/bin:${PATH}
+
+RUN dnf install -y \
+    gcc \
+    gcc-c++ \
+    make \
+    wget \
+    tar \
+    gzip \
+    findutils \
+    which \
+    zlib-devel \
+    bzip2 \
+    bzip2-devel \
+    ncurses-devel \
+    sqlite \
+    sqlite-devel \
+    openssl-devel \
+    libffi-devel \
+    xz \
+    xz-devel \
+    ca-certificates \
+    && dnf clean all
+
+WORKDIR /root
+
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
+    tar -xf Python-${PYTHON_VERSION}.tar.xz
+
+WORKDIR /root/Python-${PYTHON_VERSION}
+
+RUN ./configure --prefix=/usr/local --with-system-ffi --enable-shared && \
+    make -j"$(nproc)" && \
+    make altinstall
+
+WORKDIR /app
+
+COPY Pipfile .
+COPY Pipfile.lock .
+
+RUN /usr/local/bin/python3.12 -m pip install --upgrade pip pipenv && \
+    PIPENV_VENV_IN_PROJECT=1 /usr/local/bin/python3.12 -m pipenv install --deploy
+
+FROM redhat/ubi${UBI_MAJOR}:latest AS runtime
+
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONFAULTHANDLER=1
+ENV PYTHONPATH=/app:/app/backend
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV PATH=/app/.venv/bin:/usr/local/bin:${PATH}
+
+RUN dnf install -y \
+    bzip2-libs \
+    libffi \
+    ncurses-libs \
+    openssl-libs \
+    sqlite-libs \
+    xz-libs \
+    zlib \
+    && dnf clean all
+
+WORKDIR /app
+
+COPY --from=python-build /usr/local /usr/local
+COPY --from=python-build /app/.venv /app/.venv
+
+COPY backend /app/backend
+COPY frontend /app/frontend
+COPY plugins /app/plugins
+COPY bin /app/bin
+COPY VERSION .
+COPY entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
+
+EXPOSE 8501
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD []
