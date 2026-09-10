@@ -59,7 +59,7 @@ class AuthMethod():
                 pass
 
             connector = aiohttp.TCPConnector(
-                limit=AsyncioUtils.concurrentConnections, verify_ssl=True)
+                limit=AsyncioUtils.concurrentConnections, verify_ssl=self.verifySSL)
 
             self.session = aiohttp.ClientSession(connector=connector,
                                                  trust_env=True,
