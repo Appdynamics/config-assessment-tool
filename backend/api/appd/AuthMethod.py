@@ -42,6 +42,10 @@ class AuthMethod():
         self.session = None
         connection_url = (f'{"https" if ssl else "http"}://{host}:{port}')
 
+        logging.info(
+            f"{self.host} - SSL verification configured as verifySsl={self.verifySSL} "
+            f"for controller connection {connection_url}."
+        )
 
         # poor man's DI
         #TODO: replace with proper DI
@@ -59,7 +63,13 @@ class AuthMethod():
                 pass
 
             connector = aiohttp.TCPConnector(
-                limit=AsyncioUtils.concurrentConnections, verify_ssl=True)
+                limit=AsyncioUtils.concurrentConnections,
+                verify_ssl=self.verifySSL,
+            )
+            logging.info(
+                f"{self.host} - aiohttp connector created with verify_ssl={connector._ssl}. "
+                f"SSL certificate validation is {'disabled' if not self.verifySSL else 'enabled'} for this controller session."
+            )
 
             self.session = aiohttp.ClientSession(connector=connector,
                                                  trust_env=True,
