@@ -372,16 +372,21 @@ class Engine:
         logger.info(f"----------Input Validation----------")
         logger.info(f"Validating Thresholds - {self.thresholdsFileName}")
 
-        if "version" not in self.thresholds:
-            await self.abortAndCleanup(
-                f"Thresholds file is not versioned. Please use thresholds file compatible with {self.codebaseVersion}. Aborting."
+        thresholds_version = self.thresholds.get("version")
+        if thresholds_version is None:
+            logger.info(
+                f"Thresholds file {self.thresholdsFileName} does not include a version field. "
+                f"Version compatibility enforcement is disabled; processing will continue."
             )
-        if self.codebaseVersion != self.thresholds["version"]:
-            await self.abortAndCleanup(
-                f"Thresholds file version {self.thresholds['version']} is incompatible with codebase version {self.codebaseVersion}. Aborting."
+        elif thresholds_version != self.codebaseVersion:
+            logger.info(
+                f"Thresholds file version {thresholds_version} differs from CAT version {self.codebaseVersion}. "
+                f"This is informational only; version compatibility enforcement is disabled and processing will continue."
             )
-        # only need this once right here, we remove it for simpler iteration of thresholds
-        del self.thresholds["version"]
+        else:
+            logger.info(
+                f"Thresholds file version {thresholds_version} matches CAT version {self.codebaseVersion}."
+            )
 
         def thresholdStrictlyDecreasing(jobStep, thresholdMetric, componentType: str) -> bool:
             thresholds = self.thresholds[componentType][jobStep]
@@ -431,6 +436,8 @@ class Engine:
 
         fail = False
         for componentType, thresholds in self.thresholds.items():
+            if componentType == "version":
+                continue
             for jobStep, currThresholdLevels in thresholds.items():
                 if list(currThresholdLevels.keys()) != thresholdLevels:
                     logger.error(f"Thresholds file does not contains all of {thresholdLevels} on JobStep {jobStep}")
