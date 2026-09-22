@@ -61,14 +61,20 @@ jobs:
             $version = Get-Content -Path "VERSION" -Raw
             $version = $version.Trim()
           }
+          $extractRoot = "config-assessment-tool-windows-$version"
+          if ($pyinstallerOutputDirName -ne $extractRoot) {
+            Rename-Item -Path $sourcePathFor7z -NewName $extractRoot
+            $pyinstallerOutputDirName = $extractRoot
+            $sourcePathFor7z = Join-Path -Path "./dist/appdynamics" -ChildPath $pyinstallerOutputDirName
+          }
           $zipFileName = "config-assessment-tool-windows-${version}-x86_64-executable.zip"
           # Define the full path where the zip file should be created (in the ./dist folder)
           $zipFilePath = Join-Path -Path "./dist" -ChildPath $zipFileName
 
           # Create the zip archive
-          # 'a' for add, "$zipFilePath" is the target archive, "${sourcePathFor7z}\*" archives the CONTENTS of the directory
+          # Archive the top-level bundle directory so extraction preserves the normalized name.
           # -xr!logs excludes any 'logs' directory if it exists within the bundled output
-          7z a "$zipFilePath" "${sourcePathFor7z}\*" -xr!logs
+          7z a "$zipFilePath" "$sourcePathFor7z" -xr!logs
 
           # Set the output variable with the correct zip file name
           # This variable will be used by subsequent steps to locate the file
