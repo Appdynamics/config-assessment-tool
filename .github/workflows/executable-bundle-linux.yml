@@ -39,7 +39,7 @@ jobs:
           
           ORIGINAL_BUNDLE_NAME=$(ls -1 *.tgz | head -n 1)
           VERSION="${{ github.ref_name }}"
-          if [[ -z "$VERSION" ]]; then
+          if [[ -z "$VERSION" || ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
             VERSION="$(cat VERSION)"
           fi
           EXTRACT_ROOT="config-assessment-tool-linux-${VERSION}"
@@ -59,15 +59,15 @@ jobs:
           echo "bundle_name=$BUNDLE_NAME" >> $GITHUB_OUTPUT # Set as step output for clarity
 
       - name: Release the bundle for Linux
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PRERELEASE_FLAG=""
-          if [[ "${{ github.ref_name }}" == *"-"* ]]; then
+          if [[ "$VERSION" == *"-"* ]]; then
             PRERELEASE_FLAG="--prerelease"
           fi
-          gh release create ${{ github.ref_name }} ${{ env.BUNDLE_NAME }} --generate-notes --title "${{ github.ref_name }}" $PRERELEASE_FLAG || gh release upload ${{ github.ref_name }} ${{ env.BUNDLE_NAME }} --clobber
+          gh release create "$VERSION" "${{ env.BUNDLE_NAME }}" --generate-notes --title "$VERSION" $PRERELEASE_FLAG || gh release upload "$VERSION" "${{ env.BUNDLE_NAME }}" --clobber
 
       - name: Keep workflow artifact within the current workflow namespace (Linux)
         uses: actions/upload-artifact@v4
