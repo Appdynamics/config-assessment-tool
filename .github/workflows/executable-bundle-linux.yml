@@ -55,6 +55,7 @@ jobs:
           echo "Renamed $ORIGINAL_BUNDLE_NAME to $NEW_BUNDLE_NAME"
           
           BUNDLE_NAME="$NEW_BUNDLE_NAME"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUNDLE_NAME=$BUNDLE_NAME" >> $GITHUB_ENV # Set as an environment variable
           echo "bundle_name=$BUNDLE_NAME" >> $GITHUB_OUTPUT # Set as step output for clarity
 
