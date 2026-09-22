@@ -50,6 +50,11 @@ jobs:
           if [[ -z "$VERSION" || ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
             VERSION="$(cat ../VERSION)"
           fi
+          EXTRACT_ROOT="config-assessment-tool-macosx-${VERSION}"
+          if [[ "$BUNDLE_DIR_NAME" != "$EXTRACT_ROOT" ]]; then
+            mv "$BUNDLE_DIR_PATH" "appdynamics/${EXTRACT_ROOT}"
+            BUNDLE_DIR_NAME="$EXTRACT_ROOT"
+          fi
           BUNDLE_FILENAME="config-assessment-tool-macos-${VERSION}-arm64-executable.zip"
           
           echo "Bundle filename: ${BUNDLE_FILENAME}"
