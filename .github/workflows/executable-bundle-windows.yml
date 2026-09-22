@@ -61,6 +61,7 @@ jobs:
             $version = Get-Content -Path "VERSION" -Raw
             $version = $version.Trim()
           }
+          Write-Host "Resolved bundle/release version: $version"
           $extractRoot = "config-assessment-tool-windows-$version"
           if ($pyinstallerOutputDirName -ne $extractRoot) {
             Rename-Item -Path $sourcePathFor7z -NewName $extractRoot

@@ -64,8 +64,8 @@ jobs:
           zip -r "${BUNDLE_FILENAME}" appdynamics -x "appdynamics/*/logs/*"
 
           # Set output variable for subsequent steps
-          echo "::set-output name=bundle_name::${BUNDLE_FILENAME}"
-          echo "::set-output name=release_tag::${VERSION}"
+          echo "bundle_name=${BUNDLE_FILENAME}" >> "$GITHUB_OUTPUT"
+          echo "release_tag=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Current directory contents after zipping:"
           ls -altr
 
