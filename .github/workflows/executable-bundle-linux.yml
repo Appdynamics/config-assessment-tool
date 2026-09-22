@@ -42,8 +42,16 @@ jobs:
           if [[ -z "$VERSION" ]]; then
             VERSION="$(cat VERSION)"
           fi
+          EXTRACT_ROOT="config-assessment-tool-linux-${VERSION}"
+          TEMP_DIR="$(mktemp -d)"
+          tar -xzf "$ORIGINAL_BUNDLE_NAME" -C "$TEMP_DIR"
+          ORIGINAL_DIR_NAME="$(find "$TEMP_DIR" -mindepth 1 -maxdepth 1 -type d | head -n 1 | xargs basename)"
+          if [[ -n "$ORIGINAL_DIR_NAME" && "$ORIGINAL_DIR_NAME" != "$EXTRACT_ROOT" ]]; then
+            mv "$TEMP_DIR/$ORIGINAL_DIR_NAME" "$TEMP_DIR/$EXTRACT_ROOT"
+          fi
           NEW_BUNDLE_NAME="config-assessment-tool-linux-${VERSION}-x86_64-executable.tgz"
-          mv "$ORIGINAL_BUNDLE_NAME" "$NEW_BUNDLE_NAME"
+          tar -czf "$NEW_BUNDLE_NAME" -C "$TEMP_DIR" "$EXTRACT_ROOT"
+          rm -rf "$TEMP_DIR" "$ORIGINAL_BUNDLE_NAME"
           echo "Renamed $ORIGINAL_BUNDLE_NAME to $NEW_BUNDLE_NAME"
           
           BUNDLE_NAME="$NEW_BUNDLE_NAME"
