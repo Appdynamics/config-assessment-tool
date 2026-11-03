@@ -18,18 +18,18 @@ def is_running_in_container():
     Checks if the code is running inside a container.
     """
     # Check for /.dockerenv file
-    if os.path.exists('/.dockerenv'):
+    if os.path.exists("/.dockerenv"):
         return True
     # Check for cgroup info
     try:
-        with open('/proc/1/cgroup', 'rt') as f:
+        with open("/proc/1/cgroup", "rt") as f:
             cgroup_content = f.read()
-            return 'docker' in cgroup_content or 'kubepods' in cgroup_content
+            return "docker" in cgroup_content or "kubepods" in cgroup_content
     except FileNotFoundError:
         # This check is not available on all OSes (e.g., macOS, Windows)
         pass
     # Check for container environment variable
-    if os.environ.get('CONTAINER_RUNTIME'):
+    if os.environ.get("CONTAINER_RUNTIME"):
         return True
     return False
 
@@ -49,10 +49,7 @@ def open_folder_via_service(path: str):
         host = get_filehandler_host()
         try:
             response = requests.post(
-                f"http://{host}:16225/open_folder",
-                json={"path": path},
-                headers={"Content-Type": "application/json"},
-                timeout=10
+                f"http://{host}:16225/open_folder", json={"path": path}, headers={"Content-Type": "application/json"}, timeout=10
             )
             if response.status_code != 200:
                 st.error(f"Failed to open folder: {response.text}")
@@ -128,7 +125,7 @@ def header() -> tuple[bool, bool]:
                     </div>
                 </div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
             time.sleep(3)
             os._exit(0)
@@ -171,7 +168,6 @@ def header() -> tuple[bool, bool]:
     with col3:
         if st.button("Open Archive Folder"):
             open_folder_via_service("output/archive")
-
 
     sample_file_path = "output/archive/sample_report.json"
     if os.path.exists(sample_file_path):

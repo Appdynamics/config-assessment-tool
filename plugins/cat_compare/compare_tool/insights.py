@@ -102,10 +102,7 @@ def build_comparison_json(
     else:
         overall_result = "Even"
 
-    overall_pct = (
-        0 if overall_result == "Even"
-        else round((overall_imp / max(1, overall_imp + overall_deg)) * 100)
-    )
+    overall_pct = 0 if overall_result == "Even" else round((overall_imp / max(1, overall_imp + overall_deg)) * 100)
 
     # ---------- Per-area blocks ----------
     area_blocks = []
@@ -201,7 +198,8 @@ def build_comparison_json(
     }
 
     # ---------- Build Meta ----------
-    def _yyyymmdd(d): return d.strftime("%Y%m%d") if d else None
+    def _yyyymmdd(d):
+        return d.strftime("%Y%m%d") if d else None
 
     def _guess_workbook_date(path):
         try:
@@ -244,7 +242,6 @@ def build_comparison_json(
 
     payload["meta"] = m
 
-
     # ---------- Output ----------
     out_name = f"analysis_summary_{domain.lower()}_{m['compareDate']}.json"
     os.makedirs(result_folder, exist_ok=True)
@@ -254,5 +251,3 @@ def build_comparison_json(
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     return out_path, out_name, payload
-
-

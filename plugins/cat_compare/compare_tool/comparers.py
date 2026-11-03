@@ -54,22 +54,14 @@ def compare_files_other_sheets(
     dom = (domain or "APM").upper()
 
     if dom == "APM":
-        return compare_files_other_sheets_apm(
-            previous_file_path, current_file_path, output_file_path
-        )
+        return compare_files_other_sheets_apm(previous_file_path, current_file_path, output_file_path)
     elif dom == "BRUM":
-        return compare_files_other_sheets_brum(
-            previous_file_path, current_file_path, output_file_path
-        )
+        return compare_files_other_sheets_brum(previous_file_path, current_file_path, output_file_path)
     elif dom == "MRUM":
-        return compare_files_other_sheets_mrum(
-            previous_file_path, current_file_path, output_file_path
-        )
+        return compare_files_other_sheets_mrum(previous_file_path, current_file_path, output_file_path)
     else:
         logger.warning(
             "Unknown domain '%s' passed to compare_files_other_sheets; defaulting to APM.",
             dom,
         )
-        return compare_files_other_sheets_apm(
-            previous_file_path, current_file_path, output_file_path
-        )
+        return compare_files_other_sheets_apm(previous_file_path, current_file_path, output_file_path)

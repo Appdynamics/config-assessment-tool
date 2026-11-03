@@ -44,7 +44,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     template_folder = Path(cfg.get("TEMPLATE_FOLDER", BASE_DIR / "templates"))
 
     # Build per-domain template paths (APM/BRUM/MRUM)
-    apm_tpl  = cfg.get("apm_template_file")
+    apm_tpl = cfg.get("apm_template_file")
     brum_tpl = cfg.get("brum_template_file")
     mrum_tpl = cfg.get("mrum_template_file")
 

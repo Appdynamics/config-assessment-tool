@@ -32,14 +32,15 @@ from .excel_io import get_key_column
 logger = logging.getLogger(__name__)
 
 # Color fills (copy same as APM/BRUM)
-red_fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
-green_fill = PatternFill(start_color='00FF00', end_color='00FF00', fill_type='solid')
-added_fill = PatternFill(start_color='ADD8E6', end_color='ADD8E6', fill_type='solid')
+red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+green_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+added_fill = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
 
 
 # =========================
 # MRUM COMPARISON FUNCTIONS
 # =========================
+
 
 def compare_analysis_mrum(ws_previous: Worksheet, ws_current: Worksheet) -> None:
     """
@@ -54,9 +55,9 @@ def compare_analysis_mrum(ws_previous: Worksheet, ws_current: Worksheet) -> None
     """
     try:
         columns = {
-            'NetworkRequestsMRUM': None,
-            'HealthRulesAndAlertingMRUM': None,
-            'OverallAssessment': None,
+            "NetworkRequestsMRUM": None,
+            "HealthRulesAndAlertingMRUM": None,
+            "OverallAssessment": None,
         }
 
         # Locate comparison columns in both previous and current
@@ -69,10 +70,10 @@ def compare_analysis_mrum(ws_previous: Worksheet, ws_current: Worksheet) -> None
             columns[column] = (col_idx_prev, col_idx_curr)
 
         # Key columns
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        name_col_prev = get_key_column(ws_previous, 'name')
-        name_col_curr = get_key_column(ws_current, 'name')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        name_col_prev = get_key_column(ws_previous, "name")
+        name_col_curr = get_key_column(ws_current, "name")
 
         if name_col_prev is None or name_col_curr is None:
             logger.error("[MRUM] 'name' missing in Analysis.")
@@ -98,7 +99,7 @@ def compare_analysis_mrum(ws_previous: Worksheet, ws_current: Worksheet) -> None
             if key[0]:
                 current_data[key] = row
 
-        ranking = {'bronze': 1, 'silver': 2, 'gold': 3, 'platinum': 4}
+        ranking = {"bronze": 1, "silver": 2, "gold": 3, "platinum": 4}
 
         # Compare per key
         for key, prev_row in previous_data.items():
@@ -146,11 +147,11 @@ def compare_networkrequestsmrum(ws_previous: Worksheet, ws_current: Worksheet) -
     """
     try:
         columns = {
-            'collectingDataPastOneDay': 'bool',
-            'networkRequestLimitNotHit': 'bool',
-            'numberCustomMatchRules': 'num',
-            'hasBtCorrelation': 'bool',
-            'hasCustomEventServiceIncludeRule': 'bool',
+            "collectingDataPastOneDay": "bool",
+            "networkRequestLimitNotHit": "bool",
+            "numberCustomMatchRules": "num",
+            "hasBtCorrelation": "bool",
+            "hasCustomEventServiceIncludeRule": "bool",
         }
 
         idx: Dict[str, Tuple[int, int]] = {}
@@ -162,10 +163,10 @@ def compare_networkrequestsmrum(ws_previous: Worksheet, ws_current: Worksheet) -
                 return
             idx[c] = (p, n)
 
-        app_prev = get_key_column(ws_previous, 'application')
-        app_curr = get_key_column(ws_current, 'application')
-        ctrl_prev = get_key_column(ws_previous, 'controller')
-        ctrl_curr = get_key_column(ws_current, 'controller')
+        app_prev = get_key_column(ws_previous, "application")
+        app_curr = get_key_column(ws_current, "application")
+        ctrl_prev = get_key_column(ws_previous, "controller")
+        ctrl_curr = get_key_column(ws_current, "controller")
 
         previous_map = {}
         current_map = {}
@@ -200,14 +201,14 @@ def compare_networkrequestsmrum(ws_previous: Worksheet, ws_current: Worksheet) -
 
                 cell = ws_current.cell(row=crow[0].row, column=c_idx)
 
-                if kind == 'bool':
+                if kind == "bool":
                     p_str = str(pv).strip().upper()
                     c_str = str(cv).strip().upper()
 
-                    if p_str == 'FALSE' and c_str == 'TRUE':
+                    if p_str == "FALSE" and c_str == "TRUE":
                         cell.fill = green_fill
                         cell.value = f"{pv} → {cv} (Improved)"
-                    elif p_str == 'TRUE' and c_str == 'FALSE':
+                    elif p_str == "TRUE" and c_str == "FALSE":
                         cell.fill = red_fill
                         cell.value = f"{pv} → {cv} (Declined)"
                     else:
@@ -224,9 +225,7 @@ def compare_networkrequestsmrum(ws_previous: Worksheet, ws_current: Worksheet) -
                             cell.fill = red_fill
                             cell.value = f"{pnum:.2f} → {cnum:.2f} (Decreased)"
                     except Exception:
-                        logger.error(
-                            "[MRUM] Non-numeric '%s': %s vs %s", col, pv, cv
-                        )
+                        logger.error("[MRUM] Non-numeric '%s': %s vs %s", col, pv, cv)
 
         # New entries
         for key, crow in current_map.items():
@@ -237,9 +236,7 @@ def compare_networkrequestsmrum(ws_previous: Worksheet, ws_current: Worksheet) -
                     nc.fill = added_fill
 
     except Exception as e:
-        logger.error(
-            "[MRUM] Error in compare_networkrequestsmrum: %s", e, exc_info=True
-        )
+        logger.error("[MRUM] Error in compare_networkrequestsmrum: %s", e, exc_info=True)
         raise
 
 
@@ -249,9 +246,9 @@ def compare_healthrulesandalertingmrum(ws_previous: Worksheet, ws_current: Works
     """
     try:
         columns = {
-            'numberOfHealthRuleViolations': 'lower_better',
-            'numberOfActionsBoundToEnabledPolicies': 'higher_better',
-            'numberOfCustomHealthRules': 'higher_better',
+            "numberOfHealthRuleViolations": "lower_better",
+            "numberOfActionsBoundToEnabledPolicies": "higher_better",
+            "numberOfCustomHealthRules": "higher_better",
         }
 
         idx: Dict[str, Tuple[int, int]] = {}
@@ -263,10 +260,10 @@ def compare_healthrulesandalertingmrum(ws_previous: Worksheet, ws_current: Works
                 return
             idx[c] = (p, n)
 
-        app_prev = get_key_column(ws_previous, 'application')
-        app_curr = get_key_column(ws_current, 'application')
-        ctrl_prev = get_key_column(ws_previous, 'controller')
-        ctrl_curr = get_key_column(ws_current, 'controller')
+        app_prev = get_key_column(ws_previous, "application")
+        app_curr = get_key_column(ws_current, "application")
+        ctrl_prev = get_key_column(ws_previous, "controller")
+        ctrl_curr = get_key_column(ws_current, "controller")
 
         previous_map = {}
         current_map = {}
@@ -305,7 +302,7 @@ def compare_healthrulesandalertingmrum(ws_previous: Worksheet, ws_current: Works
                     pnum = float(pv)
                     cnum = float(cv)
 
-                    if rule == 'lower_better':
+                    if rule == "lower_better":
                         if cnum < pnum:
                             cell.fill = green_fill
                             cell.value = f"{pnum:.2f} → {cnum:.2f} (Improved)"
@@ -320,9 +317,7 @@ def compare_healthrulesandalertingmrum(ws_previous: Worksheet, ws_current: Works
                             cell.fill = red_fill
                             cell.value = f"{pnum:.2f} → {cnum:.2f} (Decreased)"
                 except Exception:
-                    logger.error(
-                        "[MRUM] Non-numeric '%s': %s vs %s", col, pv, cv
-                    )
+                    logger.error("[MRUM] Non-numeric '%s': %s vs %s", col, pv, cv)
 
         # New entries
         for key, crow in current_map.items():
@@ -333,9 +328,7 @@ def compare_healthrulesandalertingmrum(ws_previous: Worksheet, ws_current: Works
                     nc.fill = added_fill
 
     except Exception as e:
-        logger.error(
-            "[MRUM] Error in compare_healthrulesandalertingmrum: %s", e, exc_info=True
-        )
+        logger.error("[MRUM] Error in compare_healthrulesandalertingmrum: %s", e, exc_info=True)
         raise
 
 
@@ -345,9 +338,9 @@ def compare_overallassessmentmrum(ws_previous: Worksheet, ws_current: Worksheet)
     """
     try:
         columns = {
-            'percentageTotalPlatinum': None,
-            'percentageTotalGoldOrBetter': None,
-            'percentageTotalSilverOrBetter': None,
+            "percentageTotalPlatinum": None,
+            "percentageTotalGoldOrBetter": None,
+            "percentageTotalSilverOrBetter": None,
         }
 
         for c in columns.keys():
@@ -358,10 +351,10 @@ def compare_overallassessmentmrum(ws_previous: Worksheet, ws_current: Worksheet)
                 return
             columns[c] = (p, n)
 
-        ctrl_prev = get_key_column(ws_previous, 'controller')
-        ctrl_curr = get_key_column(ws_current, 'controller')
-        app_prev = get_key_column(ws_previous, 'application')
-        app_curr = get_key_column(ws_current, 'application')
+        ctrl_prev = get_key_column(ws_previous, "controller")
+        ctrl_curr = get_key_column(ws_current, "controller")
+        app_prev = get_key_column(ws_previous, "application")
+        app_curr = get_key_column(ws_current, "application")
 
         previous_map = {}
         current_map = {}
@@ -395,8 +388,8 @@ def compare_overallassessmentmrum(ws_previous: Worksheet, ws_current: Worksheet)
 
                 cell = ws_current.cell(row=crow[0].row, column=c_idx)
                 try:
-                    pnum = float(str(pv).replace('%', ''))
-                    cnum = float(str(cv).replace('%', ''))
+                    pnum = float(str(pv).replace("%", ""))
+                    cnum = float(str(cv).replace("%", ""))
 
                     if cnum > pnum:
                         cell.fill = green_fill
@@ -405,9 +398,7 @@ def compare_overallassessmentmrum(ws_previous: Worksheet, ws_current: Worksheet)
                         cell.fill = red_fill
                         cell.value = f"{pnum:.2f}% → {cnum:.2f}% (Decreased)"
                 except Exception:
-                    logger.error(
-                        "[MRUM] Non-numeric '%s': %s vs %s", col, pv, cv
-                    )
+                    logger.error("[MRUM] Non-numeric '%s': %s vs %s", col, pv, cv)
 
         # New entries
         for key, crow in current_map.items():
@@ -418,9 +409,7 @@ def compare_overallassessmentmrum(ws_previous: Worksheet, ws_current: Worksheet)
                     nc.fill = added_fill
 
     except Exception as e:
-        logger.error(
-            "[MRUM] Error in compare_overallassessmentmrum: %s", e, exc_info=True
-        )
+        logger.error("[MRUM] Error in compare_overallassessmentmrum: %s", e, exc_info=True)
         raise
 
 
@@ -446,8 +435,7 @@ def compare_files_other_sheets_mrum(
     Mirrors the APM/BRUM dispatcher.
     """
     try:
-        logger.info("[MRUM] compare_files_other_sheets_mrum starting: %s, %s -> %s",
-                    previous_file_path, current_file_path, output_file_path)
+        logger.info("[MRUM] compare_files_other_sheets_mrum starting: %s, %s -> %s", previous_file_path, current_file_path, output_file_path)
 
         wb_previous = load_workbook(previous_file_path)
         wb_current = load_workbook(current_file_path)

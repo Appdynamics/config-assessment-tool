@@ -28,7 +28,6 @@ except ImportError:
     generate_powerpoint_from_apm = None  # type: ignore
 
 
-
 # ---------------------------------------------------------------------------
 # Helper: load the Analysis sheet
 # ---------------------------------------------------------------------------
@@ -61,9 +60,7 @@ def _count_overall(df: pd.DataFrame) -> Dict[str, Any]:
     else:
         result = "Even"
 
-    pct = 0 if result == "Even" else round(
-        (improved / max(1, improved + degraded)) * 100
-    )
+    pct = 0 if result == "Even" else round((improved / max(1, improved + degraded)) * 100)
 
     return {
         "improved": improved,
@@ -100,7 +97,7 @@ def _pick_template_path(config: Optional[Dict[str, Any]], domain: str) -> Option
     template_folder = cfg.get("TEMPLATE_FOLDER", "templates")
 
     domain_name = {
-        "APM": "template.pptx",          # legacy APM template name
+        "APM": "template.pptx",  # legacy APM template name
         "BRUM": "template_brum.pptx",
         "MRUM": "template_mrum.pptx",
     }.get(domain, "template.pptx")
@@ -146,16 +143,10 @@ def _build_detail_rows(df: pd.DataFrame) -> List[str]:
     else:
         name_series = df[name_col].astype(str)
 
-    overall_series = (
-        df["OverallAssessment"].astype(str)
-        if "OverallAssessment" in df.columns
-        else pd.Series([""] * len(df))
-    )
+    overall_series = df["OverallAssessment"].astype(str) if "OverallAssessment" in df.columns else pd.Series([""] * len(df))
 
     # Mark which rows have any "change"
-    has_change = overall_series.str.contains(
-        "Upgraded|Downgraded", case=False, na=False
-    )
+    has_change = overall_series.str.contains("Upgraded|Downgraded", case=False, na=False)
 
     # We want changed apps first, then the rest
     df_detail = pd.DataFrame(
@@ -167,9 +158,7 @@ def _build_detail_rows(df: pd.DataFrame) -> List[str]:
     )
 
     # Sort: changed first, then alphabetical by name
-    df_detail = df_detail.sort_values(
-        by=["changed", "name"], ascending=[False, True]
-    )
+    df_detail = df_detail.sort_values(by=["changed", "name"], ascending=[False, True])
 
     lines: List[str] = []
     for _, row in df_detail.iterrows():
@@ -224,9 +213,7 @@ def _add_detail_slide(prs: Presentation, df: pd.DataFrame, domain: str) -> None:
         slide.shapes.title.text = f"{domain} – Application Detail"
     else:
         # Add a title textbox if needed
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(0.3), Inches(9), Inches(0.8)
-        )
+        title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(9), Inches(0.8))
         title_tf = title_box.text_frame
         title_tf.text = f"{domain} – Application Detail"
         title_tf.paragraphs[0].font.size = Pt(28)
@@ -283,7 +270,7 @@ def generate_powerpoint_from_analysis(*args, **kwargs) -> str:
     # ---- Normalise arguments (supports both old & new call styles) ---------
     comparison_result_path = kwargs.pop("comparison_result_path", None)
     powerpoint_output_path = kwargs.pop("powerpoint_output_path", None)
-    current_file_path = kwargs.pop("current_file_path", None)    # not used yet
+    current_file_path = kwargs.pop("current_file_path", None)  # not used yet
     previous_file_path = kwargs.pop("previous_file_path", None)  # not used yet
     domain = kwargs.pop("domain", "APM")
     config = kwargs.pop("config", None)
@@ -303,9 +290,7 @@ def generate_powerpoint_from_analysis(*args, **kwargs) -> str:
         config = args[5]
 
     if comparison_result_path is None or powerpoint_output_path is None:
-        raise ValueError(
-            "comparison_result_path and powerpoint_output_path are required"
-        )
+        raise ValueError("comparison_result_path and powerpoint_output_path are required")
 
     domain = (domain or "APM").upper()
 
@@ -322,14 +307,7 @@ def generate_powerpoint_from_analysis(*args, **kwargs) -> str:
     # Count apps (try to be robust to column naming)
     name_col = _find_name_column(df_analysis)
     if name_col:
-        total_apps = int(
-            df_analysis[name_col]
-            .dropna()
-            .astype(str)
-            .str.strip()
-            .ne("")
-            .sum()
-        )
+        total_apps = int(df_analysis[name_col].dropna().astype(str).str.strip().ne("").sum())
     else:
         total_apps = len(df_analysis)
 
@@ -378,26 +356,17 @@ def generate_powerpoint_from_analysis(*args, **kwargs) -> str:
     p0.font.size = Pt(24)
 
     p1 = tf.add_paragraph()
-    p1.text = (
-        f"Improved (OverallAssessment contains 'Upgraded'): "
-        f"{overall['improved']}"
-    )
+    p1.text = f"Improved (OverallAssessment contains 'Upgraded'): " f"{overall['improved']}"
     p1.level = 0
     p1.font.size = Pt(20)
 
     p2 = tf.add_paragraph()
-    p2.text = (
-        f"Degraded (OverallAssessment contains 'Downgraded'): "
-        f"{overall['degraded']}"
-    )
+    p2.text = f"Degraded (OverallAssessment contains 'Downgraded'): " f"{overall['degraded']}"
     p2.level = 0
     p2.font.size = Pt(20)
 
     p3 = tf.add_paragraph()
-    p3.text = (
-        f"Net result: {overall['result']} "
-        f"({overall['percentage']}% of changed apps)"
-    )
+    p3.text = f"Net result: {overall['result']} " f"({overall['percentage']}% of changed apps)"
     p3.level = 0
     p3.font.size = Pt(20)
 
@@ -410,6 +379,7 @@ def generate_powerpoint_from_analysis(*args, **kwargs) -> str:
     log.info("PPT saved to %s", powerpoint_output_path)
 
     return powerpoint_output_path
+
 
 # ---------------------------------------------------------------------------
 # Unified entry point: generate_powerpoint
@@ -424,7 +394,7 @@ def generate_powerpoint(*args, **kwargs) -> str:
       - domain == 'APM'  -> generate_powerpoint_from_apm(...) if available,
                             otherwise falls back to generate_powerpoint_from_analysis(...)
       - anything else     -> generate_powerpoint_from_analysis(...)
-    
+
     It supports both positional and keyword arguments in the same way
     as generate_powerpoint_from_analysis.
     """
@@ -459,6 +429,7 @@ def generate_powerpoint(*args, **kwargs) -> str:
     # Ensure the domain kwarg matches the normalised value for consistent behaviour
     kwargs["domain"] = domain_norm
     return generate_powerpoint_from_analysis(*args, **kwargs)
+
 
 __all__ = [
     "generate_powerpoint",

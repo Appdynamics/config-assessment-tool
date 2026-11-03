@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 from compare_tool.powerpoint.apm import generate_powerpoint_from_apm
 
+
 def test_generate_powerpoint_from_apm(tmp_path):
     # Setup
     template_path = tmp_path / "template.pptx"

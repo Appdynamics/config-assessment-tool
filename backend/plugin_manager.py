@@ -5,13 +5,16 @@ import subprocess
 
 PLUGIN_DIR = "plugins"
 
+
 @click.group()
 def cli():
     pass
 
+
 def is_remote_session():
     """Check if the script is running in a remote SSH session."""
     return any(key in os.environ for key in ["SSH_CLIENT", "SSH_TTY", "SSH_CONNECTION"])
+
 
 @cli.command(name="list")
 def list_plugins():
@@ -20,7 +23,7 @@ def list_plugins():
         print("No plugins directory found.")
         return
 
-    plugins = [d for d in os.listdir(PLUGIN_DIR) if os.path.isdir(os.path.join(PLUGIN_DIR, d)) and not d.startswith('__')]
+    plugins = [d for d in os.listdir(PLUGIN_DIR) if os.path.isdir(os.path.join(PLUGIN_DIR, d)) and not d.startswith("__")]
     if not plugins:
         print("No plugins found.")
     else:
@@ -33,7 +36,7 @@ def list_plugins():
             if os.path.exists(main_file):
                 if os.path.exists(readme_file):
                     if is_remote_session():
-                         status = f"(run: config-assessment-tool --plugin docs {p})"
+                        status = f"(run: config-assessment-tool --plugin docs {p})"
                     else:
                         try:
                             import tempfile
@@ -43,7 +46,7 @@ def list_plugins():
                             html_filename = f"cat_plugin_{p}_readme.html"
                             html_path = os.path.join(temp_dir, html_filename)
 
-                            with open(readme_file, 'r', encoding='utf-8') as rf:
+                            with open(readme_file, "r", encoding="utf-8") as rf:
                                 content = rf.read()
 
                             content_escaped = html.escape(content)
@@ -61,7 +64,7 @@ def list_plugins():
 </pre>
 </body>
 </html>"""
-                            with open(html_path, 'w', encoding='utf-8') as wf:
+                            with open(html_path, "w", encoding="utf-8") as wf:
                                 wf.write(html_content)
 
                             abs_link_path = os.path.abspath(html_path)
@@ -78,9 +81,10 @@ def list_plugins():
 
             print(f"  - {p} {status}")
 
+
 @cli.command()
-@click.argument('name')
-@click.argument('args', nargs=-1)
+@click.argument("name")
+@click.argument("args", nargs=-1)
 def start(name, args):
     """Start a plugin"""
     plugin_path = os.path.join(PLUGIN_DIR, name)
@@ -141,11 +145,11 @@ def start(name, args):
             stderr=subprocess.STDOUT,  # Merge stderr into stdout
             text=True,
             bufsize=1,  # Line buffered
-            universal_newlines=True
+            universal_newlines=True,
         ) as process:
             # Print output with prefix
             for line in process.stdout:
-                print(f"{prefix}{line}", end='')
+                print(f"{prefix}{line}", end="")
 
             # Wait for process to finish
             process.wait()
@@ -159,8 +163,9 @@ def start(name, args):
     except Exception as e:
         print(f"Error executing plugin: {e}")
 
+
 @cli.command(name="docs")
-@click.argument('name')
+@click.argument("name")
 def show_docs(name):
     """Show documentation for a plugin in the terminal"""
     plugin_path = os.path.join(PLUGIN_DIR, name)
@@ -171,16 +176,18 @@ def show_docs(name):
             # Try to use rich for better formatting if available, otherwise just print
             from rich.console import Console
             from rich.markdown import Markdown
+
             console = Console()
-            with open(readme_file, 'r', encoding='utf-8') as f:
+            with open(readme_file, "r", encoding="utf-8") as f:
                 md = Markdown(f.read())
             console.print(md)
         except ImportError:
             # Fallback to plain text
-            with open(readme_file, 'r', encoding='utf-8') as f:
+            with open(readme_file, "r", encoding="utf-8") as f:
                 print(f.read())
     else:
         print(f"No documentation found for plugin '{name}'.")
+
 
 if __name__ == "__main__":
     cli()

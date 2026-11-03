@@ -46,7 +46,7 @@ def writeUncoloredRow(sheet: Worksheet, rowIdx: int, data: [Any]):
             sheet[f"{colIdx}{rowIdx}"] = cell
         except IllegalCharacterError:
             logging.warning(f"illegal character detected in cell, will scrub {cell}")
-            cell = ILLEGAL_CHARACTERS_RE.sub(r'', cell)
+            cell = ILLEGAL_CHARACTERS_RE.sub(r"", cell)
             logging.warning(f"scrubbed cell: {cell}")
             sheet[f"{colIdx}{rowIdx}"] = cell
 

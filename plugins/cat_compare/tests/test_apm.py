@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 from compare_tool.powerpoint.apm import generate_powerpoint_from_apm
 
+
 def test_generate_powerpoint_from_apm(tmp_path):
     # Setup
     # Path to the existing template

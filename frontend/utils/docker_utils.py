@@ -8,9 +8,9 @@ import streamlit as st
 from docker import APIClient
 
 
-def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str,
-                            debug: bool, concurrentConnections: int,
-                            username: str, password: str, auth_method: str):
+def runConfigAssessmentTool(
+    client: APIClient, jobFile: str, thresholds: str, debug: bool, concurrentConnections: int, username: str, password: str, auth_method: str
+):
     if not isDocker():
         root = os.path.abspath("..")
     else:
@@ -34,7 +34,6 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str,
         command.extend(["-p", password])
     if auth_method:
         command.extend(["-m", auth_method])
-
 
     arch = get_arch()
     backend_image_tag, _ = get_image_tags()
@@ -73,6 +72,7 @@ def runConfigAssessmentTool(client: APIClient, jobFile: str, thresholds: str,
     time.sleep(8)
     # refresh the page to see newly generated report
     from utils.streamlit_utils import rerun
+
     rerun()
 
 
@@ -143,8 +143,8 @@ def get_arch():
 
 def get_version():
     # Find the project base directory (two levels up from this file)
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    version_path = os.path.join(base_dir, 'VERSION')
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    version_path = os.path.join(base_dir, "VERSION")
     try:
         with open(version_path) as f:
             return f.read().strip()

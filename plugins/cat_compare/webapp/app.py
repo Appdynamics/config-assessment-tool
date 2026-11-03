@@ -27,11 +27,11 @@ from compare_tool.config import load_config
 from compare_tool.logging_config import setup_logging
 from compare_tool.insights import build_comparison_json
 from compare_tool.service import (
-    run_comparison,        # APM
-    run_comparison_brum,   # BRUM
-    run_comparison_mrum,   # MRUM
+    run_comparison,  # APM
+    run_comparison_brum,  # BRUM
+    run_comparison_mrum,  # MRUM
     find_best_matching_files,  # Folder processing
-    save_matched_files,        # Folder processing
+    save_matched_files,  # Folder processing
 )
 import logging
 
@@ -46,9 +46,9 @@ logging.info("Logging setup is complete.")
 BASE_DIR = Path(__file__).resolve().parent.parent  # points at compare-plugin
 config = load_config(str(BASE_DIR / "config.json"))
 
-UPLOAD_FOLDER = config["upload_folder"]   # e.g. "uploads"
-RESULT_FOLDER = config["result_folder"]   # e.g. "results"
-HISTORY_FOLDER = BASE_DIR / "history"     # used by insights APIs
+UPLOAD_FOLDER = config["upload_folder"]  # e.g. "uploads"
+RESULT_FOLDER = config["result_folder"]  # e.g. "results"
+HISTORY_FOLDER = BASE_DIR / "history"  # used by insights APIs
 
 app = Flask(
     __name__,
@@ -102,7 +102,7 @@ def upload_apm():
         comparison_result_path=output_file,
         current_file_path=curr_path,
         previous_file_path=prev_path,
-        result_folder=RESULT_FOLDER,   # IMPORTANT
+        result_folder=RESULT_FOLDER,  # IMPORTANT
     )
 
     app.config["LAST_RESULT_APM"] = output_file
@@ -116,8 +116,6 @@ def upload_apm():
         "Insights snapshot has been generated and will be available on the Insights page."
     )
     return render_template("index.html", message=msg)
-
-
 
 
 @app.route("/download/<filename>")
@@ -210,65 +208,65 @@ def upload_mrum():
 @app.route("/upload_folders", methods=["POST"])
 def upload_folders():
     logging.debug("[FOLDERS] Request files: %s", list(request.files.keys()))
-    
+
     # Check if folders were uploaded
-    if 'previous_folder' not in request.files or 'current_folder' not in request.files:
+    if "previous_folder" not in request.files or "current_folder" not in request.files:
         logging.error("[FOLDERS] No folder part")
-        return render_template('index.html', message="Error: Please select both previous and current folders."), 400
-    
+        return render_template("index.html", message="Error: Please select both previous and current folders."), 400
+
     # Get the selected data types from checkboxes
-    selected_types = request.form.getlist('data_types')
+    selected_types = request.form.getlist("data_types")
     if not selected_types:
-        return render_template('index.html', message="Error: Please select at least one data type (APM, BRUM, or MRUM)."), 400
-    
+        return render_template("index.html", message="Error: Please select at least one data type (APM, BRUM, or MRUM)."), 400
+
     logging.info(f"[FOLDERS] Selected data types: {selected_types}")
-    
+
     # Get all files from both folders
-    previous_files = request.files.getlist('previous_folder')
-    current_files = request.files.getlist('current_folder')
-    
+    previous_files = request.files.getlist("previous_folder")
+    current_files = request.files.getlist("current_folder")
+
     logging.info(f"[FOLDERS] Previous folder: {len(previous_files)} files")
     logging.info(f"[FOLDERS] Current folder: {len(current_files)} files")
-    
+
     # Find matching files for each data type
     matches = find_best_matching_files(previous_files, current_files)
-    
+
     # Process each selected data type
     results = {}
     errors = []
-    
+
     for data_type in selected_types:
         domain = data_type.upper()
         logging.info(f"[FOLDERS] Processing {domain}")
-        
+
         try:
             # Save matched files for this domain
             previous_path, current_path = save_matched_files(matches, UPLOAD_FOLDER, data_type)
-            
+
             if not previous_path or not current_path:
                 errors.append(f"No matching {domain} files found in the selected folders.")
                 continue
-            
+
             # Process based on data type
-            if data_type == 'apm':
+            if data_type == "apm":
                 output_file, ppt_file = run_comparison(
                     previous_file_path=previous_path,
                     current_file_path=current_path,
                     config=config,
                 )
-            elif data_type == 'brum':
+            elif data_type == "brum":
                 output_file, ppt_file = run_comparison_brum(
                     previous_file_path=previous_path,
                     current_file_path=current_path,
                     config=config,
                 )
-            elif data_type == 'mrum':
+            elif data_type == "mrum":
                 output_file, ppt_file = run_comparison_mrum(
                     previous_file_path=previous_path,
                     current_file_path=current_path,
                     config=config,
                 )
-            
+
             # Build JSON snapshot for insights
             json_path, json_name, _ = build_comparison_json(
                 domain=domain,
@@ -277,41 +275,37 @@ def upload_folders():
                 previous_file_path=previous_path,
                 result_folder=RESULT_FOLDER,
             )
-            
+
             # Store results
-            results[domain] = {
-                'xlsx': os.path.basename(output_file),
-                'pptx': os.path.basename(ppt_file),
-                'json': json_name
-            }
-            
+            results[domain] = {"xlsx": os.path.basename(output_file), "pptx": os.path.basename(ppt_file), "json": json_name}
+
             logging.info(f"[FOLDERS] Successfully processed {domain}")
-            
+
         except Exception as e:
             logging.error(f"[FOLDERS] Error processing {domain}: {e}", exc_info=True)
             errors.append(f"{domain}: Error during processing - {str(e)}")
-    
+
     # Generate response message
     if results:
         message_parts = ["Processing completed successfully!<br><br>"]
-        
+
         for domain, files in results.items():
             message_parts.append(f"<strong>{domain}:</strong><br>")
             message_parts.append(f"• Results: <a href='/download/{files['xlsx']}' style='color: #32CD32;'>Download Excel</a><br>")
             message_parts.append(f"• PowerPoint: <a href='/download/{files['pptx']}' style='color: #32CD32;'>Download PPT</a><br>")
             message_parts.append(f"• JSON: <a href='/download/{files['json']}' style='color: #32CD32;'>Download JSON</a><br><br>")
-        
+
         if errors:
             message_parts.append("<br><strong>Warnings:</strong><br>")
             for error in errors:
                 message_parts.append(f"• {error}<br>")
-        
+
         message = "".join(message_parts)
     else:
         message = f"Error: No files could be processed. Issues encountered:<br>{'<br>'.join(errors)}"
-        return render_template('index.html', message=message), 400
-    
-    return render_template('index.html', message=message)
+        return render_template("index.html", message=message), 400
+
+    return render_template("index.html", message=message)
 
 
 #####################################################################################
@@ -385,6 +379,7 @@ def scan_runs(folder: str, domain: str, controller_filter: Optional[str], limit:
 # For now, you can leave your existing implementations here and just
 # update them later to use the new comparison outputs.
 
+
 @app.route("/api/history", methods=["GET"])
 def api_history():
     """
@@ -399,7 +394,7 @@ def api_history():
         return jsonify({"error": "Invalid domain."}), 400
 
     folder = RESULT_FOLDER
-    prefix = f"analysis_summary_{domain}_"   # <-- matches your filenames
+    prefix = f"analysis_summary_{domain}_"  # <-- matches your filenames
 
     items = []
 
@@ -460,11 +455,7 @@ def api_apps():
         prefix = f"analysis_summary_{domain.lower()}_"
         if not os.path.isdir(folder):
             return None
-        candidates = [
-            n
-            for n in os.listdir(folder)
-            if n.startswith(prefix) and n.endswith(".json")
-        ]
+        candidates = [n for n in os.listdir(folder) if n.startswith(prefix) and n.endswith(".json")]
         if not candidates:
             return None
         # Files are timestamped; sorted() gives oldest->newest; we want newest
@@ -508,10 +499,7 @@ def api_insights():
     else:
         prefix = f"analysis_summary_{domain.lower()}_"
         try:
-            names = [
-                n for n in os.listdir(folder)
-                if n.startswith(prefix) and n.endswith(".json")
-            ]
+            names = [n for n in os.listdir(folder) if n.startswith(prefix) and n.endswith(".json")]
         except FileNotFoundError:
             names = []
         names.sort(reverse=True)  # newest first
@@ -523,7 +511,7 @@ def api_insights():
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    apps_index = (data.get("appsIndex") or {})
+    apps_index = data.get("appsIndex") or {}
     entry = apps_index.get(app_name)
     if not entry:
         # Try a normalized match
@@ -548,7 +536,6 @@ def api_insights():
             "meta": data.get("meta", {}),
         }
     )
-
 
 
 @app.route("/api/trends/runs", methods=["GET"])
@@ -600,12 +587,12 @@ def api_trends_runs():
         }
     )
 
+
 if __name__ == "__main__":
+
     def open_browser():
         webbrowser.open("http://127.0.0.1:5000")
 
     # Give Flask a moment to start, then open the browser
     threading.Timer(1.0, open_browser).start()
     app.run(host="127.0.0.1", port=5000, debug=False)
-
-

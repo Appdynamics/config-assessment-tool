@@ -22,10 +22,11 @@ client_id = f"{oauth_client_id}"
 client_secret = os.getenv("TEST_OAUTH_CLIENT_SECRET")
 bearer_token = os.getenv("TEST_OAUTH_BEARER_TOKEN")
 connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
-token_url=f"{connection_url}/controller/api/oauth/access_token"
+token_url = f"{connection_url}/controller/api/oauth/access_token"
 
 
 initLogging(True)
+
 
 @pytest.fixture
 def event_loop():
@@ -40,35 +41,47 @@ def event_loop():
 def authentication_factory(auth_method):
     method = None
     if auth_method == "basic":
-        method = AuthMethod( auth_method=auth_method, host=host,
-                             port=port, ssl=ssl, account=account, username=username, password=pwd,
-                             verifySsl=True, useProxy=False
-                             )
+        method = AuthMethod(
+            auth_method=auth_method, host=host, port=port, ssl=ssl, account=account, username=username, password=pwd, verifySsl=True, useProxy=False
+        )
     elif auth_method == "secret":
-        method =  AuthMethod( auth_method=auth_method, host=host,
-                              port=port, ssl=ssl, account=account, username=client_id,
-                              password=client_secret, verifySsl=True, useProxy=False
-                              )
+        method = AuthMethod(
+            auth_method=auth_method,
+            host=host,
+            port=port,
+            ssl=ssl,
+            account=account,
+            username=client_id,
+            password=client_secret,
+            verifySsl=True,
+            useProxy=False,
+        )
     elif auth_method == "token":
-        method = AuthMethod( auth_method=auth_method, host=host, port=port,
-                             ssl=ssl, account=account, username=client_id, password=bearer_token,
-                             verifySsl=True, useProxy=False
-                             )
+        method = AuthMethod(
+            auth_method=auth_method,
+            host=host,
+            port=port,
+            ssl=ssl,
+            account=account,
+            username=client_id,
+            password=bearer_token,
+            verifySsl=True,
+            useProxy=False,
+        )
     else:
         raise ValueError(f"Invalid auth method: {auth_method}")
 
-    return AppDService(
-        applicationFilter={"apm": ".*", "mrum": ".*", "brum": ".*"},
-        timeRangeMins=1440,
-        authMethod=method)
+    return AppDService(applicationFilter={"apm": ".*", "mrum": ".*", "brum": ".*"}, timeRangeMins=1440, authMethod=method)
+
 
 @pytest.fixture()
 def appdServiceFactory():
     return authentication_factory
 
+
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
 @pytest.mark.asyncio
-async def testLogin(appdServiceFactory,auth_method):
+async def testLogin(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     await appdService.close()
@@ -92,7 +105,7 @@ async def testGetApmApplications(appdServiceFactory, auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetBtMatchRules(appdServiceFactory,auth_method):
+async def testGetBtMatchRules(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     btMatchRules = await appdService.getBtMatchRules(APPLICATION_ID)
@@ -112,7 +125,7 @@ async def testGetBtMatchRules(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetConfigurations(appdServiceFactory,auth_method):
+async def testGetConfigurations(appdServiceFactory, auth_method):
     logging.info("testGetConfig...")
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
@@ -146,7 +159,7 @@ async def testGetConfigurations(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetAllCustomExitPoints(appdServiceFactory,auth_method):
+async def testGetAllCustomExitPoints(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     customExitPoints = await appdService.getAllCustomExitPoints(APPLICATION_ID)
@@ -158,15 +171,16 @@ async def testGetAllCustomExitPoints(appdServiceFactory,auth_method):
         assert "agentType" in customExitPoint
 
     assert (
-               next(
-                   customExitPoint
-                   for customExitPoint in customExitPoints.data
-                   if customExitPoint["name"] == "FOO" and customExitPoint["agentType"] == "APP_AGENT"
-               ),
-               None,
-           ) is not None
+        next(
+            customExitPoint
+            for customExitPoint in customExitPoints.data
+            if customExitPoint["name"] == "FOO" and customExitPoint["agentType"] == "APP_AGENT"
+        ),
+        None,
+    ) is not None
 
     await appdService.close()
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
@@ -188,7 +202,7 @@ async def testGetBackendDiscoveryConfigs(appdServiceFactory, auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetDevModeConfig(appdServiceFactory,auth_method):
+async def testGetDevModeConfig(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     devModeConfig = await appdService.getDevModeConfig(APPLICATION_ID)
@@ -205,7 +219,7 @@ async def testGetDevModeConfig(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetInstrumentationLevel(appdServiceFactory,auth_method):
+async def testGetInstrumentationLevel(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     instrumentationLevel = await appdService.getInstrumentationLevel(APPLICATION_ID)
@@ -218,8 +232,7 @@ async def testGetInstrumentationLevel(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["token"])
-async def testGetAllNodePropertiesForCustomizedComponents(appdServiceFactory,
-                                                          auth_method):
+async def testGetAllNodePropertiesForCustomizedComponents(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     allNodeProperties = await appdService.getAllNodePropertiesForCustomizedComponents(APPLICATION_ID)
@@ -239,7 +252,7 @@ async def testGetAllNodePropertiesForCustomizedComponents(appdServiceFactory,
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetApplicationConfiguration(appdServiceFactory,auth_method):
+async def testGetApplicationConfiguration(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     applicationConfiguration = await appdService.getApplicationConfiguration(APPLICATION_ID)
@@ -260,7 +273,7 @@ async def testGetApplicationConfiguration(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetServiceEndpointCustomMatchRules(appdServiceFactory,auth_method):
+async def testGetServiceEndpointCustomMatchRules(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     serviceEndpointMatchRules = await appdService.getServiceEndpointMatchRules(APPLICATION_ID)
@@ -290,7 +303,7 @@ async def testGetServiceEndpointCustomMatchRules(appdServiceFactory,auth_method)
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetAppLevelBTConfig(appdServiceFactory,auth_method):
+async def testGetAppLevelBTConfig(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     appLevelBTConfig = await appdService.getAppLevelBTConfig(APPLICATION_ID)
@@ -307,7 +320,7 @@ async def testGetAppLevelBTConfig(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetMetricData(appdServiceFactory,auth_method):
+async def testGetMetricData(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -345,7 +358,7 @@ async def testGetMetricData(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetEventCountsLastDay(appdServiceFactory,auth_method):
+async def testGetEventCountsLastDay(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -370,7 +383,7 @@ async def testGetEventCountsLastDay(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetHealthRules(appdServiceFactory,auth_method):
+async def testGetHealthRules(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -395,7 +408,7 @@ async def testGetHealthRules(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetPolicies(appdServiceFactory,auth_method):
+async def testGetPolicies(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -417,7 +430,7 @@ async def testGetPolicies(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetPolicies(appdServiceFactory,auth_method):
+async def testGetPolicies(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     policies = await appdService.getPolicies(APPLICATION_ID)
@@ -438,7 +451,7 @@ async def testGetPolicies(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetDataCollectorUsage(appdServiceFactory,auth_method):
+async def testGetDataCollectorUsage(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -452,42 +465,42 @@ async def testGetDataCollectorUsage(appdServiceFactory,auth_method):
 
     assert ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["allDataCollectors"]
     assert (
-               "Business Data",
-               "in_snapshot_not_analytics",
-               False,
-           ) in dataCollectorUsage.data["allDataCollectors"]
+        "Business Data",
+        "in_snapshot_not_analytics",
+        False,
+    ) in dataCollectorUsage.data["allDataCollectors"]
     assert (
-               "Business Data",
-               "in_snapshot_and_analytics",
-               True,
-           ) in dataCollectorUsage.data["allDataCollectors"]
+        "Business Data",
+        "in_snapshot_and_analytics",
+        True,
+    ) in dataCollectorUsage.data["allDataCollectors"]
 
     assert not ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
     assert (
-               "Business Data",
-               "in_snapshot_not_analytics",
-               False,
-           ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
+        "Business Data",
+        "in_snapshot_not_analytics",
+        False,
+    ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
     assert (
-               "Business Data",
-               "in_snapshot_and_analytics",
-               True,
-           ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
+        "Business Data",
+        "in_snapshot_and_analytics",
+        True,
+    ) in dataCollectorUsage.data["dataCollectorsPresentInSnapshots"]
 
     assert not ("HTTP Parameter", "foo", True) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
     assert not ("Business Data", "in_snapshot_not_analytics", False) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
     assert (
-               "Business Data",
-               "in_snapshot_and_analytics",
-               True,
-           ) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
+        "Business Data",
+        "in_snapshot_and_analytics",
+        True,
+    ) in dataCollectorUsage.data["dataCollectorsPresentInAnalytics"]
 
     await appdService.close()
 
+
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
 @pytest.mark.asyncio
-async def testGetAnalyticsEnabledStatusForAllApplications(appdServiceFactory,
-                                                          auth_method):
+async def testGetAnalyticsEnabledStatusForAllApplications(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -526,8 +539,8 @@ async def testGetDashboards(appdServiceFactory, auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetUserPermissions(appdServiceFactory,auth_method):
-    '''authenticate validates required permissions as well'''
+async def testGetUserPermissions(appdServiceFactory, auth_method):
+    """authenticate validates required permissions as well"""
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
     await appdService.close()
@@ -543,7 +556,7 @@ async def testGetUserPermissions(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetCustomMetrics(appdServiceFactory,auth_method):
+async def testGetCustomMetrics(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -556,7 +569,7 @@ async def testGetCustomMetrics(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetAccountUsageSummary(appdServiceFactory,auth_method):
+async def testGetAccountUsageSummary(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -577,7 +590,7 @@ async def testGetAccountUsageSummary(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetAppServerAgents(appdServiceFactory,auth_method):
+async def testGetAppServerAgents(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -605,7 +618,7 @@ async def testGetAppServerAgents(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetMachineAgents(appdServiceFactory,auth_method):
+async def testGetMachineAgents(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -674,7 +687,7 @@ async def testGetMachineAgents(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetCustomMetrics(appdServiceFactory,auth_method):
+async def testGetCustomMetrics(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -698,7 +711,7 @@ async def testGetCustomMetrics(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetEumApplications(appdServiceFactory,auth_method):
+async def testGetEumApplications(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -735,7 +748,7 @@ async def testGetEumApplications(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetEumPageListViewData(appdServiceFactory,auth_method):
+async def testGetEumPageListViewData(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -754,7 +767,7 @@ async def testGetEumPageListViewData(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetPagesAndFramesConfig(appdServiceFactory,auth_method):
+async def testGetPagesAndFramesConfig(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -790,7 +803,7 @@ async def testGetPagesAndFramesConfig(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetAJAXConfig(appdServiceFactory,auth_method):
+async def testGetAJAXConfig(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 
@@ -847,7 +860,7 @@ async def testGetAJAXConfig(appdServiceFactory,auth_method):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auth_method", ["basic", "secret", "token"])
-async def testGetVirtualPagesConfig(appdServiceFactory,auth_method):
+async def testGetVirtualPagesConfig(appdServiceFactory, auth_method):
     appdService = appdServiceFactory(auth_method)
     assert (await appdService.getAuthMethod().authenticate()).error is None
 

@@ -12,9 +12,9 @@ from .excel_io import get_key_column
 logger = logging.getLogger(__name__)
 
 # Color fills (copied from original script)
-red_fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
-green_fill = PatternFill(start_color='00FF00', end_color='00FF00', fill_type='solid')
-added_fill = PatternFill(start_color='ADD8E6', end_color='ADD8E6', fill_type='solid')
+red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+green_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+added_fill = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
 
 """
 comparers_apm.py
@@ -36,21 +36,22 @@ Key Functions:
 - `compare_files_other_sheets_apm`: Compares all sheets except "Summary".
 """
 
+
 def compare_analysis(ws_previous, ws_current):
     try:
         # Define the columns for comparison
         columns = {
-            'AppAgentsAPM': None,
-            'MachineAgentsAPM': None,
-            'BusinessTransactionsAPM': None,
-            'BackendsAPM': None,
-            'OverheadAPM': None,
-            'ServiceEndpointsAPM': None,
-            'ErrorConfigurationAPM': None,
-            'HealthRulesAndAlertingAPM': None,
-            'DataCollectorsAPM': None,
-            'DashboardsAPM': None,
-            'OverallAssessment': None
+            "AppAgentsAPM": None,
+            "MachineAgentsAPM": None,
+            "BusinessTransactionsAPM": None,
+            "BackendsAPM": None,
+            "OverheadAPM": None,
+            "ServiceEndpointsAPM": None,
+            "ErrorConfigurationAPM": None,
+            "HealthRulesAndAlertingAPM": None,
+            "DataCollectorsAPM": None,
+            "DashboardsAPM": None,
+            "OverallAssessment": None,
         }
 
         # Retrieve column indices
@@ -63,10 +64,10 @@ def compare_analysis(ws_previous, ws_current):
             columns[column] = (col_idx_prev, col_idx_curr)
 
         # Retrieve key column indices
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        name_col_prev = get_key_column(ws_previous, 'name')
-        name_col_curr = get_key_column(ws_current, 'name')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        name_col_prev = get_key_column(ws_previous, "name")
+        name_col_curr = get_key_column(ws_current, "name")
 
         if name_col_prev is None or name_col_curr is None:
             logging.error("The 'name' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -109,7 +110,7 @@ def compare_analysis(ws_previous, ws_current):
 
                     try:
                         # Comparison logic based on ranking
-                        ranking = {'bronze': 1, 'silver': 2, 'gold': 3, 'platinum': 4}
+                        ranking = {"bronze": 1, "silver": 2, "gold": 3, "platinum": 4}
                         prev_rank = ranking.get(str(previous_value).lower(), 0)
                         curr_rank = ranking.get(str(current_value).lower(), 0)
 
@@ -121,8 +122,7 @@ def compare_analysis(ws_previous, ws_current):
                             cell_output.value = f"{previous_value} → {current_value} (Downgraded)"
                     except ValueError:
                         logging.error(
-                            f"Invalid ranking value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
+                            f"Invalid ranking value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                         )
 
         # Add new entries in the current sheet
@@ -141,11 +141,11 @@ def compare_analysis(ws_previous, ws_current):
 def compare_appagentsapm(ws_previous, ws_current):
     try:
         columns = {
-            'metricLimitNotHit': None,
-            'percentAgentsLessThan1YearOld': None,
-            'percentAgentsLessThan2YearsOld': None,
-            'percentAgentsReportingData': None,
-            'percentAgentsRunningSameVersion': None
+            "metricLimitNotHit": None,
+            "percentAgentsLessThan1YearOld": None,
+            "percentAgentsLessThan2YearsOld": None,
+            "percentAgentsReportingData": None,
+            "percentAgentsRunningSameVersion": None,
         }
 
         for column in columns.keys():
@@ -156,10 +156,10 @@ def compare_appagentsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -197,7 +197,7 @@ def compare_appagentsapm(ws_previous, ws_current):
                     if previous_value == current_value:
                         continue
 
-                    if column == 'metricLimitNotHit':
+                    if column == "metricLimitNotHit":
                         prev_value_str = str(previous_value).strip().upper()
                         curr_value_str = str(current_value).strip().upper()
 
@@ -227,8 +227,7 @@ def compare_appagentsapm(ws_previous, ws_current):
                                 cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Declined)"
                         except ValueError:
                             logging.error(
-                                f"Non-numeric value encountered for column '{column}': "
-                                f"Previous={previous_value}, Current={current_value}"
+                                f"Non-numeric value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                             )
 
         for key, current_row in current_data.items():
@@ -246,11 +245,11 @@ def compare_appagentsapm(ws_previous, ws_current):
 def compare_machineagentsapm(ws_previous, ws_current):
     try:
         columns = {
-            'percentAgentsLessThan1YearOld': None,
-            'percentAgentsLessThan2YearsOld': None,
-            'percentAgentsReportingData': None,
-            'percentAgentsRunningSameVersion': None,
-            'percentAgentsInstalledAlongsideAppAgents': None
+            "percentAgentsLessThan1YearOld": None,
+            "percentAgentsLessThan2YearsOld": None,
+            "percentAgentsReportingData": None,
+            "percentAgentsRunningSameVersion": None,
+            "percentAgentsInstalledAlongsideAppAgents": None,
         }
 
         for column in columns.keys():
@@ -261,10 +260,10 @@ def compare_machineagentsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -315,10 +314,7 @@ def compare_machineagentsapm(ws_previous, ws_current):
                             cell_output.fill = red_fill
                             cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Declined)"
                     except ValueError:
-                        logging.error(
-                            f"Non-numeric value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
-                        )
+                        logging.error(f"Non-numeric value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}")
 
         for key, current_row in current_data.items():
             if key not in previous_data:
@@ -335,10 +331,10 @@ def compare_machineagentsapm(ws_previous, ws_current):
 def compare_datacollectorsapm(ws_previous, ws_current):
     try:
         columns = {
-            'numberOfDataCollectorFieldsConfigured': None,
-            'numberOfDataCollectorFieldsCollectedInSnapshots': None,
-            'numberOfDataCollectorFieldsCollectedInAnalytics': None,
-            'biqEnabled': None
+            "numberOfDataCollectorFieldsConfigured": None,
+            "numberOfDataCollectorFieldsCollectedInSnapshots": None,
+            "numberOfDataCollectorFieldsCollectedInAnalytics": None,
+            "biqEnabled": None,
         }
 
         for column in columns.keys():
@@ -349,10 +345,10 @@ def compare_datacollectorsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -391,7 +387,7 @@ def compare_datacollectorsapm(ws_previous, ws_current):
                         cell_output.value = previous_value
                         continue
 
-                    if column == 'biqEnabled':
+                    if column == "biqEnabled":
                         prev_value_str = str(previous_value).strip().upper()
                         curr_value_str = str(current_value).strip().upper()
 
@@ -421,11 +417,7 @@ def compare_datacollectorsapm(ws_previous, ws_current):
 
 def compare_backendsapm(ws_previous, ws_current):
     try:
-        columns = {
-            'percentBackendsWithLoad': None,
-            'backendLimitNotHit': None,
-            'numberOfCustomBackendRules': None
-        }
+        columns = {"percentBackendsWithLoad": None, "backendLimitNotHit": None, "numberOfCustomBackendRules": None}
 
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
@@ -435,10 +427,10 @@ def compare_backendsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -477,7 +469,7 @@ def compare_backendsapm(ws_previous, ws_current):
                         cell_output.value = previous_value
                         continue
 
-                    if column == 'backendLimitNotHit':
+                    if column == "backendLimitNotHit":
                         prev_value = str(previous_value).strip().upper()
                         curr_value = str(current_value).strip().upper()
 
@@ -507,8 +499,7 @@ def compare_backendsapm(ws_previous, ws_current):
                                 cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Decreased)"
                         except ValueError:
                             logging.error(
-                                f"Non-numeric value encountered for column '{column}': "
-                                f"Previous={previous_value}, Current={current_value}"
+                                f"Non-numeric value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                             )
 
         for key, current_row in current_data.items():
@@ -526,10 +517,10 @@ def compare_backendsapm(ws_previous, ws_current):
 def compare_overheadapm(ws_previous, ws_current):
     try:
         columns = {
-            'developerModeNotEnabledForAnyBT': None,
-            'findEntryPointsNotEnabled': None,
-            'aggressiveSnapshottingNotEnabled': None,
-            'developerModeNotEnabledForApplication': None
+            "developerModeNotEnabledForAnyBT": None,
+            "findEntryPointsNotEnabled": None,
+            "aggressiveSnapshottingNotEnabled": None,
+            "developerModeNotEnabledForApplication": None,
         }
 
         for column in columns.keys():
@@ -540,10 +531,10 @@ def compare_overheadapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -582,10 +573,10 @@ def compare_overheadapm(ws_previous, ws_current):
                         continue
 
                     if column in (
-                        'developerModeNotEnabledForAnyBT',
-                        'findEntryPointsNotEnabled',
-                        'aggressiveSnapshottingNotEnabled',
-                        'developerModeNotEnabledForApplication',
+                        "developerModeNotEnabledForAnyBT",
+                        "findEntryPointsNotEnabled",
+                        "aggressiveSnapshottingNotEnabled",
+                        "developerModeNotEnabledForApplication",
                     ):
                         prev_value_str = str(previous_value).strip().upper()
                         curr_value_str = str(current_value).strip().upper()
@@ -617,10 +608,10 @@ def compare_overheadapm(ws_previous, ws_current):
 def compare_healthrulesandalertingapm(ws_previous, ws_current):
     try:
         columns = {
-            'numberOfHealthRuleViolations': None,
-            'numberOfDefaultHealthRulesModified': None,
-            'numberOfActionsBoundToEnabledPolicies': None,
-            'numberOfCustomHealthRules': None
+            "numberOfHealthRuleViolations": None,
+            "numberOfDefaultHealthRulesModified": None,
+            "numberOfActionsBoundToEnabledPolicies": None,
+            "numberOfCustomHealthRules": None,
         }
 
         for column in columns.keys():
@@ -631,10 +622,10 @@ def compare_healthrulesandalertingapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -678,7 +669,7 @@ def compare_healthrulesandalertingapm(ws_previous, ws_current):
                         formatted_prev_value = f"{prev_value_num:.2f}"
                         formatted_curr_value = f"{curr_value_num:.2f}"
 
-                        if column == 'numberOfHealthRuleViolations':
+                        if column == "numberOfHealthRuleViolations":
                             if curr_value_num > prev_value_num:
                                 cell_output.fill = red_fill
                                 cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Increased)"
@@ -693,10 +684,7 @@ def compare_healthrulesandalertingapm(ws_previous, ws_current):
                                 cell_output.fill = red_fill
                                 cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Decreased)"
                     except ValueError:
-                        logging.error(
-                            f"Non-numeric value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
-                        )
+                        logging.error(f"Non-numeric value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}")
 
         for key, current_row in current_data.items():
             if key not in previous_data:
@@ -712,10 +700,7 @@ def compare_healthrulesandalertingapm(ws_previous, ws_current):
 
 def compare_errorconfigurationapm(ws_previous, ws_current):
     try:
-        columns = {
-            'successPercentageOfWorstTransaction': None,
-            'numberOfCustomRules': None
-        }
+        columns = {"successPercentageOfWorstTransaction": None, "numberOfCustomRules": None}
 
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
@@ -725,10 +710,10 @@ def compare_errorconfigurationapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -772,7 +757,7 @@ def compare_errorconfigurationapm(ws_previous, ws_current):
                         formatted_prev_value = f"{prev_value_num:.2f}"
                         formatted_curr_value = f"{curr_value_num:.2f}"
 
-                        if column in ('successPercentageOfWorstTransaction', 'numberOfCustomRules'):
+                        if column in ("successPercentageOfWorstTransaction", "numberOfCustomRules"):
                             if curr_value_num > prev_value_num:
                                 cell_output.fill = green_fill
                                 cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Increased)"
@@ -780,10 +765,7 @@ def compare_errorconfigurationapm(ws_previous, ws_current):
                                 cell_output.fill = red_fill
                                 cell_output.value = f"{formatted_prev_value} → {formatted_curr_value} (Decreased)"
                     except ValueError:
-                        logging.error(
-                            f"Non-numeric value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
-                        )
+                        logging.error(f"Non-numeric value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}")
 
         for key, current_row in current_data.items():
             if key not in previous_data:
@@ -799,11 +781,7 @@ def compare_errorconfigurationapm(ws_previous, ws_current):
 
 def compare_serviceendpointsapm(ws_previous, ws_current):
     try:
-        columns = {
-            'numberOfCustomServiceEndpointRules': None,
-            'serviceEndpointLimitNotHit': None,
-            'percentServiceEndpointsWithLoadOrDisabled': None
-        }
+        columns = {"numberOfCustomServiceEndpointRules": None, "serviceEndpointLimitNotHit": None, "percentServiceEndpointsWithLoadOrDisabled": None}
 
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
@@ -813,10 +791,10 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -851,16 +829,13 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
                     current_value = current_row[col_idx_curr - 1].value
                     cell_output = ws_current.cell(row=current_row[0].row, column=col_idx_curr)
 
-                    logging.debug(
-                        f"Comparing '{column}' for key '{key}': "
-                        f"Previous={previous_value}, Current={current_value}"
-                    )
+                    logging.debug(f"Comparing '{column}' for key '{key}': " f"Previous={previous_value}, Current={current_value}")
 
                     if previous_value == current_value:
                         continue
 
                     try:
-                        if column == 'numberOfCustomServiceEndpointRules':
+                        if column == "numberOfCustomServiceEndpointRules":
                             prev_value_num = float(previous_value)
                             curr_value_num = float(current_value)
                             if curr_value_num > prev_value_num:
@@ -870,14 +845,11 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
                                 cell_output.fill = red_fill
                                 cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
 
-                        elif column == 'serviceEndpointLimitNotHit':
+                        elif column == "serviceEndpointLimitNotHit":
                             prev_value_str = str(previous_value).strip().upper()
                             curr_value_str = str(current_value).strip().upper()
 
-                            logging.info(
-                                f"Comparing serviceEndpointLimitNotHit: "
-                                f"Previous={prev_value_str}, Current={curr_value_str}"
-                            )
+                            logging.info(f"Comparing serviceEndpointLimitNotHit: " f"Previous={prev_value_str}, Current={curr_value_str}")
 
                             if prev_value_str == "FALSE" and curr_value_str == "TRUE":
                                 cell_output.fill = green_fill
@@ -887,11 +859,10 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
                                 cell_output.value = "TRUE → FALSE"
                             else:
                                 logging.info(
-                                    f"Unexpected values for serviceEndpointLimitNotHit: "
-                                    f"Previous={previous_value}, Current={current_value}"
+                                    f"Unexpected values for serviceEndpointLimitNotHit: " f"Previous={previous_value}, Current={current_value}"
                                 )
 
-                        elif column == 'percentServiceEndpointsWithLoadOrDisabled':
+                        elif column == "percentServiceEndpointsWithLoadOrDisabled":
                             prev_value_num = float(previous_value)
                             curr_value_num = float(current_value)
                             if curr_value_num > prev_value_num:
@@ -903,8 +874,7 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
 
                     except ValueError:
                         logging.error(
-                            f"Non-numeric or invalid value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
+                            f"Non-numeric or invalid value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                         )
 
         for key, current_row in current_data.items():
@@ -921,11 +891,7 @@ def compare_serviceendpointsapm(ws_previous, ws_current):
 
 def compare_dashboardsapm(ws_previous, ws_current):
     try:
-        columns = {
-            'numberOfDashboards': None,
-            'percentageOfDashboardsModifiedLast6Months': None,
-            'numberOfDashboardsUsingBiQ': None
-        }
+        columns = {"numberOfDashboards": None, "percentageOfDashboardsModifiedLast6Months": None, "numberOfDashboardsUsingBiQ": None}
 
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
@@ -935,10 +901,10 @@ def compare_dashboardsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -987,8 +953,7 @@ def compare_dashboardsapm(ws_previous, ws_current):
                             cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
                     except ValueError:
                         logging.error(
-                            f"Non-numeric or invalid value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
+                            f"Non-numeric or invalid value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                         )
 
         for key, current_row in current_data.items():
@@ -1005,11 +970,7 @@ def compare_dashboardsapm(ws_previous, ws_current):
 
 def compare_overallassessmentapm(ws_previous, ws_current):
     try:
-        columns = {
-            'percentageTotalPlatinum': None,
-            'percentageTotalGoldOrBetter': None,
-            'percentageTotalSilverOrBetter': None
-        }
+        columns = {"percentageTotalPlatinum": None, "percentageTotalGoldOrBetter": None, "percentageTotalSilverOrBetter": None}
 
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
@@ -1019,10 +980,10 @@ def compare_overallassessmentapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
 
         if app_col_prev is None or app_col_curr is None:
             logging.error("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -1071,8 +1032,7 @@ def compare_overallassessmentapm(ws_previous, ws_current):
                             cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
                     except ValueError:
                         logging.error(
-                            f"Non-numeric or invalid value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
+                            f"Non-numeric or invalid value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                         )
 
         for key, current_row in current_data.items():
@@ -1089,12 +1049,7 @@ def compare_overallassessmentapm(ws_previous, ws_current):
 
 def compare_businesstransactionsapm(ws_previous, ws_current):
     try:
-        columns = {
-            'numberOfBTs': None,
-            'percentBTsWithLoad': None,
-            'btLockdownEnabled': None,
-            'numberCustomMatchRules': None
-        }
+        columns = {"numberOfBTs": None, "percentBTsWithLoad": None, "btLockdownEnabled": None, "numberCustomMatchRules": None}
 
         for column in columns.keys():
             col_idx_prev = get_key_column(ws_previous, column)
@@ -1104,10 +1059,10 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                 return
             columns[column] = (col_idx_prev, col_idx_curr)
 
-        ctrl_col_prev = get_key_column(ws_previous, 'controller')
-        ctrl_col_curr = get_key_column(ws_current, 'controller')
-        app_col_prev = get_key_column(ws_previous, 'application')
-        app_col_curr = get_key_column(ws_current, 'application')
+        ctrl_col_prev = get_key_column(ws_previous, "controller")
+        ctrl_col_curr = get_key_column(ws_current, "controller")
+        app_col_prev = get_key_column(ws_previous, "application")
+        app_col_curr = get_key_column(ws_current, "application")
 
         if app_col_prev is None or app_col_curr is None:
             print("The 'application' column is missing in one of the sheets. Cannot proceed with comparison.")
@@ -1145,45 +1100,34 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                     if previous_value == current_value:
                         continue
 
-                    try:     
+                    try:
 
-                        if column == 'numberOfBTs':
+                        if column == "numberOfBTs":
                             prev_value_num = float(previous_value)
                             curr_value_num = float(current_value)
                             if 201 <= prev_value_num <= 600:
                                 if curr_value_num < prev_value_num:
                                     cell_output.fill = green_fill
-                                    cell_output.value = (
-                                        f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
-                                    )
+                                    cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
                                 elif curr_value_num > prev_value_num:
                                     cell_output.fill = red_fill
-                                    cell_output.value = (
-                                        f"{prev_value_num:.2f} → {curr_value_num:.2f} (Increased)"
-                                    )
+                                    cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Increased)"
 
-                        elif column == 'percentBTsWithLoad':
+                        elif column == "percentBTsWithLoad":
                             prev_value_num = float(previous_value)
                             curr_value_num = float(current_value)
                             if curr_value_num > prev_value_num:
                                 cell_output.fill = green_fill
-                                cell_output.value = (
-                                    f"{prev_value_num:.2f} → {curr_value_num:.2f} (Increased)"
-                                )
+                                cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Increased)"
                             elif curr_value_num < prev_value_num:
                                 cell_output.fill = red_fill
-                                cell_output.value = (
-                                    f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
-                                )
+                                cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
 
-                        elif column == 'btLockdownEnabled':
+                        elif column == "btLockdownEnabled":
                             prev_value_str = str(previous_value).strip().upper()
                             curr_value_str = str(current_value).strip().upper()
 
-                            print(
-                                f"Comparing btLockdownEnabled for app {key}: "
-                                f"Previous={prev_value_str}, Current={curr_value_str}"
-                            )
+                            print(f"Comparing btLockdownEnabled for app {key}: " f"Previous={prev_value_str}, Current={curr_value_str}")
 
                             if prev_value_str == "FALSE" and curr_value_str == "TRUE":
                                 print(f"Update: FALSE → TRUE for app {key}")
@@ -1194,28 +1138,20 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
                                 cell_output.fill = red_fill
                                 cell_output.value = "TRUE → FALSE"
                             else:
-                                print(
-                                    f"Unexpected values for btLockdownEnabled: "
-                                    f"Previous={previous_value}, Current={current_value}"
-                                )
+                                print(f"Unexpected values for btLockdownEnabled: " f"Previous={previous_value}, Current={current_value}")
 
-                        elif column == 'numberCustomMatchRules':
+                        elif column == "numberCustomMatchRules":
                             prev_value_num = float(previous_value)
                             curr_value_num = float(current_value)
                             if curr_value_num > prev_value_num:
                                 cell_output.fill = green_fill
-                                cell_output.value = (
-                                    f"{prev_value_num:.2f} → {curr_value_num:.2f} (Increased)"
-                                )
+                                cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Increased)"
                             elif curr_value_num < prev_value_num:
                                 cell_output.fill = red_fill
-                                cell_output.value = (
-                                    f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
-                                )
+                                cell_output.value = f"{prev_value_num:.2f} → {curr_value_num:.2f} (Decreased)"
                     except ValueError:
                         print(
-                            f"Non-numeric or invalid value encountered for column '{column}': "
-                            f"Previous={previous_value}, Current={current_value}"
+                            f"Non-numeric or invalid value encountered for column '{column}': " f"Previous={previous_value}, Current={current_value}"
                         )
 
         for key, current_row in current_data.items():
@@ -1228,6 +1164,7 @@ def compare_businesstransactionsapm(ws_previous, ws_current):
     except Exception as e:
         print(f"Error in compare_businesstransactionsapm: {e}")
         raise
+
 
 # Map APM sheet names → their comparer functions
 SHEET_COMPARERS_APM = {

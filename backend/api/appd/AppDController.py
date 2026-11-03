@@ -18,7 +18,7 @@ class AppdController(Consumer):
 
     def __init__(self, *args, session=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.client_session=session
+        self.client_session = session
 
     def get_client_session(self):
         return self.client_session
@@ -146,11 +146,11 @@ class AppdController(Consumer):
     @params({"output": "json"})
     @get("/controller/restui/events/eventCounts")
     def getEventCounts(
-            self,
-            applicationID: Query("applicationId"),
-            entityType: Query("entityType"),
-            entityID: Query("entityId"),
-            timeRangeString: Query("timeRangeString"),
+        self,
+        applicationID: Query("applicationId"),
+        entityType: Query("entityType"),
+        entityID: Query("entityId"),
+        timeRangeString: Query("timeRangeString"),
     ):
         """Retrieves Event Counts"""
 
@@ -163,28 +163,28 @@ class AppdController(Consumer):
     @params({"output": "json"})
     @get("/controller/rest/applications/{applicationID}/metric-data")
     def getMetricData(
-            self,
-            applicationID: Path,
-            metric_path: Query("metric-path"),
-            rollup: Query("rollup"),
-            time_range_type: Query("time-range-type"),
-            duration_in_mins: Query("duration-in-mins"),
-            start_time: Query("start-time"),
-            end_time: Query("end-time"),
+        self,
+        applicationID: Path,
+        metric_path: Query("metric-path"),
+        rollup: Query("rollup"),
+        time_range_type: Query("time-range-type"),
+        duration_in_mins: Query("duration-in-mins"),
+        start_time: Query("start-time"),
+        end_time: Query("end-time"),
     ):
         """Retrieves Metrics"""
 
     @params({"output": "json"})
     @get("/controller/rest/applications/{applicationID}/events")
     def getApplicationEvents(
-            self,
-            applicationID: Path,
-            event_types: Query("event-types"),
-            severities: Query("severities"),
-            time_range_type: Query("time-range-type"),
-            duration_in_mins: Query("duration-in-mins"),
-            start_time: Query("start-time"),
-            end_time: Query("end-time"),
+        self,
+        applicationID: Path,
+        event_types: Query("event-types"),
+        severities: Query("severities"),
+        time_range_type: Query("time-range-type"),
+        duration_in_mins: Query("duration-in-mins"),
+        start_time: Query("start-time"),
+        end_time: Query("end-time"),
     ):
         """Retrieves Events"""
 

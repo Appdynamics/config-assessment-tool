@@ -60,7 +60,7 @@ def isBase64(s: str, encoding="ISO-8859-1"):
 def base64Encode(s: str, encoding="ISO-8859-1"):
     strBytes = bytes(s, encoding=encoding)
     encodedBytes = base64.standard_b64encode(strBytes)
-    return encodedBytes.decode('ascii')
+    return encodedBytes.decode("ascii")
 
 
 def base64Decode(s: str, encoding="ISO-8859-1"):

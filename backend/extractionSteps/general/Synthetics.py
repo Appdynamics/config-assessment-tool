@@ -5,7 +5,8 @@ from backend.api.appd.AppDService import AppDService
 from backend.extractionSteps.JobStepBase import JobStepBase
 from backend.util.asyncio_utils import AsyncioUtils
 
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
+
 
 class Synthetics(JobStepBase):
     def __init__(self):

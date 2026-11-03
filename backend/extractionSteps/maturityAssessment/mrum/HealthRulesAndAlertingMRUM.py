@@ -7,8 +7,7 @@ from deepdiff import DeepDiff
 from backend.extractionSteps.JobStepBase import JobStepBase
 from backend.util.asyncio_utils import AsyncioUtils
 
-
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
 
 
 class HealthRulesAndAlertingMRUM(JobStepBase):
@@ -51,7 +50,9 @@ class HealthRulesAndAlertingMRUM(JobStepBase):
                 application = hostInfo[self.componentType][applicationName]
 
                 if eventCounts[idx].error is not None or not isinstance(eventCounts[idx].data, dict):
-                    logger.warning(f"Failed to retrieve event counts for '{applicationName}': {eventCounts[idx].error}; defaulting to zero violations.")
+                    logger.warning(
+                        f"Failed to retrieve event counts for '{applicationName}': {eventCounts[idx].error}; defaulting to zero violations."
+                    )
                     application["eventCounts"] = {"policyViolationEventCounts": {"totalPolicyViolations": {"warning": 0, "critical": 0}}}
                 else:
                     application["eventCounts"] = eventCounts[idx].data
