@@ -58,6 +58,7 @@ def autofit_table_columns(table) -> None:
     for col in table.columns:
         col.width = equal_width
 
+
 def generate_powerpoint_for_channel(
     cfg: ChannelConfig,
     comparison_result_path: str,
@@ -86,14 +87,7 @@ def generate_powerpoint_for_channel(
 
         # -------- Load data -------- #
         df_current_analysis = pd.read_excel(current_file_path, sheet_name="Analysis")
-        number_of_apps = (
-            df_current_analysis["name"]
-            .dropna()
-            .astype(str)
-            .str.strip()
-            .ne("")
-            .sum()
-        )
+        number_of_apps = df_current_analysis["name"].dropna().astype(str).str.strip().ne("").sum()
 
         current_summary_df = pd.read_excel(current_file_path, sheet_name="Summary")
         previous_summary_df = pd.read_excel(previous_file_path, sheet_name="Summary")
@@ -176,10 +170,12 @@ def generate_powerpoint_for_channel(
         log.exception("%s Error generating PowerPoint", log_prefix)
         raise
 
+
 # --------------------------------------------------------------------
 # Stub builder helpers – currently no-ops so Pylance is happy.
 # We will gradually move real logic from brum.py / mrum.py into these.
 # --------------------------------------------------------------------
+
 
 def _build_key_callouts_and_maturity(
     prs,

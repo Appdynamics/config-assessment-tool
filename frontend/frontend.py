@@ -35,7 +35,8 @@ def main():
 
     for jobName in orderedJobs:
         # Directly call jobHandler without Docker image tags
-        jobHandler(jobName,debug, concurrentNetworkConnections)
+        jobHandler(jobName, debug, concurrentNetworkConnections)
         st.markdown("""---""")
+
 
 main()

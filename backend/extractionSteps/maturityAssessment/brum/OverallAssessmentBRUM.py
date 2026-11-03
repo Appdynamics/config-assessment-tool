@@ -3,8 +3,7 @@ from collections import OrderedDict
 
 from backend.extractionSteps.JobStepBase import JobStepBase
 
-
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
 
 
 class OverallAssessmentBRUM(JobStepBase):

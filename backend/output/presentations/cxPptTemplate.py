@@ -12,6 +12,7 @@ from pptx.slide import Slide
 from pptx.util import Inches, Pt
 from tzlocal import get_localzone
 
+
 class Color(Enum):
     WHITE = RGBColor(255, 255, 255)
     BLACK = RGBColor(0, 0, 0)
@@ -19,9 +20,11 @@ class Color(Enum):
     GREEN = RGBColor(0, 255, 0)
     BLUE = RGBColor(0, 0, 255)
 
+
 def delete_shape(shape):
     sp = shape.element
     shape.element.getparent().remove(sp)
+
 
 def remove_overlapping_shapes(slide, left_inch, top_inch, width_inch, height_inch, exclude_shapes=None):
     if exclude_shapes is None:
@@ -44,7 +47,7 @@ def remove_overlapping_shapes(slide, left_inch, top_inch, width_inch, height_inc
         # Check intersection
         # We need to handle shapes that might not have simple left/top attributes exposed directly or correctly for some types
         # but generally shapes in slide.shapes do.
-        if not hasattr(shape, 'left'):
+        if not hasattr(shape, "left"):
             continue
 
         sl = shape.left
@@ -74,11 +77,13 @@ def remove_overlapping_shapes(slide, left_inch, top_inch, width_inch, height_inc
         try:
             delete_shape(shape)
         except Exception as e:
-             logging.warning(f"Could not delete overlapping shape: {e}")
+            logging.warning(f"Could not delete overlapping shape: {e}")
+
 
 def updateTitle(slide: Slide, text: str):
     if slide.shapes.title:
         slide.shapes.title.text = text
+
 
 def addBulletedText(slide: Slide, text: List[str], fontSize: int = 12):
     if len(slide.shapes.placeholders) < 2:
@@ -104,6 +109,7 @@ def addBulletedText(slide: Slide, text: List[str], fontSize: int = 12):
     for paragraph in body_shape.text_frame.paragraphs:
         for run in paragraph.runs:
             run.font.size = Pt(fontSize)
+
 
 def addNestedBulletedText(slide: Slide, text: dict, headerFontSize: int = 24, subHeaderFontSize: int = 16, color: Color = Color.WHITE):
     if len(slide.shapes.placeholders) < 2:
@@ -150,14 +156,15 @@ def addNestedBulletedText(slide: Slide, text: dict, headerFontSize: int = 24, su
             run.font.size = Pt(fontSize)
             run.font.color.rgb = color.value
 
+
 def addTable(slide, data, fontSize: int = 16, left: float = None, top: float = 3.5, width: float = 9.5, height: float = 1.5):
     # Calculate centering if left is None
     if left is None:
         try:
-             # Try to access presentation slide width
-             slide_width = slide.part.package.presentation_part.presentation.slide_width
+            # Try to access presentation slide width
+            slide_width = slide.part.package.presentation_part.presentation.slide_width
         except:
-             slide_width = Inches(13.333) # Fallback to 16:9
+            slide_width = Inches(13.333)  # Fallback to 16:9
 
         slide_width_inches = slide_width / 914400
         left_inches = (slide_width_inches - width) / 2
@@ -189,6 +196,7 @@ def addTable(slide, data, fontSize: int = 16, left: float = None, top: float = 3
                     run.font.size = Pt(fontSize)
                     run.font.color.rgb = Color.BLACK.value
 
+
 def getValuesInColumn(sheet, param):
     values = []
     for column_cell in sheet.iter_cols(1, sheet.max_column):
@@ -197,6 +205,7 @@ def getValuesInColumn(sheet, param):
                 values.append(data.value)
             break
     return values
+
 
 def getAppsWithScore(sheet, assessmentScore):
     values = []
@@ -208,6 +217,7 @@ def getAppsWithScore(sheet, assessmentScore):
                     values.append(sheet[f"C{idx + 2}"].value)
             break
     return values
+
 
 def createCxPpt(folder, output_dir="output"):
     logging.info(f"Creating presentation from template for output folder: {folder}")
@@ -284,10 +294,25 @@ def createCxPpt(folder, output_dir="output"):
         ],
         [
             folder,
-            str(format((len([x for x in percentAgentsLessThan1YearOld if x != 100]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in percentAgentsReportingData if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in percentMachineAgentsLessThan1YearOld if x != 100]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in percentMachineAgentsReportingData if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
+            str(
+                format((len([x for x in percentAgentsLessThan1YearOld if x != 100]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")
+            )
+            + "%",
+            str(format((len([x for x in percentAgentsReportingData if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
+            str(
+                format(
+                    (len([x for x in percentMachineAgentsLessThan1YearOld if x != 100]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in percentMachineAgentsReportingData if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
         ],
     ]
     addTable(slide, data_agents, top=5.0)
@@ -314,10 +339,25 @@ def createCxPpt(folder, output_dir="output"):
         ],
         [
             folder,
-            str(format((len([x for x in developerModeNotEnabledForAnyBT if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in findEntryPointsNotEnabled if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in aggressiveSnapshottingNotEnabled if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in developerModeNotEnabledForApplication if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
+            str(
+                format((len([x for x in developerModeNotEnabledForAnyBT if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")
+            )
+            + "%",
+            str(format((len([x for x in findEntryPointsNotEnabled if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
+            str(
+                format(
+                    (len([x for x in aggressiveSnapshottingNotEnabled if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in developerModeNotEnabledForApplication if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
         ],
     ]
     addTable(slide, data_overhead, top=5.0)
@@ -336,7 +376,12 @@ def createCxPpt(folder, output_dir="output"):
         ],
         [
             folder,
-            str(format((len([x for x in successPercentageOfWorstTransaction if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
+            str(
+                format(
+                    (len([x for x in successPercentageOfWorstTransaction if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
             str(format((len([x for x in numberOfCustomRules if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
         ],
     ]
@@ -360,10 +405,23 @@ def createCxPpt(folder, output_dir="output"):
         ],
         [
             folder,
-            str(format((len([x for x in numberOfHealthRuleViolations if x >= 50]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in numberOfDefaultHealthRulesModified if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in numberOfActionsBoundToEnabledPolicies if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
-            str(format((len([x for x in numberOfCustomHealthRules if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f")) + "%",
+            str(format((len([x for x in numberOfHealthRuleViolations if x >= 50]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
+            str(
+                format(
+                    (len([x for x in numberOfDefaultHealthRulesModified if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"
+                )
+            )
+            + "%",
+            str(
+                format(
+                    (len([x for x in numberOfActionsBoundToEnabledPolicies if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100,
+                    ".0f",
+                )
+            )
+            + "%",
+            str(format((len([x for x in numberOfCustomHealthRules if x == 0]) / totalApplications if totalApplications > 0 else 0) * 100, ".0f"))
+            + "%",
         ],
     ]
     addTable(slide, data_hr, top=5.0)

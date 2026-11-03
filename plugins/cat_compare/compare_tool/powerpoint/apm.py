@@ -73,6 +73,7 @@ except Exception as e:  # pragma: no cover
 # Nite: Generic placeholder helpers used across many slides
 # ---------------------------------------------------------------------------
 
+
 def find_table_placeholder_by_name(slide, name):
     """
     Nite: Find a placeholder shape on the given slide by its name.
@@ -102,10 +103,7 @@ def insert_table_at_placeholder(slide, placeholder_name, rows, cols):
     width = placeholder.width
     height = placeholder.height
 
-    logging.debug(
-        f"Inserting table at placeholder position: "
-        f"left={left}, top={top}, width={width}, height={height}"
-    )
+    logging.debug(f"Inserting table at placeholder position: " f"left={left}, top={top}, width={width}, height={height}")
 
     table_shape = slide.shapes.add_table(rows, cols, left, top, width, height)
     return table_shape.table
@@ -114,6 +112,7 @@ def insert_table_at_placeholder(slide, placeholder_name, rows, cols):
 # ---------------------------------------------------------------------------
 # Nite: Main entry point for APM PPT generation
 # ---------------------------------------------------------------------------
+
 
 def generate_powerpoint_from_apm(
     comparison_result_path,
@@ -146,9 +145,7 @@ def generate_powerpoint_from_apm(
             if env_path and os.path.exists(env_path):
                 effective_template_path = env_path
             else:
-                effective_template_path = input(
-                    "Template not found! Please provide the full path to the template: "
-                )
+                effective_template_path = input("Template not found! Please provide the full path to the template: ")
 
         prs = Presentation(effective_template_path)
         logging.debug(f"Template loaded from: {effective_template_path}")
@@ -171,19 +168,14 @@ def generate_powerpoint_from_apm(
         #         previous_file_path=previous_file_path,
         #     )
 
-
         # -------------------------------------------------------------------
         # Nite: Load Analysis from CURRENT workbook to drive counts & maturity
         # -------------------------------------------------------------------
         df_current_analysis = pd.read_excel(current_file_path, sheet_name="Analysis")
 
         # Count valid applications (non-empty 'name')
-        number_of_apps = (
-            df_current_analysis["name"].dropna().str.strip().ne("").sum()
-        )
-        logging.info(
-            f"Number of applications in the current 'Analysis' sheet: {number_of_apps}"
-        )
+        number_of_apps = df_current_analysis["name"].dropna().str.strip().ne("").sum()
+        logging.info(f"Number of applications in the current 'Analysis' sheet: {number_of_apps}")
 
         # -------------------------------------------------------------------
         # Nite: Load summary sheets (current, previous, and comparison summary)
@@ -200,33 +192,15 @@ def generate_powerpoint_from_apm(
         # -------------------------------------------------------------------
         df_analysis = pd.read_excel(comparison_result_path, sheet_name="Analysis")
         df_app_agents = pd.read_excel(comparison_result_path, sheet_name="AppAgentsAPM")
-        df_machine_agents = pd.read_excel(
-            comparison_result_path, sheet_name="MachineAgentsAPM"
-        )
-        df_BTs = pd.read_excel(
-            comparison_result_path, sheet_name="BusinessTransactionsAPM"
-        )
-        df_Backends = pd.read_excel(
-            comparison_result_path, sheet_name="BackendsAPM"
-        )
-        df_Overhead = pd.read_excel(
-            comparison_result_path, sheet_name="OverheadAPM"
-        )
-        df_ServiceEndpoints = pd.read_excel(
-            comparison_result_path, sheet_name="ServiceEndpointsAPM"
-        )
-        df_ErrorConfiguration = pd.read_excel(
-            comparison_result_path, sheet_name="ErrorConfigurationAPM"
-        )
-        df_HealthRulesAndAlerting = pd.read_excel(
-            comparison_result_path, sheet_name="HealthRulesAndAlertingAPM"
-        )
-        df_DataCollectors = pd.read_excel(
-            comparison_result_path, sheet_name="DataCollectorsAPM"
-        )
-        df_Dashboards = pd.read_excel(
-            comparison_result_path, sheet_name="DashboardsAPM"
-        )
+        df_machine_agents = pd.read_excel(comparison_result_path, sheet_name="MachineAgentsAPM")
+        df_BTs = pd.read_excel(comparison_result_path, sheet_name="BusinessTransactionsAPM")
+        df_Backends = pd.read_excel(comparison_result_path, sheet_name="BackendsAPM")
+        df_Overhead = pd.read_excel(comparison_result_path, sheet_name="OverheadAPM")
+        df_ServiceEndpoints = pd.read_excel(comparison_result_path, sheet_name="ServiceEndpointsAPM")
+        df_ErrorConfiguration = pd.read_excel(comparison_result_path, sheet_name="ErrorConfigurationAPM")
+        df_HealthRulesAndAlerting = pd.read_excel(comparison_result_path, sheet_name="HealthRulesAndAlertingAPM")
+        df_DataCollectors = pd.read_excel(comparison_result_path, sheet_name="DataCollectorsAPM")
+        df_Dashboards = pd.read_excel(comparison_result_path, sheet_name="DashboardsAPM")
 
         # -------------------------------------------------------------------
         # Nite: Local helpers for Slide 2 – Key Callouts + coverage
@@ -263,9 +237,7 @@ def generate_powerpoint_from_apm(
                     total = 0.0
                     counts = {}
                     for k in needed:
-                        val = pd.to_numeric(
-                            df[name_map[k]].iloc[0], errors="coerce"
-                        )
+                        val = pd.to_numeric(df[name_map[k]].iloc[0], errors="coerce")
                         counts[k] = 0.0 if pd.isna(val) else float(val)
                         total += counts[k]
                     if total > 0:
@@ -306,19 +278,10 @@ def generate_powerpoint_from_apm(
         def _apps_coverage(path):
             try:
                 df = pd.read_excel(path, sheet_name="Analysis")
-                total = int(
-                    df["name"]
-                    .dropna()
-                    .astype(str)
-                    .str.strip()
-                    .ne("")
-                    .sum()
-                )
+                total = int(df["name"].dropna().astype(str).str.strip().ne("").sum())
                 if total == 0:
                     return (0, 0, 0.0)
-                rated = int(
-                    df["OverallAssessment"].apply(_grade_token).notna().sum()
-                )
+                rated = int(df["OverallAssessment"].apply(_grade_token).notna().sum())
                 pct = (rated / total) * 100.0
                 return (total, rated, pct)
             except Exception:
@@ -344,13 +307,7 @@ def generate_powerpoint_from_apm(
         def _fmt_outcome(prev, curr, delta):
             if prev is None or curr is None:
                 return "Data not available."
-            sign = (
-                "+"
-                if delta is not None and delta > 0
-                else "−"
-                if delta is not None and delta < 0
-                else "±"
-            )
+            sign = "+" if delta is not None and delta > 0 else "−" if delta is not None and delta < 0 else "±"
             if delta is None:
                 return f"{prev:.1f}%→{curr:.1f}%"
             return f"{prev:.1f}%→{curr:.1f}% ({sign}{abs(delta):.1f} pp)."
@@ -392,13 +349,7 @@ def generate_powerpoint_from_apm(
             return int(up), int(down)
 
         up_overall, down_overall = _count_changes(df_cmp, "OverallAssessment")
-        overall_result_text = (
-            "Increase"
-            if up_overall > down_overall
-            else "Decrease"
-            if down_overall > up_overall
-            else "Even"
-        )
+        overall_result_text = "Increase" if up_overall > down_overall else "Decrease" if down_overall > up_overall else "Even"
 
         area_cols = [
             "AppAgentsAPM",
@@ -433,9 +384,7 @@ def generate_powerpoint_from_apm(
                     downgraded_counts.append((col, int(cnt)))
         downgraded_counts.sort(key=lambda x: x[1], reverse=True)
         focus_list = [pretty[c] for c, n in downgraded_counts if n > 0][:2]
-        next_focus_text = (
-            ", ".join(focus_list) if focus_list else "Maintain current progress"
-        )
+        next_focus_text = ", ".join(focus_list) if focus_list else "Maintain current progress"
 
         delta_gold = _delta_pp(curr_gold, prev_gold)
         delta_plat = _delta_pp(curr_plat, prev_plat)
@@ -470,30 +419,22 @@ def generate_powerpoint_from_apm(
                 "Maturity Partnership",
                 "Working cadence in place; recommendations implemented during this period.",
                 f"Overall result: {overall_result_text}. Next focus: {next_focus_text}.",
-                "↑"
-                if overall_result_text == "Increase"
-                else "↓"
-                if overall_result_text == "Decrease"
-                else "→",
+                "↑" if overall_result_text == "Increase" else "↓" if overall_result_text == "Decrease" else "→",
             ],
         ]
 
         key_callouts_ph = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if key_callouts_ph:
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(rows) + 1, len(headers)
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(rows) + 1, len(headers))
         else:
-            table = (
-                slide.shapes.add_table(
-                    len(rows) + 1,
-                    len(headers),
-                    Inches(0.6),
-                    Inches(2.1),
-                    Inches(9.0),
-                    Inches(4.0),
-                ).table
-            )
+            table = slide.shapes.add_table(
+                len(rows) + 1,
+                len(headers),
+                Inches(0.6),
+                Inches(2.1),
+                Inches(9.0),
+                Inches(4.0),
+            ).table
 
         for i, h in enumerate(headers):
             cell = table.cell(0, i)
@@ -503,9 +444,7 @@ def generate_powerpoint_from_apm(
             p.font.size = Pt(12)
             cell.text_frame.word_wrap = False
 
-        autosize_col_to_header(
-            table, 3, header_pt=12, padding_in=0.6, avg_char_em=0.55
-        )
+        autosize_col_to_header(table, 3, header_pt=12, padding_in=0.6, avg_char_em=0.55)
 
         for r_idx, row in enumerate(rows, start=1):
             for c_idx, value in enumerate(row):
@@ -520,13 +459,9 @@ def generate_powerpoint_from_apm(
         # -------------------------------------------------------------------
         # Nite: Color the overall maturity oval & write slide notes rationale
         # -------------------------------------------------------------------
-        overall_tier = overall_maturity_from_df(
-            df_current_analysis, grade_func=_grade_token
-        )
+        overall_tier = overall_maturity_from_df(df_current_analysis, grade_func=_grade_token)
         if overall_tier:
-            color_oval_for_maturity(
-                slide, shape_name="Oval 10", tier=overall_tier, update_text=False
-            )
+            color_oval_for_maturity(slide, shape_name="Oval 10", tier=overall_tier, update_text=False)
 
         def _tier_counts(df):
             counts = {"bronze": 0, "silver": 0, "gold": 0, "platinum": 0}
@@ -564,9 +499,7 @@ def generate_powerpoint_from_apm(
         )
 
         coverage_note = (
-            f"Rated coverage: {cov_curr:.1f}% ({rated_curr}/{total_curr})."
-            if cov_curr is not None and total_curr > 0
-            else "Rated coverage: n/a."
+            f"Rated coverage: {cov_curr:.1f}% ({rated_curr}/{total_curr})." if cov_curr is not None and total_curr > 0 else "Rated coverage: n/a."
         )
         next_focus_note = f"Next focus: {next_focus_text}."
 
@@ -574,10 +507,7 @@ def generate_powerpoint_from_apm(
         tf = notes.notes_text_frame
         tf.clear()
         p1 = tf.paragraphs[0]
-        p1.text = (
-            "Overall tier selection: majority of app ratings in Analysis; "
-            "ties prefer the higher tier."
-        )
+        p1.text = "Overall tier selection: majority of app ratings in Analysis; " "ties prefer the higher tier."
         p2 = tf.add_paragraph()
         p2.text = rationale
         p3 = tf.add_paragraph()
@@ -587,15 +517,9 @@ def generate_powerpoint_from_apm(
         # Nite: Slide 4 – Upgraded applications list + count in TextBox 7
         # -------------------------------------------------------------------
         slide = prs.slides[3]
-        upgraded_apps = df_analysis[
-            df_analysis["OverallAssessment"].str.contains(
-                "upgraded", case=False, na=False
-            )
-        ]["name"].tolist()
+        upgraded_apps = df_analysis[df_analysis["OverallAssessment"].str.contains("upgraded", case=False, na=False)]["name"].tolist()
 
-        current_analysis_df = pd.read_excel(
-            current_file_path, sheet_name="Analysis"
-        )
+        current_analysis_df = pd.read_excel(current_file_path, sheet_name="Analysis")
         number_of_apps = len(current_analysis_df)
 
         textbox_7 = None
@@ -609,20 +533,12 @@ def generate_powerpoint_from_apm(
         else:
             logging.warning("TextBox 8 not found on Slide 3.")
 
-        upgraded_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        upgraded_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if upgraded_placeholder:
-            logging.debug(
-                "Found Upgraded Applications table placeholder. Inserting table."
-            )
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(upgraded_apps) + 1, 1
-            )
+            logging.debug("Found Upgraded Applications table placeholder. Inserting table.")
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(upgraded_apps) + 1, 1)
         else:
-            logging.warning(
-                "Upgraded Applications table placeholder not found. Adding manually."
-            )
+            logging.warning("Upgraded Applications table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(upgraded_apps) + 1,
                 1,
@@ -643,20 +559,14 @@ def generate_powerpoint_from_apm(
         # Nite: Slide 5 – Comparison summary + previous vs current summary tables
         # -------------------------------------------------------------------
         slide = prs.slides[4]
-        summary_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        summary_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
 
         # Nite: main comparison Result Summary table
         if summary_placeholder:
             logging.debug("Found Summary table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(summary_df) + 1, len(summary_df.columns)
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(summary_df) + 1, len(summary_df.columns))
         else:
-            logging.warning(
-                "Summary table placeholder not found. Adding manually."
-            )
+            logging.warning("Summary table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(summary_df) + 1,
                 len(summary_df.columns),
@@ -673,14 +583,10 @@ def generate_powerpoint_from_apm(
         for row_idx, row in summary_df.iterrows():
             for col_idx, value in enumerate(row):
                 table.cell(row_idx + 1, col_idx).text = str(value)
-                table.cell(row_idx + 1, col_idx).text_frame.paragraphs[
-                    0
-                ].font.size = Pt(12)
+                table.cell(row_idx + 1, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
         # Nite: previous summary mini-table (Table Placeholder 4)
-        summary_placeholder_previous = find_table_placeholder_by_name(
-            slide, "Table Placeholder 4"
-        )
+        summary_placeholder_previous = find_table_placeholder_by_name(slide, "Table Placeholder 4")
         if summary_placeholder_previous:
             logging.debug("Found Table Placeholder 4. Inserting table for previous summary.")
             table_previous = insert_table_at_placeholder(
@@ -702,21 +608,15 @@ def generate_powerpoint_from_apm(
 
         for col_idx, column in enumerate(previous_summary_df.columns):
             table_previous.cell(0, col_idx).text = str(column)
-            table_previous.cell(0, col_idx).text_frame.paragraphs[
-                0
-            ].font.size = Pt(12)
+            table_previous.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
         for row_idx, row in previous_summary_df.iterrows():
             for col_idx, value in enumerate(row):
                 table_previous.cell(row_idx + 1, col_idx).text = str(value)
-                table_previous.cell(row_idx + 1, col_idx).text_frame.paragraphs[
-                    0
-                ].font.size = Pt(12)
+                table_previous.cell(row_idx + 1, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
         # Nite: current summary mini-table (Table Placeholder 3)
-        summary_placeholder_current = find_table_placeholder_by_name(
-            slide, "Table Placeholder 3"
-        )
+        summary_placeholder_current = find_table_placeholder_by_name(slide, "Table Placeholder 3")
         if summary_placeholder_current:
             logging.debug("Found Table Placeholder 3. Inserting table for current summary.")
             table_current = insert_table_at_placeholder(
@@ -738,16 +638,12 @@ def generate_powerpoint_from_apm(
 
         for col_idx, column in enumerate(current_summary_df.columns):
             table_current.cell(0, col_idx).text = str(column)
-            table_current.cell(0, col_idx).text_frame.paragraphs[
-                0
-            ].font.size = Pt(12)
+            table_current.cell(0, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
         for row_idx, row in current_summary_df.iterrows():
             for col_idx, value in enumerate(row):
                 table_current.cell(row_idx + 1, col_idx).text = str(value)
-                table_current.cell(row_idx + 1, col_idx).text_frame.paragraphs[
-                    0
-                ].font.size = Pt(12)
+                table_current.cell(row_idx + 1, col_idx).text_frame.paragraphs[0].font.size = Pt(12)
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -779,26 +675,12 @@ def generate_powerpoint_from_apm(
 
         for col in columns:
             df[col] = df[col].astype(str)
-            upgraded_count = df[col].str.contains(
-                "upgraded", case=False, na=False
-            ).sum()
-            downgraded_count = df[col].str.contains(
-                "downgraded", case=False, na=False
-            ).sum()
+            upgraded_count = df[col].str.contains("upgraded", case=False, na=False).sum()
+            downgraded_count = df[col].str.contains("downgraded", case=False, na=False).sum()
 
             total_applications = len(df[col])
-            overall_result = (
-                "Increase"
-                if upgraded_count > downgraded_count
-                else "Decrease"
-                if downgraded_count > upgraded_count
-                else "Even"
-            )
-            percentage_value = (
-                0
-                if overall_result == "Even"
-                else round((upgraded_count / total_applications) * 100)
-            )
+            overall_result = "Increase" if upgraded_count > downgraded_count else "Decrease" if downgraded_count > upgraded_count else "Even"
+            percentage_value = 0 if overall_result == "Even" else round((upgraded_count / total_applications) * 100)
 
             results[col] = {
                 "upgraded": upgraded_count,
@@ -811,16 +693,12 @@ def generate_powerpoint_from_apm(
         # Nite: Slide 7 – Overall Assessment Result table
         # -------------------------------------------------------------------
         slide = prs.slides[6]
-        overall_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        overall_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
 
         if overall_placeholder:
             table = insert_table_at_placeholder(slide, "Table Placeholder 1", 2, 5)
         else:
-            table = slide.shapes.add_table(
-                2, 5, Inches(0.5), Inches(1.5), Inches(9), Inches(1.5)
-            ).table
+            table = slide.shapes.add_table(2, 5, Inches(0.5), Inches(1.5), Inches(9), Inches(1.5)).table
 
         headers = [
             "Metric",
@@ -855,21 +733,15 @@ def generate_powerpoint_from_apm(
         # Nite: Slide 8 – Status table per APM domain
         # -------------------------------------------------------------------
         slide = prs.slides[7]
-        status_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        status_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
 
         num_rows = len(columns)
         num_cols = 5
 
         if status_placeholder:
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", num_rows, num_cols
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", num_rows, num_cols)
         else:
-            table = slide.shapes.add_table(
-                num_rows, num_cols, Inches(0.5), Inches(1.5), Inches(9), Inches(4)
-            ).table
+            table = slide.shapes.add_table(num_rows, num_cols, Inches(0.5), Inches(1.5), Inches(9), Inches(4)).table
 
         headers = [
             "Metric",
@@ -915,10 +787,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["AppAgentsAPM"]
@@ -932,60 +801,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1002,17 +846,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1053,10 +889,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["MachineAgentsAPM"]
@@ -1070,60 +903,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1140,17 +948,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1191,10 +991,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["BusinessTransactionsAPM"]
@@ -1208,60 +1005,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1278,17 +1050,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1328,10 +1092,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["BackendsAPM"]
@@ -1345,60 +1106,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1415,20 +1151,14 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             applications_str = (
-                ", ".join(str(app) for app in downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
+                ", ".join(str(app) for app in downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
             )
             logging.debug(f"Grade: {grade}, Applications: {applications_str}")
 
             table.cell(i + 1, 0).text = grade.capitalize()
             table.cell(i + 1, 1).text = applications_str
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1467,10 +1197,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["ServiceEndpointsAPM"]
@@ -1484,60 +1211,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1554,17 +1256,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1603,10 +1297,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["ErrorConfigurationAPM"]
@@ -1620,60 +1311,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1690,17 +1356,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1738,10 +1396,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["HealthRulesAndAlertingAPM"]
@@ -1755,60 +1410,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1825,17 +1455,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -1875,10 +1497,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["DataCollectorsAPM"]
@@ -1892,60 +1511,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -1962,17 +1556,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -2012,10 +1598,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["DashboardsAPM"]
@@ -2029,60 +1612,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -2099,17 +1657,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):
@@ -2148,10 +1698,7 @@ def generate_powerpoint_from_apm(
 
         all_grades = ["platinum", "gold", "silver", "bronze"]
         grades_for_table = ["gold", "silver", "bronze"]
-        downgrade_data = {
-            grade: {"applications": [], "number_of_apps": 0, "percentage": 0}
-            for grade in grades_for_table
-        }
+        downgrade_data = {grade: {"applications": [], "number_of_apps": 0, "percentage": 0} for grade in grades_for_table}
 
         for _, row in df_analysis.iterrows():
             current_value = row["OverheadAPM"]
@@ -2165,60 +1712,35 @@ def generate_powerpoint_from_apm(
                     previous_value = previous_value.strip().lower()
                     current_grade = current_grade.strip().lower().split(" ")[0]
 
-                    logging.debug(
-                        f"Extracted: Previous Value: {previous_value}, "
-                        f"Current Grade: {current_grade}"
-                    )
+                    logging.debug(f"Extracted: Previous Value: {previous_value}, " f"Current Grade: {current_grade}")
 
                     if previous_value in all_grades and current_grade in all_grades:
                         if all_grades.index(previous_value) < all_grades.index(current_grade):
-                            logging.debug(
-                                f"Adding {app_name} to {current_grade} downgrade list"
-                            )
+                            logging.debug(f"Adding {app_name} to {current_grade} downgrade list")
                             downgrade_data[current_grade]["applications"].append(app_name)
                             downgrade_data[current_grade]["number_of_apps"] += 1
                         else:
-                            logging.debug(
-                                f"Not a downgrade for {app_name}: "
-                                f"{previous_value} → {current_grade}"
-                            )
+                            logging.debug(f"Not a downgrade for {app_name}: " f"{previous_value} → {current_grade}")
                     else:
-                        logging.debug(
-                            f"Invalid grades for downgrade comparison: "
-                            f"{previous_value}, {current_grade}"
-                        )
+                        logging.debug(f"Invalid grades for downgrade comparison: " f"{previous_value}, {current_grade}")
                 except Exception as e:
                     logging.error(f"Error processing downgrade for {app_name}: {e}")
             else:
-                logging.debug(
-                    f"No Downgrade for App: {app_name} - Current Value: {current_value}"
-                )
+                logging.debug(f"No Downgrade for App: {app_name} - Current Value: {current_value}")
 
         for grade in grades_for_table:
-            logging.debug(
-                f"Applications for {grade}: {downgrade_data[grade]['applications']}"
-            )
+            logging.debug(f"Applications for {grade}: {downgrade_data[grade]['applications']}")
 
         total_apps = len(df_analysis)
         for grade in grades_for_table:
-            downgrade_data[grade]["percentage"] = (
-                len(downgrade_data[grade]["applications"]) / total_apps * 100
-                if total_apps
-                else 0
-            )
+            downgrade_data[grade]["percentage"] = len(downgrade_data[grade]["applications"]) / total_apps * 100 if total_apps else 0
 
-        downgrade_placeholder = find_table_placeholder_by_name(
-            slide, "Table Placeholder 1"
-        )
+        downgrade_placeholder = find_table_placeholder_by_name(slide, "Table Placeholder 1")
         if downgrade_placeholder:
             logging.debug("Found Downgrade table placeholder. Inserting table.")
-            table = insert_table_at_placeholder(
-                slide, "Table Placeholder 1", len(grades_for_table) + 1, 4
-            )
+            table = insert_table_at_placeholder(slide, "Table Placeholder 1", len(grades_for_table) + 1, 4)
         else:
-            logging.warning(
-                "Downgrade table placeholder not found. Adding manually."
-            )
+            logging.warning("Downgrade table placeholder not found. Adding manually.")
             table = slide.shapes.add_table(
                 len(grades_for_table) + 1,
                 4,
@@ -2235,17 +1757,9 @@ def generate_powerpoint_from_apm(
 
         for i, grade in enumerate(grades_for_table):
             table.cell(i + 1, 0).text = grade.capitalize()
-            table.cell(i + 1, 1).text = (
-                ", ".join(downgrade_data[grade]["applications"])
-                if downgrade_data[grade]["applications"]
-                else "None"
-            )
-            table.cell(i + 1, 2).text = str(
-                downgrade_data[grade]["number_of_apps"]
-            )
-            table.cell(i + 1, 3).text = (
-                f"{downgrade_data[grade]['percentage']:.2f}%"
-            )
+            table.cell(i + 1, 1).text = ", ".join(downgrade_data[grade]["applications"]) if downgrade_data[grade]["applications"] else "None"
+            table.cell(i + 1, 2).text = str(downgrade_data[grade]["number_of_apps"])
+            table.cell(i + 1, 3).text = f"{downgrade_data[grade]['percentage']:.2f}%"
 
         title_placeholder = find_table_placeholder_by_name(slide, "Title 2")
         if title_placeholder and hasattr(title_placeholder, "text_frame"):

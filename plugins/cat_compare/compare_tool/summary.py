@@ -38,12 +38,12 @@ def create_summary_workbooks(previous_file_path, current_file_path, previous_sum
         wb_previous = load_workbook(previous_file_path, data_only=True)
         wb_current = load_workbook(current_file_path, data_only=True)
 
-        if 'Summary' not in wb_previous.sheetnames or 'Summary' not in wb_current.sheetnames:
+        if "Summary" not in wb_previous.sheetnames or "Summary" not in wb_current.sheetnames:
             logging.error("'Summary' sheet is missing in one of the files.")
             return
 
-        ws_previous = wb_previous['Summary']
-        ws_current = wb_current['Summary']
+        ws_previous = wb_previous["Summary"]
+        ws_current = wb_current["Summary"]
 
         # Create new workbooks for the summaries
         wb_previous_sum = openpyxl.Workbook()
@@ -52,8 +52,8 @@ def create_summary_workbooks(previous_file_path, current_file_path, previous_sum
         ws_previous_sum = wb_previous_sum.active
         ws_current_sum = wb_current_sum.active
 
-        ws_previous_sum.title = 'Summary'
-        ws_current_sum.title = 'Summary'
+        ws_previous_sum.title = "Summary"
+        ws_current_sum.title = "Summary"
 
         # Copy data from original workbooks to summary workbooks as values only
         for row in ws_previous.iter_rows(values_only=True):
@@ -78,13 +78,13 @@ def compare_files_summary(previous_sum_path, current_sum_path, comparison_sum_pa
         wb_current = load_workbook(current_sum_path, data_only=True)
         wb_output = openpyxl.Workbook()
 
-        ws_previous = wb_previous['Summary']
-        ws_current = wb_current['Summary']
+        ws_previous = wb_previous["Summary"]
+        ws_current = wb_current["Summary"]
         ws_output = wb_output.active
-        ws_output.title = 'Summary'
-        
+        ws_output.title = "Summary"
+
         logging.debug(f"Processing sheet: 'Summary'")
-        
+
         compare_summary(ws_previous, ws_current, ws_output)
 
         # Save the workbook after all modifications have been completed
@@ -114,9 +114,9 @@ def compare_summary(ws_previous, ws_current, ws_output):
             curr_value = curr_cell.value
 
             if prev_value is None:
-                prev_value = ''
+                prev_value = ""
             if curr_value is None:
-                curr_value = ''
+                curr_value = ""
 
             logging.debug(f"Comparing cell ({cell.row},{cell.column}): Previous Value: {prev_value}, Current Value: {curr_value}")
 
@@ -170,8 +170,7 @@ def copy_summary_to_result(comparison_sum_path: str, output_file_path: str) -> N
         # Ensure the result workbook exists
         if not out_path.exists():
             logging.warning(
-                "Result workbook %s not found; creating a new workbook before "
-                "copying summary.",
+                "Result workbook %s not found; creating a new workbook before " "copying summary.",
                 out_path,
             )
             out_path.parent.mkdir(parents=True, exist_ok=True)

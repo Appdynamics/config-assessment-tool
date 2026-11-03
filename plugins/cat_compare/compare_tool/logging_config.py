@@ -25,6 +25,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
+
 def setup_logging():
     # Create logs directory if it doesn't exist
     logs_dir = "logs"

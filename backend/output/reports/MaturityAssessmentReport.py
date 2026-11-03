@@ -35,15 +35,11 @@ class MaturityAssessmentReport(ReportBase):
                 *jobNameCols,
             ]
 
-            if reportType == "apm": # add desc header after name
+            if reportType == "apm":  # add desc header after name
                 data_header.insert(4, "description")
 
             # Write Headers
-            writeUncoloredRow(
-                analysisSheet,
-                1,
-                data_header
-            )
+            writeUncoloredRow(analysisSheet, 1, data_header)
 
             rowIdx = 2
             for host, hostInfo in controllerData.items():
@@ -57,14 +53,10 @@ class MaturityAssessmentReport(ReportBase):
                         *[component[jobStep]["computed"] for jobStep in [type(jobStep).__name__ for jobStep in filteredJobs]],
                     ]
 
-                    if reportType == "apm": # add desc after name
+                    if reportType == "apm":  # add desc after name
                         data_row.insert(4, (component["description"], None))
 
-                    writeColoredRow(
-                        analysisSheet,
-                        rowIdx,
-                        data_row
-                    )
+                    writeColoredRow(analysisSheet, rowIdx, data_row)
                     rowIdx += 1
 
             addFilterAndFreeze(analysisSheet, "E2")

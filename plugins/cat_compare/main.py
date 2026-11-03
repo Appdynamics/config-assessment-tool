@@ -12,8 +12,7 @@ import sys
 import subprocess
 from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parent             # compare-plugin/
+ROOT = Path(__file__).resolve().parent  # compare-plugin/
 VENV_DIR = ROOT / ".venv"
 REQUIREMENTS = ROOT / "requirements.txt"
 
@@ -21,7 +20,7 @@ REQUIREMENTS = ROOT / "requirements.txt"
 def get_venv_python() -> Path:
     if os.name == "nt":  # Windows
         return VENV_DIR / "Scripts" / "python.exe"
-    else:                # macOS / Linux
+    else:  # macOS / Linux
         return VENV_DIR / "bin" / "python"
 
 
@@ -31,6 +30,7 @@ def ensure_venv():
         if VENV_DIR.exists():
             print("Removing incomplete virtual environment...")
             import shutil
+
             shutil.rmtree(VENV_DIR)
         print("Creating virtual environment in .venv ...")
         subprocess.check_call([sys.executable, "-m", "venv", str(VENV_DIR)])

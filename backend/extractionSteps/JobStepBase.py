@@ -3,8 +3,7 @@ from abc import ABC, abstractmethod
 
 from backend.util.excel_utils import Color, addFilterAndFreeze, resizeColumnWidth, writeColoredRow, writeUncoloredRow
 
-
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
 
 
 class JobStepBase(ABC):
@@ -62,32 +61,24 @@ class JobStepBase(ABC):
             for application in hostInfo[self.componentType].values():
                 if colorRows:
                     data = [
-                        ( hostInfo["controller"].host, None),
-                        ( application["name"], None),
-                        ( application["applicationId"] if self.componentType == "mrum" else application["id"], None),
-                        *[application[jobStepName][metricFolder][header] for header in rawDataHeaders]
+                        (hostInfo["controller"].host, None),
+                        (application["name"], None),
+                        (application["applicationId"] if self.componentType == "mrum" else application["id"], None),
+                        *[application[jobStepName][metricFolder][header] for header in rawDataHeaders],
                     ]
                     if self.componentType == "apm":
-                        data.insert(3, ( application["description"], None))
-                    writeColoredRow(
-                        rawDataSheet,
-                        rowIdx,
-                        data
-                    )
+                        data.insert(3, (application["description"], None))
+                    writeColoredRow(rawDataSheet, rowIdx, data)
                 else:
                     data = [
                         hostInfo["controller"].host,
                         application["name"],
                         application["applicationId"] if self.componentType == "mrum" else application["id"],
-                        *[application[jobStepName][metricFolder][header] for header in rawDataHeaders]
+                        *[application[jobStepName][metricFolder][header] for header in rawDataHeaders],
                     ]
                     if self.componentType == "apm":
                         data.insert(3, application["description"])
-                    writeUncoloredRow(
-                        rawDataSheet,
-                        rowIdx,
-                        data
-                    )
+                    writeUncoloredRow(rawDataSheet, rowIdx, data)
                 rowIdx += 1
 
         addFilterAndFreeze(rawDataSheet, "E2") if self.componentType == "apm" else addFilterAndFreeze(rawDataSheet, "D2")

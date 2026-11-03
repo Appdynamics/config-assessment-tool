@@ -4,7 +4,8 @@ from collections import OrderedDict
 from backend.api.appd.AppDService import AppDService
 from backend.extractionSteps.JobStepBase import JobStepBase
 
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
+
 
 class ControllerLevelDetails(JobStepBase):
     def __init__(self):

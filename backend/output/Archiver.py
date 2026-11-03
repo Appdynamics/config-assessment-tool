@@ -8,11 +8,11 @@ import xlsxwriter
 
 from backend.output.PostProcessReport import PostProcessReport
 
-light_font = '#FFFFFF'
-dark_font = '#000000'
+light_font = "#FFFFFF"
+dark_font = "#000000"
 
-medium_bg = '#A0A0A0'
-dark_bg = '#000000'
+medium_bg = "#A0A0A0"
+dark_bg = "#000000"
 
 
 class Archiver(PostProcessReport):

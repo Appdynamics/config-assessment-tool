@@ -6,8 +6,7 @@ from backend.extractionSteps.JobStepBase import JobStepBase
 from backend.util.asyncio_utils import AsyncioUtils
 from backend.util.stdlib_utils import substringBetween
 
-
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
 
 
 class BackendsAPM(JobStepBase):
@@ -122,14 +121,22 @@ class BackendsAPM(JobStepBase):
                 try:
                     backendLimit = int(
                         next(
-                            iter([configuration for configuration in hostInfo["configurations"] if configuration["name"] == "backend.registration.limit"])
+                            iter(
+                                [
+                                    configuration
+                                    for configuration in hostInfo["configurations"]
+                                    if configuration["name"] == "backend.registration.limit"
+                                ]
+                            )
                         )["value"]
                     )
                 except StopIteration:
-                    logger.warning(f'{hostInfo["controller"].host} - '
-                                    f'backend.registration.limit '
-                                    f'configuration not found for'
-                                    f' {application["name"]}. Use default.')
+                    logger.warning(
+                        f'{hostInfo["controller"].host} - '
+                        f"backend.registration.limit "
+                        f"configuration not found for"
+                        f' {application["name"]}. Use default.'
+                    )
                     # set to default if api not returning
                     backendLimit = 500000
 

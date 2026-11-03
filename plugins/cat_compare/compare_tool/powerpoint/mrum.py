@@ -63,6 +63,7 @@ def set_arrow_cell(cell, direction: str, color=PINK, size_pt: int = 36, font_nam
 # mrum POWERPOINT
 # --------------------------------------------------------------------
 
+
 def generate_powerpoint_from_mrum(
     comparison_result_path: str,
     powerpoint_output_path: str,
@@ -93,8 +94,7 @@ def generate_powerpoint_from_mrum(
                 template_path = env_path
             else:
                 log.warning(
-                    "[mrum] template_mrum.pptx not found at %s; "
-                    "falling back to a blank presentation.",
+                    "[mrum] template_mrum.pptx not found at %s; " "falling back to a blank presentation.",
                     template_path,
                 )
                 prs = Presentation()
@@ -106,9 +106,7 @@ def generate_powerpoint_from_mrum(
         # Load Excel data
         # ------------------------------------------------------------------
         df_current_analysis = pd.read_excel(current_file_path, sheet_name="Analysis")
-        number_of_apps = (
-            df_current_analysis["name"].dropna().astype(str).str.strip().ne("").sum()
-        )
+        number_of_apps = df_current_analysis["name"].dropna().astype(str).str.strip().ne("").sum()
         log.info("[mrum] Number of applications in the current 'Analysis' sheet: %s", number_of_apps)
 
         current_summary_df = pd.read_excel(current_file_path, sheet_name="Summary")
@@ -195,9 +193,7 @@ def generate_powerpoint_from_mrum(
         def last_percent(df, col):
             if df.empty or col not in df.columns:
                 return None
-            s = pd.to_numeric(
-                df[col].astype(str).str.replace("%", ""), errors="coerce"
-            ).dropna()
+            s = pd.to_numeric(df[col].astype(str).str.replace("%", ""), errors="coerce").dropna()
             return float(s.iloc[-1]) if not s.empty else None
 
         curr_gold = last_percent(curr_overall_df, "percentageTotalGoldOrBetter")
@@ -233,9 +229,7 @@ def generate_powerpoint_from_mrum(
             return f"No change ({curr:.1f}{suffix})."
 
         slides_with_ph = find_slides_with_placeholder(prs, "Table Placeholder 1")
-        key_callouts_slide = (
-            slides_with_ph[0] if slides_with_ph else (prs.slides[0] if len(prs.slides) else None)
-        )
+        key_callouts_slide = slides_with_ph[0] if slides_with_ph else (prs.slides[0] if len(prs.slides) else None)
         if key_callouts_slide:
             used_slide_ids.add(id(key_callouts_slide))
 
@@ -269,17 +263,11 @@ def generate_powerpoint_from_mrum(
                     "Maturity Partnership (mrum).",
                     "Ongoing improvements in mrum instrumentation and alerting.",
                     f"Network Requests (↑{net_up}/↓{net_down}), Health Rules (↑{hra_up}/↓{hra_down}).",
-                    "↑"
-                    if (net_up + hra_up) > (net_down + hra_down)
-                    else "↓"
-                    if (net_down + hra_down) > (net_up + hra_up)
-                    else "→",
+                    "↑" if (net_up + hra_up) > (net_down + hra_down) else "↓" if (net_down + hra_down) > (net_up + hra_up) else "→",
                 ],
             ]
 
-            table = insert_table_at_placeholder(
-                key_callouts_slide, "Table Placeholder 1", len(rows) + 1, len(headers)
-            )
+            table = insert_table_at_placeholder(key_callouts_slide, "Table Placeholder 1", len(rows) + 1, len(headers))
             if table:
                 # Header row
                 for i, h in enumerate(headers):
@@ -306,6 +294,7 @@ def generate_powerpoint_from_mrum(
         # mrum maturity badge & notes (uses current Analysis)
         # ------------------------------------------------------------------
         try:
+
             def _mrum_grade_token(v):
                 if not isinstance(v, str):
                     v = "" if pd.isna(v) else str(v)
@@ -378,8 +367,7 @@ def generate_powerpoint_from_mrum(
                 tf = notes.notes_text_frame
                 tf.clear()
                 tf.paragraphs[0].text = (
-                    "Overall tier selection: majority of app ratings in Analysis; "
-                    "ties prefer higher tier (Platinum > Gold > Silver > Bronze)."
+                    "Overall tier selection: majority of app ratings in Analysis; " "ties prefer higher tier (Platinum > Gold > Silver > Bronze)."
                 )
                 p2 = tf.add_paragraph()
                 p2.text = (
@@ -428,9 +416,7 @@ def generate_powerpoint_from_mrum(
             used_slide_ids.add(id(improved_slide))
             headers = ["Application", "Improvement Areas"]
             row_count = max(1, len(improved)) + 1
-            table = insert_table_at_placeholder(
-                improved_slide, "Table Placeholder 1", row_count, len(headers)
-            )
+            table = insert_table_at_placeholder(improved_slide, "Table Placeholder 1", row_count, len(headers))
             if table:
                 for c, h in enumerate(headers):
                     table.cell(0, c).text = h
@@ -457,15 +443,10 @@ def generate_powerpoint_from_mrum(
                     return s
             return None
 
-        summary_slide = find_slide_with_all_placeholders(
-            prs, ["Table Placeholder 1", "Table Placeholder 3", "Table Placeholder 4"]
-        )
+        summary_slide = find_slide_with_all_placeholders(prs, ["Table Placeholder 1", "Table Placeholder 3", "Table Placeholder 4"])
         if not summary_slide:
             for s in prs.slides:
-                if any(
-                    find_table_placeholder_by_name(s, n)
-                    for n in ["Table Placeholder 1", "Table Placeholder 3", "Table Placeholder 4"]
-                ):
+                if any(find_table_placeholder_by_name(s, n) for n in ["Table Placeholder 1", "Table Placeholder 3", "Table Placeholder 4"]):
                     summary_slide = s
                     break
         if summary_slide:
@@ -540,14 +521,8 @@ def generate_powerpoint_from_mrum(
                     table.cell(0, i).text = h
                     table.cell(0, i).text_frame.paragraphs[0].font.size = Pt(14)
 
-                overall_result = (
-                    "Increase" if oa_up > oa_down else "Decrease" if oa_down > oa_up else "Even"
-                )
-                percentage_value = (
-                    0
-                    if overall_result == "Even"
-                    else round((oa_up / max(1, oa_up + oa_down)) * 100)
-                )
+                overall_result = "Increase" if oa_up > oa_down else "Decrease" if oa_down > oa_up else "Even"
+                percentage_value = 0 if overall_result == "Even" else round((oa_up / max(1, oa_up + oa_down)) * 100)
 
                 table.cell(1, 0).text = "Overall mrum Assessment"
                 table.cell(1, 1).text = str(oa_up)
@@ -564,7 +539,7 @@ def generate_powerpoint_from_mrum(
         else:
             log.warning("[mrum] Could not find slide for Overall Assessment.")
 
-                # ============================
+            # ============================
         # mrum Entity Comparison (Slide 8) — Table Placeholder 1
         # Headers: Metric | # of Apps Improved | # Apps Degraded | Overall Result | Percentage Value
         # Rows: NetworkRequestsmrum, HealthRulesAndAlertingmrum
@@ -639,9 +614,9 @@ def generate_powerpoint_from_mrum(
                             result_text = rows[r_idx - 1][3]
                             run = p.runs[0] if p.runs else p.add_run()
                             if result_text == "Increase":
-                                run.font.color.rgb = RGBColor(0, 176, 80)   # Green
+                                run.font.color.rgb = RGBColor(0, 176, 80)  # Green
                             elif result_text == "Decrease":
-                                run.font.color.rgb = RGBColor(192, 0, 0)   # Red
+                                run.font.color.rgb = RGBColor(192, 0, 0)  # Red
         else:
             logging.warning("[mrum] Entity comparison slide not found or missing 'Table Placeholder 1'.")
 
@@ -774,17 +749,7 @@ def generate_powerpoint_from_mrum(
                 # Heuristic fallback by keyword overlap.
                 key_tokens = set()
                 for c in candidates:
-                    key_tokens.update(
-                        [
-                            t
-                            for t in str(c)
-                            .lower()
-                            .replace("#", "")
-                            .replace("_", " ")
-                            .split()
-                            if t
-                        ]
-                    )
+                    key_tokens.update([t for t in str(c).lower().replace("#", "").replace("_", " ").split() if t])
                 best = None
                 best_score = 0
                 for c in df.columns:
@@ -864,9 +829,7 @@ def generate_powerpoint_from_mrum(
                 for _, r in df.iterrows():
                     app = str(r.get(app_col, "") or "").strip()
                     val = r.get(metric_col, "")
-                    if (is_bool and is_bool_decline_cell(val)) or (
-                        (not is_bool) and is_num_decline_cell(val)
-                    ):
+                    if (is_bool and is_bool_decline_cell(val)) or ((not is_bool) and is_num_decline_cell(val)):
                         apps.append(app)
                 logging.info(
                     "[mrum][Slide11] Rectangles: %s declines=%d (apps sample: %s)",
@@ -914,13 +877,7 @@ def generate_powerpoint_from_mrum(
 
             # Explicit debug for 'Concerto' if present.
             if app_col_nr_eff and col_limit_nothit:
-                concerto_rows = df_network_requests[
-                    df_network_requests[app_col_nr_eff]
-                    .astype(str)
-                    .str.strip()
-                    .str.lower()
-                    == "concerto"
-                ]
+                concerto_rows = df_network_requests[df_network_requests[app_col_nr_eff].astype(str).str.strip().str.lower() == "concerto"]
                 if not concerto_rows.empty:
                     logging.debug(
                         "[mrum][Slide11] Concerto networkRequestLimitNotHit cell(s): %s",
@@ -937,17 +894,13 @@ def generate_powerpoint_from_mrum(
         # ============================
         # Table — Declined-only (Network Requests) in Table Placeholder 1.
         # ============================
-        if deep_dive_slide and find_table_placeholder_by_name(
-            deep_dive_slide, "Table Placeholder 1"
-        ):
+        if deep_dive_slide and find_table_placeholder_by_name(deep_dive_slide, "Table Placeholder 1"):
 
             logging.debug(
                 "[mrum][Slide11] df_network_requests columns: %s",
                 list(df_network_requests.columns),
             )
-            logging.debug(
-                "[mrum][Slide11] df_analysis columns: %s", list(df_analysis.columns)
-            )
+            logging.debug("[mrum][Slide11] df_analysis columns: %s", list(df_analysis.columns))
 
             # Canonical grade order for rank comparisons.
             all_grades = ["platinum", "gold", "silver", "bronze"]
@@ -988,9 +941,7 @@ def generate_powerpoint_from_mrum(
                 )
                 if m:
                     return (None, m.group(1))  # only current known
-                m = re.search(
-                    r"(?:now|is\s+now|became)\s+(platinum|gold|silver|bronze)", low
-                )
+                m = re.search(r"(?:now|is\s+now|became)\s+(platinum|gold|silver|bronze)", low)
                 if m:
                     return (None, m.group(1))
                 # If any grade appears, treat as current grade.
@@ -1004,11 +955,7 @@ def generate_powerpoint_from_mrum(
                 df_network_requests,
                 ["name", "Name", "applicationName", "Application Name", "Application"],
             ) or next(
-                (
-                    c
-                    for c in df_network_requests.columns
-                    if str(c).lower() in ("app", "application", "application name")
-                ),
+                (c for c in df_network_requests.columns if str(c).lower() in ("app", "application", "application name")),
                 None,
             )
 
@@ -1017,23 +964,19 @@ def generate_powerpoint_from_mrum(
                 [
                     "NetworkRequestsGrade",
                     "networkRequestsGrade",
-                    "MRUMNetworkRequestsGrade",   # ← added (capital MRUM)
-                    "mrumNetworkRequestsGrade",   # keep lowercase variant just in case
+                    "MRUMNetworkRequestsGrade",  # ← added (capital MRUM)
+                    "mrumNetworkRequestsGrade",  # keep lowercase variant just in case
                     "Network Requests Grade",
                     "Grade",
                     "grade",
                 ],
             )
 
-
             # Row lookup by app.
             def row_for_app(app):
                 if not app_col_nr:
                     return None
-                match = df_network_requests[
-                    df_network_requests[app_col_nr].astype(str).str.strip()
-                    == str(app)
-                ]
+                match = df_network_requests[df_network_requests[app_col_nr].astype(str).str.strip() == str(app)]
                 return match.iloc[0] if not match.empty else None
 
             # Fallback grade resolver that scans all values in the NR row.
@@ -1108,7 +1051,6 @@ def generate_powerpoint_from_mrum(
                         totals_by_grade,
                     )
 
-
             # A) Declines detected from Analysis.
             declined_apps_analysis = set()
             if "NetworkRequestsMRUM" in df_analysis.columns:
@@ -1120,12 +1062,7 @@ def generate_powerpoint_from_mrum(
                     low = str(val).lower()
                     if "declined" in low or "downgraded" in low:
                         is_dg = True
-                    elif (
-                        prev_g
-                        and curr_g
-                        and prev_g in all_grades
-                        and curr_g in all_grades
-                    ):
+                    elif prev_g and curr_g and prev_g in all_grades and curr_g in all_grades:
                         is_dg = all_grades.index(prev_g) < all_grades.index(curr_g)
                     if is_dg and app:
                         declined_apps_analysis.add(app)
@@ -1155,9 +1092,7 @@ def generate_powerpoint_from_mrum(
                     for _, r in df_network_requests.iterrows():
                         app = str(r.get(app_col_nr, "") or "").strip()
                         val = r.get(col, "")
-                        if (is_bool and is_bool_decline_cell(val)) or (
-                            (not is_bool) and is_num_decline_cell(val)
-                        ):
+                        if (is_bool and is_bool_decline_cell(val)) or ((not is_bool) and is_num_decline_cell(val)):
                             metric_declined_apps.add(app)
 
             logging.info(
@@ -1171,9 +1106,7 @@ def generate_powerpoint_from_mrum(
 
             # Union of Analysis- and Metric-detected declines.
             declined_union = declined_apps_analysis.union(metric_declined_apps)
-            logging.info(
-                "[mrum][Slide11] Total declined apps (union): %d", len(declined_union)
-            )
+            logging.info("[mrum][Slide11] Total declined apps (union): %d", len(declined_union))
 
             # Group apps under destination grade.
             declined_by_grade = {g: [] for g in table_grades}
@@ -1202,14 +1135,11 @@ def generate_powerpoint_from_mrum(
                     missing_grade[:20],
                 )
 
-
             logging.debug(
                 "[mrum][Slide11] Declined-by-grade counts: %s",
                 {k: len(v) for k, v in declined_by_grade.items()},
             )
-            logging.debug(
-                "[mrum][Slide11] Final totals_by_grade: %s", totals_by_grade
-            )
+            logging.debug("[mrum][Slide11] Final totals_by_grade: %s", totals_by_grade)
 
             # Build table rows in Gold, Silver, Bronze order.
             headers = [
@@ -1231,14 +1161,10 @@ def generate_powerpoint_from_mrum(
                     denom,
                     pct,
                 )
-                rows.append(
-                    [g, "\n".join(names) if names else "—", str(num_apps), f"{pct}%"]
-                )
+                rows.append([g, "\n".join(names) if names else "—", str(num_apps), f"{pct}%"])
 
             # Insert and render the single table.
-            table = insert_table_at_placeholder(
-                deep_dive_slide, "Table Placeholder 1", len(rows) + 1, len(headers)
-            )
+            table = insert_table_at_placeholder(deep_dive_slide, "Table Placeholder 1", len(rows) + 1, len(headers))
             if table:
                 for i, h in enumerate(headers):
                     cell = table.cell(0, i)
@@ -1256,15 +1182,9 @@ def generate_powerpoint_from_mrum(
                         if c_idx == 3:
                             run = p.runs[0] if p.runs else p.add_run()
                             pct_num = int(str(val).replace("%", "") or 0)
-                            run.font.color.rgb = (
-                                RGBColor(192, 0, 0)
-                                if pct_num > 0
-                                else RGBColor(0, 176, 80)
-                            )
+                            run.font.color.rgb = RGBColor(192, 0, 0) if pct_num > 0 else RGBColor(0, 176, 80)
             else:
-                logging.error(
-                    "[mrum][Slide11] Could not insert Network Requests Declined table; placeholder missing."
-                )
+                logging.error("[mrum][Slide11] Could not insert Network Requests Declined table; placeholder missing.")
 
         # ============================
         # Slide 12: Health Rules & Alerting Deep Dive (MRUM)
@@ -1274,9 +1194,7 @@ def generate_powerpoint_from_mrum(
 
         # Locate slide 12 (0-based index 11), fallback by title/placeholder.
         hra_deep_dive_slide = prs.slides[11] if len(prs.slides) > 11 else None
-        if hra_deep_dive_slide is None or not find_table_placeholder_by_name(
-            hra_deep_dive_slide, "Table Placeholder 1"
-        ):
+        if hra_deep_dive_slide is None or not find_table_placeholder_by_name(hra_deep_dive_slide, "Table Placeholder 1"):
             hra_deep_dive_slide = choose_slide_for_section(
                 prefer_titles=[
                     "Health Rules & Alerting Deep Dive",
@@ -1298,15 +1216,11 @@ def generate_powerpoint_from_mrum(
             if slide is None:
                 return False
             for shp in slide.shapes:
-                if getattr(shp, "name", "") == shape_name and hasattr(
-                    shp, "text_frame"
-                ) and shp.text_frame:
+                if getattr(shp, "name", "") == shape_name and hasattr(shp, "text_frame") and shp.text_frame:
                     shp.text_frame.clear()
                     shp.text_frame.text = str(text)
                     return True
-            logging.debug(
-                "[MRUM] Shape '%s' not found on HRA deep dive slide.", shape_name
-            )
+            logging.debug("[MRUM] Shape '%s' not found on HRA deep dive slide.", shape_name)
             return False
 
         def hra_first_present_col(df, candidates):
@@ -1363,17 +1277,7 @@ def generate_powerpoint_from_mrum(
             # Heuristic fallback by keyword overlap.
             key_tokens = set()
             for c in candidates:
-                key_tokens.update(
-                    [
-                        t
-                        for t in str(c)
-                        .lower()
-                        .replace("#", "")
-                        .replace("_", " ")
-                        .split()
-                        if t
-                    ]
-                )
+                key_tokens.update([t for t in str(c).lower().replace("#", "").replace("_", " ").split() if t])
             best = None
             best_score = 0
             for c in df.columns:
@@ -1414,9 +1318,7 @@ def generate_powerpoint_from_mrum(
                 return None
 
             app_col_hr_eff = hra_resolve_app_col(df_health_rules)
-            logging.debug(
-                "[MRUM][Slide12] Rectangles: resolved app_col=%s", app_col_hr_eff
-            )
+            logging.debug("[MRUM][Slide12] Rectangles: resolved app_col=%s", app_col_hr_eff)
 
             # Metric columns (common headers + variants).
             col_violations = hra_resolve_metric_col(
@@ -1446,8 +1348,7 @@ def generate_powerpoint_from_mrum(
             )
 
             logging.debug(
-                "[MRUM][Slide12] Rectangles: metric columns -> violations=%s, "
-                "actionsBound=%s, customRules=%s",
+                "[MRUM][Slide12] Rectangles: metric columns -> violations=%s, " "actionsBound=%s, customRules=%s",
                 col_violations,
                 col_actions_bound,
                 col_custom_rules,
@@ -1509,17 +1410,13 @@ def generate_powerpoint_from_mrum(
         # ============================
         # Table — Declined-only (Health Rules & Alerting) in Table Placeholder 1.
         # ============================
-        if hra_deep_dive_slide and find_table_placeholder_by_name(
-            hra_deep_dive_slide, "Table Placeholder 1"
-        ):
+        if hra_deep_dive_slide and find_table_placeholder_by_name(hra_deep_dive_slide, "Table Placeholder 1"):
 
             logging.debug(
                 "[MRUM][Slide12] df_health_rules columns: %s",
                 list(df_health_rules.columns),
             )
-            logging.debug(
-                "[MRUM][Slide12] df_analysis columns: %s", list(df_analysis.columns)
-            )
+            logging.debug("[MRUM][Slide12] df_analysis columns: %s", list(df_analysis.columns))
 
             # Pick the correct Analysis column (BRUM vs MRUM).
             hra_analysis_col = None
@@ -1529,10 +1426,7 @@ def generate_powerpoint_from_mrum(
                     break
 
             if not hra_analysis_col:
-                logging.warning(
-                    "[MRUM][Slide12] No HealthRulesAndAlerting* column found in Analysis; "
-                    "skipping declined HRA table."
-                )
+                logging.warning("[MRUM][Slide12] No HealthRulesAndAlerting* column found in Analysis; " "skipping declined HRA table.")
             else:
                 # Canonical grade order for rank comparisons.
                 all_grades = ["platinum", "gold", "silver", "bronze"]
@@ -1566,10 +1460,7 @@ def generate_powerpoint_from_mrum(
                     )
                     if m:
                         return (None, m.group(1))
-                    m = re.search(
-                        r"(?:now|is\s+now|became)\s+(platinum|gold|silver|bronze)",
-                        low
-                    )
+                    m = re.search(r"(?:now|is\s+now|became)\s+(platinum|gold|silver|bronze)", low)
                     if m:
                         return (None, m.group(1))
                     g = hra_norm_grade(low)
@@ -1582,11 +1473,7 @@ def generate_powerpoint_from_mrum(
                     df_health_rules,
                     ["name", "Name", "applicationName", "Application Name", "Application"],
                 ) or next(
-                    (
-                        c
-                        for c in df_health_rules.columns
-                        if str(c).lower() in ("app", "application", "application name")
-                    ),
+                    (c for c in df_health_rules.columns if str(c).lower() in ("app", "application", "application name")),
                     None,
                 )
                 grade_col_hr = hra_first_present_col(
@@ -1604,9 +1491,7 @@ def generate_powerpoint_from_mrum(
                 def row_for_app_hr(app):
                     if not app_col_hr:
                         return None
-                    match = df_health_rules[
-                        df_health_rules[app_col_hr].astype(str).str.strip() == str(app)
-                    ]
+                    match = df_health_rules[df_health_rules[app_col_hr].astype(str).str.strip() == str(app)]
                     return match.iloc[0] if not match.empty else None
 
                 def resolve_grade_for_app_hr(app):
@@ -1665,9 +1550,7 @@ def generate_powerpoint_from_mrum(
                 if not any(v > 0 for v in totals_by_grade_hr.values()):
                     inferred_totals = {g: 0 for g in table_grades}
                     for _, r in df_analysis.iterrows():
-                        _, cg = hra_parse_transition_grade(
-                            r.get(hra_analysis_col, "")
-                        )
+                        _, cg = hra_parse_transition_grade(r.get(hra_analysis_col, ""))
                         disp = cg.capitalize() if cg else None
                         if disp in inferred_totals:
                             inferred_totals[disp] += 1
@@ -1689,12 +1572,7 @@ def generate_powerpoint_from_mrum(
                     is_dg = False
                     if "declined" in low or "downgraded" in low:
                         is_dg = True
-                    elif (
-                        prev_g
-                        and curr_g
-                        and prev_g in all_grades
-                        and curr_g in all_grades
-                    ):
+                    elif prev_g and curr_g and prev_g in all_grades and curr_g in all_grades:
                         is_dg = all_grades.index(prev_g) < all_grades.index(curr_g)
                     if is_dg and app:
                         declined_apps_analysis_hr.add(app)
@@ -1728,9 +1606,7 @@ def generate_powerpoint_from_mrum(
                 )
 
                 # Union of Analysis- and Metric-detected declines.
-                declined_union_hr = declined_apps_analysis_hr.union(
-                    metric_declined_apps_hr
-                )
+                declined_union_hr = declined_apps_analysis_hr.union(metric_declined_apps_hr)
                 logging.info(
                     "[MRUM][Slide12] Total declined apps (union): %d",
                     len(declined_union_hr),
@@ -1759,9 +1635,7 @@ def generate_powerpoint_from_mrum(
                     "[MRUM][Slide12] Declined-by-grade counts: %s",
                     {k: len(v) for k, v in declined_by_grade_hr.items()},
                 )
-                logging.debug(
-                    "[MRUM][Slide12] Final totals_by_grade_hr: %s", totals_by_grade_hr
-                )
+                logging.debug("[MRUM][Slide12] Final totals_by_grade_hr: %s", totals_by_grade_hr)
 
                 # Build table in Gold, Silver, Bronze order.
                 headers = [
@@ -1783,9 +1657,7 @@ def generate_powerpoint_from_mrum(
                         denom,
                         pct,
                     )
-                    rows.append(
-                        [g, "\n".join(names) if names else "—", str(num_apps), f"{pct}%"]
-                    )
+                    rows.append([g, "\n".join(names) if names else "—", str(num_apps), f"{pct}%"])
 
                 table = insert_table_at_placeholder(
                     hra_deep_dive_slide,
@@ -1810,16 +1682,9 @@ def generate_powerpoint_from_mrum(
                             if c_idx == 3:
                                 run = p.runs[0] if p.runs else p.add_run()
                                 pct_num = int(str(val).replace("%", "") or 0)
-                                run.font.color.rgb = (
-                                    RGBColor(192, 0, 0)
-                                    if pct_num > 0
-                                    else RGBColor(0, 176, 80)
-                                )
+                                run.font.color.rgb = RGBColor(192, 0, 0) if pct_num > 0 else RGBColor(0, 176, 80)
                 else:
-                    logging.error(
-                        "[MRUM][Slide12] Could not insert Health Rules & Alerting Declined table; placeholder missing."
-                    )
-
+                    logging.error("[MRUM][Slide12] Could not insert Health Rules & Alerting Declined table; placeholder missing.")
 
         # ============================
         # Populate "TextBox 7" with number of mrum applications (slide index 5)
@@ -1828,33 +1693,27 @@ def generate_powerpoint_from_mrum(
         def set_textbox_value(prs_obj, shape_name, text, fallback_slide_index=5):
             for s in prs_obj.slides:
                 for shp in s.shapes:
-                    if getattr(shp, "name", "") == shape_name and hasattr(
-                        shp, "text_frame"
-                    ):
+                    if getattr(shp, "name", "") == shape_name and hasattr(shp, "text_frame"):
                         shp.text_frame.clear()
                         shp.text_frame.text = str(text)
                         return True
             if len(prs_obj.slides) > fallback_slide_index:
                 s = prs_obj.slides[fallback_slide_index]
                 for shp in s.shapes:
-                    if getattr(shp, "name", "") == shape_name and hasattr(
-                        shp, "text_frame"
-                    ):
+                    if getattr(shp, "name", "") == shape_name and hasattr(shp, "text_frame"):
                         shp.text_frame.clear()
                         shp.text_frame.text = str(text)
                         return True
             return False
 
         if not set_textbox_value(prs, "TextBox 7", number_of_apps, fallback_slide_index=5):
-            logging.warning(
-                "[mrum] 'TextBox 7' not found; mrum application count not written."
-            )
+            logging.warning("[mrum] 'TextBox 7' not found; mrum application count not written.")
 
         # Save the presentation when all slide content is populated.
         prs.save(powerpoint_output_path)
         logging.debug(f"[mrum] PowerPoint saved to: {powerpoint_output_path}")
         return powerpoint_output_path
-    
+
     except Exception as e:
         log.error("[mrum] Error generating PowerPoint: %s", e, exc_info=True)
         # Re-raise so upstream code (CLI / API) sees the failure.

@@ -36,6 +36,7 @@ from backend.extractionSteps.maturityAssessment.mrum.NetworkRequestsMRUM import 
 from backend.extractionSteps.maturityAssessment.mrum.OverallAssessmentMRUM import OverallAssessmentMRUM
 from backend.output.Archiver import Archiver
 from backend.output.PostProcessReport import PostProcessReport
+
 # from output.presentations.cxPpt import createCxPpt
 from backend.output.presentations.cxPptTemplate import createCxPpt as createCxPptTemplate
 from backend.output.reports.AgentMatrixReport import AgentMatrixReport
@@ -49,10 +50,11 @@ from backend.output.reports.SyntheticsReport import SyntheticsReport
 from backend.util.asyncio_utils import AsyncioUtils
 from backend.util.stdlib_utils import base64Decode, base64Encode, isBase64, jsonEncoder
 
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
+
 
 class Engine:
-    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, user_name: str, password: str, auth_method : str):
+    def __init__(self, jobFileName: str, thresholdsFileName: str, concurrentConnections: int, user_name: str, password: str, auth_method: str):
 
         # should we run the configuration analysis report in post-processing?
         self.controllers = []
@@ -79,7 +81,6 @@ class Engine:
         logger.info(f'\n{open(f"backend/resources/img/splash.txt").read()}')
         self.codebaseVersion = open(f"VERSION").read().strip()
         logger.info(f"Running Software Version: {self.codebaseVersion}")
-
 
         # Validate jobFileName and thresholdFileName
         self.jobFileName = jobFileName
@@ -158,16 +159,16 @@ class Engine:
         for controller in self.job:
 
             if controller.get("authType") is None:
-                logger.warn(f'\'authType\' is not '
-                             f'specified for host {controller["host"]} in '
-                             f'the input job file. Will '
-                             f'default to basic authentication for '
-                             f'backward compatibility.')
+                logger.warn(
+                    f"'authType' is not "
+                    f'specified for host {controller["host"]} in '
+                    f"the input job file. Will "
+                    f"default to basic authentication for "
+                    f"backward compatibility."
+                )
                 controller["authType"] = "basic"
 
-            logger.debug(
-                f'authenticationMethod: {controller["authType"]} '
-                f'for host {controller["host"]}')
+            logger.debug(f'authenticationMethod: {controller["authType"]} ' f'for host {controller["host"]}')
 
             authMethod = AuthMethod(
                 # auth_method=controller["authType"],
@@ -177,23 +178,20 @@ class Engine:
                 ssl=controller["ssl"],
                 account=controller["account"],
                 username=user_name if user_name else controller["username"],
-                password=password if password else base64Decode(controller[
-                                                                    "pwd"])[len("CAT-ENCODED-") :],
+                password=password if password else base64Decode(controller["pwd"])[len("CAT-ENCODED-") :],
                 verifySsl=controller.get("verifySsl", True),
-                useProxy=controller.get("useProxy", False)
+                useProxy=controller.get("useProxy", False),
             )
 
             controllerService = AppDService(
                 applicationFilter=controller.get("applicationFilter", None),
                 timeRangeMins=controller.get("timeRangeMins", 1440),
-                authMethod=authMethod
+                authMethod=authMethod,
             )
-
 
             self.controllers.append(controllerService)
             username = None
             password = None
-
 
         if password:  # I will let it here until it's the final version, so that we will
             logger.info("Dynamic password change was used!")  # have confirmation, that it's working as intended
@@ -248,9 +246,7 @@ class Engine:
             await self.postProcess()
             await self.runPlugins()
             self.finalize(startTime)
-            logger.info(
-                "JOB COMPLETED SUCCESSFULLY. All extraction, report exports, "
-                "post-processing, and plugins have finished.")
+            logger.info("JOB COMPLETED SUCCESSFULLY. All extraction, report exports, " "post-processing, and plugins have finished.")
         except Exception as e:
             # catch exceptions here, so we can terminate coroutines before program exit
             logger.error("".join(traceback.TracebackException.from_exception(e).format()))
@@ -260,7 +256,6 @@ class Engine:
             error=False,
         )
 
-
     async def runPlugins(self):
         logger.info(f"----------Plugins----------")
         plugin_dir = os.path.join(self.user_data_dir, "plugins")
@@ -269,7 +264,7 @@ class Engine:
             return
 
         # List subdirectories in plugins dir (ignoring files)
-        plugin_folders = [d for d in os.listdir(plugin_dir) if os.path.isdir(os.path.join(plugin_dir, d)) and not d.startswith('__')]
+        plugin_folders = [d for d in os.listdir(plugin_dir) if os.path.isdir(os.path.join(plugin_dir, d)) and not d.startswith("__")]
 
         if not plugin_folders:
             logger.info("No plugin directories found.")
@@ -279,7 +274,7 @@ class Engine:
             "jobFileName": self.jobFileName,
             "outputDir": os.path.join(self.output_dir, self.jobFileName),
             "controllerData": self.controllerData,
-            "controllers": self.controllers
+            "controllers": self.controllers,
         }
 
         for plugin_name in plugin_folders:
@@ -292,7 +287,9 @@ class Engine:
 
             requirements_file = os.path.join(plugin_path, "requirements.txt")
             if os.path.exists(requirements_file):
-                logger.info(f"Loading plugin: {plugin_name}. Standalone plugin detected. Will not run this plugin as its not part of CAT tool lifecycle. You may launch separately.")
+                logger.info(
+                    f"Loading plugin: {plugin_name}. Standalone plugin detected. Will not run this plugin as its not part of CAT tool lifecycle. You may launch separately."
+                )
                 continue
 
             try:
@@ -301,8 +298,8 @@ class Engine:
                 # Import the module dynamically from the path
                 spec = importlib.util.spec_from_file_location(f"plugins.{plugin_name}.main", main_file)
                 if spec is None or spec.loader is None:
-                     logger.error(f"Could not load spec for plugin {plugin_name}")
-                     continue
+                    logger.error(f"Could not load spec for plugin {plugin_name}")
+                    continue
 
                 module = importlib.util.module_from_spec(spec)
                 sys.modules[f"plugins.{plugin_name}.main"] = module
@@ -359,12 +356,10 @@ class Engine:
 
     async def initControllers(self) -> ([AppDService], str):
         logger.info(f"Validating Controller Login(s) for Job - {self.jobFileName} ")
-        loginFutures = [controller.getAuthMethod().authenticate() for controller in
-                        self.controllers]
+        loginFutures = [controller.getAuthMethod().authenticate() for controller in self.controllers]
         loginResults = await AsyncioUtils.gatherWithConcurrency(*loginFutures)
         if any(login.error is not None for login in loginResults):
             await self.abortAndCleanup(f"Unable to connect to one or more controllers. Aborting.")
-
 
         for idx, controller in enumerate(self.controllers):
             self.controllerData[controller.host] = OrderedDict()
@@ -387,28 +382,26 @@ class Engine:
                 f"This is informational only; version compatibility enforcement is disabled and processing will continue."
             )
         else:
-            logger.info(
-                f"Thresholds file version {thresholds_version} matches CAT version {self.codebaseVersion}."
-            )
+            logger.info(f"Thresholds file version {thresholds_version} matches CAT version {self.codebaseVersion}.")
 
         def thresholdStrictlyDecreasing(jobStep, thresholdMetric, componentType: str) -> bool:
             thresholds = self.thresholds[componentType][jobStep]
             if all(
-                    value is True
-                    for value in [
-                        thresholds["platinum"][thresholdMetric],
-                        thresholds["gold"][thresholdMetric],
-                        thresholds["silver"][thresholdMetric],
-                    ]
+                value is True
+                for value in [
+                    thresholds["platinum"][thresholdMetric],
+                    thresholds["gold"][thresholdMetric],
+                    thresholds["silver"][thresholdMetric],
+                ]
             ):
                 return True
             if all(
-                    value is False
-                    for value in [
-                        thresholds["platinum"][thresholdMetric],
-                        thresholds["gold"][thresholdMetric],
-                        thresholds["silver"][thresholdMetric],
-                    ]
+                value is False
+                for value in [
+                    thresholds["platinum"][thresholdMetric],
+                    thresholds["gold"][thresholdMetric],
+                    thresholds["silver"][thresholdMetric],
+                ]
             ):
                 return False
             return thresholds["platinum"][thresholdMetric] >= thresholds["gold"][thresholdMetric] >= thresholds["silver"][thresholdMetric]
@@ -416,21 +409,21 @@ class Engine:
         def thresholdStrictlyIncreasing(jobStep, thresholdMetric, componentType: str) -> bool:
             thresholds = self.thresholds[componentType][jobStep]
             if all(
-                    value is False
-                    for value in [
-                        thresholds["platinum"][thresholdMetric],
-                        thresholds["gold"][thresholdMetric],
-                        thresholds["silver"][thresholdMetric],
-                    ]
+                value is False
+                for value in [
+                    thresholds["platinum"][thresholdMetric],
+                    thresholds["gold"][thresholdMetric],
+                    thresholds["silver"][thresholdMetric],
+                ]
             ):
                 return True
             if all(
-                    value is True
-                    for value in [
-                        thresholds["platinum"][thresholdMetric],
-                        thresholds["gold"][thresholdMetric],
-                        thresholds["silver"][thresholdMetric],
-                    ]
+                value is True
+                for value in [
+                    thresholds["platinum"][thresholdMetric],
+                    thresholds["gold"][thresholdMetric],
+                    thresholds["silver"][thresholdMetric],
+                ]
             ):
                 return False
             return thresholds["platinum"][thresholdMetric] <= thresholds["gold"][thresholdMetric] <= thresholds["silver"][thresholdMetric]

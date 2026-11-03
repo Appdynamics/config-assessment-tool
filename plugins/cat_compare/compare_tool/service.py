@@ -31,8 +31,6 @@ from compare_tool.powerpoint.apm import generate_powerpoint_from_apm as generate
 from compare_tool.powerpoint.brum import generate_powerpoint_from_brum
 from compare_tool.powerpoint.mrum import generate_powerpoint_from_mrum
 
-
-
 logger = logging.getLogger(__name__)
 
 # Base directory of the project (points at compare-plugin root)
@@ -116,9 +114,7 @@ def run_comparison(
         raise ValueError("Controllers do not match between previous and current files.")
 
     # 3. Summary extraction & comparison
-    create_summary_workbooks(
-        previous_file_path, current_file_path, previous_sum_path, current_sum_path
-    )
+    create_summary_workbooks(previous_file_path, current_file_path, previous_sum_path, current_sum_path)
     compare_files_summary(previous_sum_path, current_sum_path, comparison_sum_path)
 
     # 4. Per-sheet comparisons -> main comparison_result.xlsx (APM domain)
@@ -182,9 +178,7 @@ def run_comparison_brum(
     output_file_name = config.get("output_file_brum", "comparison_result_brum.xlsx")
     previous_sum_name = config.get("previous_sum_file_brum", "previous_sum_brum.xlsx")
     current_sum_name = config.get("current_sum_file_brum", "current_sum_brum.xlsx")
-    comparison_sum_name = config.get(
-        "comparison_sum_file_brum", "comparison_sum_brum.xlsx"
-    )
+    comparison_sum_name = config.get("comparison_sum_file_brum", "comparison_sum_brum.xlsx")
 
     output_file_path = os.path.join(result_folder, output_file_name)
     previous_sum_path = os.path.join(upload_folder, previous_sum_name)
@@ -198,14 +192,10 @@ def run_comparison_brum(
 
     # 2. Controllers must match
     if not check_controllers_match(previous_file_path, current_file_path):
-        raise ValueError(
-            "Controllers do not match between previous and current files (BRUM)."
-        )
+        raise ValueError("Controllers do not match between previous and current files (BRUM).")
 
     # 3. Summary extraction & comparison
-    create_summary_workbooks(
-        previous_file_path, current_file_path, previous_sum_path, current_sum_path
-    )
+    create_summary_workbooks(previous_file_path, current_file_path, previous_sum_path, current_sum_path)
     compare_files_summary(previous_sum_path, current_sum_path, comparison_sum_path)
 
     # 4. Per-sheet comparisons (BRUM domain)
@@ -267,9 +257,7 @@ def run_comparison_mrum(
     output_file_name = config.get("output_file_mrum", "comparison_result_mrum.xlsx")
     previous_sum_name = config.get("previous_sum_file_mrum", "previous_sum_mrum.xlsx")
     current_sum_name = config.get("current_sum_file_mrum", "current_sum_mrum.xlsx")
-    comparison_sum_name = config.get(
-        "comparison_sum_file_mrum", "comparison_sum_mrum.xlsx"
-    )
+    comparison_sum_name = config.get("comparison_sum_file_mrum", "comparison_sum_mrum.xlsx")
 
     output_file_path = os.path.join(result_folder, output_file_name)
     previous_sum_path = os.path.join(upload_folder, previous_sum_name)
@@ -283,14 +271,10 @@ def run_comparison_mrum(
 
     # 2. Controllers must match
     if not check_controllers_match(previous_file_path, current_file_path):
-        raise ValueError(
-            "Controllers do not match between previous and current files (MRUM)."
-        )
+        raise ValueError("Controllers do not match between previous and current files (MRUM).")
 
     # 3. Summary extraction & comparison
-    create_summary_workbooks(
-        previous_file_path, current_file_path, previous_sum_path, current_sum_path
-    )
+    create_summary_workbooks(previous_file_path, current_file_path, previous_sum_path, current_sum_path)
     compare_files_summary(previous_sum_path, current_sum_path, comparison_sum_path)
 
     # 4. Per-sheet comparisons (MRUM domain)
@@ -325,15 +309,17 @@ def run_comparison_mrum(
         )
     except Exception as e:
         logger.warning("Failed to build MRUM Insights JSON: %s", e, exc_info=True)
-        
+
     logger.info("MRUM comparison pipeline completed successfully.")
     return output_file_path, powerpoint_output_path
+
 
 # ---------------------------------------------------------------------------
 # Folder upload helpers (used by webapp.app /upload_folders)
 # ---------------------------------------------------------------------------
 
 from difflib import SequenceMatcher
+
 
 def _norm_name(name: str) -> str:
     return "".join(ch.lower() for ch in (name or "") if ch.isalnum())
@@ -385,11 +371,11 @@ def _best_candidate(files: List[Any], domain: str) -> Optional[Any]:
     )
     return candidates[0]
 
+
 def find_best_matching_files(
     previous_files: List[Any],
     current_files: List[Any],
 ) -> Dict[str, Tuple[Optional[Any], Optional[Any]]]:
-
     """
     Determine best matching file pairs for each domain based on filenames.
     Returns:
@@ -452,4 +438,3 @@ def save_matched_files(
     curr_file.save(curr_path)
 
     return prev_path, curr_path
-

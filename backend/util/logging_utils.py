@@ -13,7 +13,7 @@ def initLogging(debug: bool):
         level=logging.DEBUG if debug else logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s %(funcName)s: %(message)s",
         handlers=[
-            logging.FileHandler("logs/config-assessment-tool.log", mode='a'),
+            logging.FileHandler("logs/config-assessment-tool.log", mode="a"),
             logging.StreamHandler(),
         ],
     )

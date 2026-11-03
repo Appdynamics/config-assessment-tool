@@ -4,11 +4,13 @@ import output.presentations.cxPptFsoUseCases as fsoppt
 from pptx import Presentation
 from output.presentations.cxPptFsoUseCases import UseCase, ExcelSheets
 
+
 def search(filename, search_path="."):
     for root, _, files in os.walk(search_path):
         if filename in files:
             return os.path.join(root, filename)
     return None
+
 
 @pytest.fixture
 def uc():
@@ -19,20 +21,19 @@ def uc():
 @pytest.fixture
 def excels():
     folder = f"output/test_ham_report"
-    ma_apm = 'test_ham_report-MaturityAssessment-apm.xlsx'
-    ma_apm_raw = 'test_ham_report-MaturityAssessmentRaw-apm.xlsx'
-    agent_matrix = 'test_ham_report-AgentMatrix.xlsx'
-    return ExcelSheets(folder,(ma_apm,ma_apm_raw, agent_matrix))
+    ma_apm = "test_ham_report-MaturityAssessment-apm.xlsx"
+    ma_apm_raw = "test_ham_report-MaturityAssessmentRaw-apm.xlsx"
+    agent_matrix = "test_ham_report-AgentMatrix.xlsx"
+    return ExcelSheets(folder, (ma_apm, ma_apm_raw, agent_matrix))
 
 
-
-def testCxPptFsoUseCases(uc,excels):
+def testCxPptFsoUseCases(uc, excels):
     template = search("HybridApplicationMonitoringUseCase_template.pptx", "../")
     root = Presentation(template)
     data = uc.pitstop_data
     setHealthStatus(uc)
 
-    fsoppt.markRaceTrackFailures(root,uc)
+    fsoppt.markRaceTrackFailures(root, uc)
 
     fsoppt.generatePitstopHealthCheckTable("folder_xxx", root, uc, "onboard")
     fsoppt.generatePitstopHealthCheckTable("folder_xxx", root, uc, "implement")
@@ -81,12 +82,12 @@ def setHealthStatus(uc):
     uc.setHealthCheckStatus("FSO_HAM_ENG_4", "fail (xxx hc )")
 
 
-def testCxPptFsoUseCases_secondary_remediation_generation(uc, excels) :
+def testCxPptFsoUseCases_secondary_remediation_generation(uc, excels):
     template = search("HybridApplicationMonitoringUseCase_template.pptx", "../")
     root = Presentation(template)
     data = uc.pitstop_data
     setHealthStatus(uc)
-    fsoppt.markRaceTrackFailures(root,uc)
+    fsoppt.markRaceTrackFailures(root, uc)
 
     fsoppt.generateRemediationSlides("folder_xxx", root, uc, excels, "onboard", fsoppt.SlideId.ONBOARD_REMEDIATION_SECONDARY)
     fsoppt.generateRemediationSlides("folder_xxx", root, uc, excels, "implement", fsoppt.SlideId.IMPLEMENT_REMEDIATION_SECONDARY)
@@ -96,6 +97,7 @@ def testCxPptFsoUseCases_secondary_remediation_generation(uc, excels) :
     fsoppt.generateRemediationSlides("folder_xxx", root, uc, excels, "use", fsoppt.SlideId.USE_REMEDIATION_SECONDARY)
 
     root.save(f"cx-ham-usecase-test-presentation-secondary.pptx")
+
 
 def testGetPitstopTasks(uc):
     # onboard has 4 sequence or tasks
@@ -111,18 +113,15 @@ def testGetPitstopTasks(uc):
     # optimize has 4 sequence or tasks
     assert len(uc.getPitstopTasks("optimize")) == 4
 
-
     assert uc.getPitstopTasks("onboard")[0] == "FSO_HAM_ONB_1"
     assert uc.getPitstopTasks("onboard")[1] == "FSO_HAM_ONB_2"
     assert uc.getPitstopTasks("onboard")[2] == "FSO_HAM_ONB_3"
     assert uc.getPitstopTasks("onboard")[3] == "FSO_HAM_ONB_4"
 
-
     assert uc.getPitstopTasks("implement")[0] == "FSO_HAM_IMP_1"
     assert uc.getPitstopTasks("implement")[1] == "FSO_HAM_IMP_2"
     assert uc.getPitstopTasks("implement")[2] == "FSO_HAM_IMP_3"
     assert uc.getPitstopTasks("implement")[3] == "FSO_HAM_IMP_4"
-
 
     assert uc.getPitstopTasks("use")[0] == "FSO_HAM_USE_1"
     assert uc.getPitstopTasks("use")[1] == "FSO_HAM_USE_2"
@@ -146,12 +145,13 @@ def testGetPitstopTasks(uc):
     assert uc.getPitstopTasks("optimize")[2] == "FSO_HAM_OPT_3"
     assert uc.getPitstopTasks("optimize")[3] == "FSO_HAM_OPT_4"
 
+
 def testExecSheetsClass():
     folder = f"output/test_ham_report"
-    ma_apm = 'test_ham_report-MaturityAssessment-apm.xlsx'
-    ma_apm_raw = 'test_ham_report-MaturityAssessmentRaw-apm.xlsx'
-    agent_matrix = 'test_ham_report-AgentMatrix.xlsx'
-    xs = ExcelSheets(folder,(ma_apm, ma_apm_raw, agent_matrix))
+    ma_apm = "test_ham_report-MaturityAssessment-apm.xlsx"
+    ma_apm_raw = "test_ham_report-MaturityAssessmentRaw-apm.xlsx"
+    agent_matrix = "test_ham_report-AgentMatrix.xlsx"
+    xs = ExcelSheets(folder, (ma_apm, ma_apm_raw, agent_matrix))
     assert len(xs.getWorkBooks()) == 3
     assert len(xs.getHeaders(ma_apm, "AppAgentsAPM")) == 7
     print(xs.getHeaders(ma_apm, "AppAgentsAPM"))
@@ -161,8 +161,7 @@ def testExecSheetsClass():
     assert t1 == 400
     t1 = xs.getColumnAverage(ma_apm, "AppAgentsAPM", "percentAgentsReportingData")
     assert t1 == 11.11111111111111
-    t1 = xs.getRowCountForColumnValue(
-        ma_apm, "HealthRulesAndAlertingAPM", "numberOfActionsBoundToEnabledPolicies", "==", 1)
+    t1 = xs.getRowCountForColumnValue(ma_apm, "HealthRulesAndAlertingAPM", "numberOfActionsBoundToEnabledPolicies", "==", 1)
     assert t1 == 5
 
     expression = "BT lockdown total is <eval>count(btLockdownEnabled == True)</eval>"
@@ -187,7 +186,7 @@ def testExecSheetsClass():
 
     expression = "deployed agent count for 23+ is <eval>count(agentVersion == 23.3.0.0 compatible with 4.4.1.0)</eval>"
     sub_exp, column_name, operator, value, is_eval_expr = xs.parseExpression(expression)
-    count = xs.getValue(agent_matrix, "Individual - appServerAgents" , column_name, operator, value)
+    count = xs.getValue(agent_matrix, "Individual - appServerAgents", column_name, operator, value)
     assert count == 1
     assert xs.substituteExpression(expression, sub_exp, count) == "deployed agent count for 23+ is 1"
 
@@ -200,18 +199,23 @@ def testExecSheetsClass():
     expression = "Ensure you keep your AppAgent versions up to date. Count of applications with all the AppAgents less than 1 years old:  <eval>count(percentAgentsLessThan1YearOld == 100)</eval> of your agents are less than 1 year old."
     sub_exp, column_name, operator, value, is_eval_expr = xs.parseExpression(expression)
     assert is_eval_expr == True
-    count = xs.getValue(ma_apm, "AppAgentsAPM" , column_name, operator, value)
+    count = xs.getValue(ma_apm, "AppAgentsAPM", column_name, operator, value)
     assert count == 2
-    assert xs.substituteExpression(expression, sub_exp, count) == "Ensure you keep your AppAgent versions up to date. Count of applications with all the AppAgents less than 1 years old:  2 of your agents are less than 1 year old."
+    assert (
+        xs.substituteExpression(expression, sub_exp, count)
+        == "Ensure you keep your AppAgent versions up to date. Count of applications with all the AppAgents less than 1 years old:  2 of your agents are less than 1 year old."
+    )
 
     # try > operator
-    expression = 'Most applications have more than one agent attached to their process/vms. Currently you have <eval>count(numberOfAgentsReportingData > 1)</eval> applications with more than one agent reporting data.'
+    expression = "Most applications have more than one agent attached to their process/vms. Currently you have <eval>count(numberOfAgentsReportingData > 1)</eval> applications with more than one agent reporting data."
     sub_exp, column_name, operator, value, is_eval_expr = xs.parseExpression(expression)
     assert is_eval_expr == True
-    count = xs.getValue(ma_apm_raw, "AppAgentsAPM" , column_name, operator, value)
+    count = xs.getValue(ma_apm_raw, "AppAgentsAPM", column_name, operator, value)
     assert count == 2
-    assert xs.substituteExpression(expression, sub_exp, count) == "Most applications have more than one agent attached to their process/vms. Currently you have 2 applications with more than one agent reporting data."
-
+    assert (
+        xs.substituteExpression(expression, sub_exp, count)
+        == "Most applications have more than one agent attached to their process/vms. Currently you have 2 applications with more than one agent reporting data."
+    )
 
     wb_name, sheet_name = xs.findSheetByHeader("percentAgentsReportingData")
     assert wb_name == ma_apm

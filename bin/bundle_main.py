@@ -3,13 +3,15 @@ import os
 import multiprocessing
 from streamlit.web import cli as st_cli
 
+
 def resolve_path(path):
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         base_path = sys._MEIPASS
     else:
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     return os.path.join(base_path, path)
+
 
 def run_ui():
     """
@@ -25,7 +27,7 @@ def run_ui():
 
     # Ensure the directory containing 'backend' package is in sys.path
     # In frozen app, sys._MEIPASS is usually where bundled packages live.
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         # sys._MEIPASS is the root of the bundle content (_internal)
         # If 'backend' package is in sys._MEIPASS, then sys._MEIPASS should be in PYTHONPATH
         # Streamlit spawns a new process or execs in current?
@@ -42,15 +44,11 @@ def run_ui():
     # Streamlit CLI expects sys.argv to start with "streamlit"
     # We construct the arguments: "streamlit run path/to/frontend.py [args]"
     # Currently we don't pass extra args to frontend, but we could filter sys.argv
-    sys.argv = [
-        "streamlit",
-        "run",
-        script_path,
-        "--global.developmentMode=false"
-    ]
+    sys.argv = ["streamlit", "run", script_path, "--global.developmentMode=false"]
 
     print("Starting Config Assessment Tool UI...")
     sys.exit(st_cli.main())
+
 
 def run_backend():
     """
@@ -65,6 +63,7 @@ def run_backend():
     # Let's import it here.
     try:
         import backend.backend
+
         # Click's main() will handle sys.argv parsing/execution and sys.exit
         # Force prog_name to be "config-assessment-tool" instead of script name
         backend.backend.main(prog_name="config-assessment-tool")
@@ -72,21 +71,22 @@ def run_backend():
         print(f"Error importing backend: {e}")
         sys.exit(1)
 
+
 if __name__ == "__main__":
     multiprocessing.freeze_support()
 
     # Add backend directory to sys.path
-    if getattr(sys, 'frozen', False):
-        backend_path = os.path.join(sys._MEIPASS, 'backend')
+    if getattr(sys, "frozen", False):
+        backend_path = os.path.join(sys._MEIPASS, "backend")
         if backend_path not in sys.path:
             sys.path.append(backend_path)
 
         # Set SSL_CERT_FILE to the bundled certifi cacert.pem
         # PyInstaller bundles certifi's cacert.pem in 'certifi/cacert.pem' relative to _MEIPASS
-        cert_path = os.path.join(sys._MEIPASS, 'certifi', 'cacert.pem')
+        cert_path = os.path.join(sys._MEIPASS, "certifi", "cacert.pem")
         if os.path.exists(cert_path):
-            os.environ['SSL_CERT_FILE'] = cert_path
-            os.environ['REQUESTS_CA_BUNDLE'] = cert_path
+            os.environ["SSL_CERT_FILE"] = cert_path
+            os.environ["REQUESTS_CA_BUNDLE"] = cert_path
             # print(f"Setting SSL CA Bundle to: {cert_path}") # Debug only
 
     # Check for UI flags

@@ -65,15 +65,11 @@ def check_controllers_match(previous_file_path: str, current_file_path: str) -> 
     logging.debug(f"Current controller(s): {curr_ctrls}")
 
     if len(prev_ctrls) != 1 or len(curr_ctrls) != 1:
-        logging.error(
-            "Controller column does not contain exactly one unique value in each file."
-        )
+        logging.error("Controller column does not contain exactly one unique value in each file.")
         return False
 
     if prev_ctrls[0] != curr_ctrls[0]:
-        logging.error(
-            f"Controllers do not match: {prev_ctrls[0]} vs {curr_ctrls[0]}"
-        )
+        logging.error(f"Controllers do not match: {prev_ctrls[0]} vs {curr_ctrls[0]}")
         return False
 
     return True

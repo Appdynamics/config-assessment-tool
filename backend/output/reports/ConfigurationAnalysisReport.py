@@ -7,11 +7,11 @@ import xlsxwriter
 
 from backend.output.PostProcessReport import PostProcessReport
 
-light_font = '#FFFFFF'
-dark_font = '#000000'
+light_font = "#FFFFFF"
+dark_font = "#000000"
 
-medium_bg = '#A0A0A0'
-dark_bg = '#000000'
+medium_bg = "#A0A0A0"
+dark_bg = "#000000"
 
 
 class ConfigurationAnalysisReport(PostProcessReport):
@@ -30,8 +30,9 @@ class ConfigurationAnalysisReport(PostProcessReport):
         self.analysis_sheet = os.path.join(directory, f"{file_prefix}-MaturityAssessment-apm.xlsx")
 
         if not os.path.exists(self.analysis_sheet):
-            logging.warn(f"Input file sheet {self.analysis_sheet} does not exist. "
-                         f"Skipping post-process command: Creating Configuration Analysis Workbook")
+            logging.warn(
+                f"Input file sheet {self.analysis_sheet} does not exist. " f"Skipping post-process command: Creating Configuration Analysis Workbook"
+            )
             return
 
         # output
@@ -45,7 +46,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
             ranking = self.performAnalysis(application, taskList)
             if ranking != "Platinum":
                 for task in taskList:
-                    if (len(task) > 0):
+                    if len(task) > 0:
                         applicationData.append([application, ranking, taskList])
                         break
             else:
@@ -66,225 +67,243 @@ class ConfigurationAnalysisReport(PostProcessReport):
         return values
 
     def getListOfApplications(self):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='Analysis',
-                              engine='openpyxl').dropna(how='all')
-        return frame['name'].tolist()
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="Analysis", engine="openpyxl").dropna(how="all")
+        return frame["name"].tolist()
 
     def overallAppStatus(self, application, tasklist):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='Analysis', engine='openpyxl')
-        frame = frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['name'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="Analysis", engine="openpyxl")
+        frame = frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["name"] == application]
 
         # Overall Assessment
-        ranking = 'NA'
-        if (appFrame['OverallAssessment'] == 'bronze').any():
-            ranking = 'Bronze'
-        elif (appFrame['OverallAssessment'] == 'silver').any():
-            ranking = 'Silver'
-        elif (appFrame['OverallAssessment'] == 'gold').any():
-            ranking = 'Gold'
-        elif (appFrame['OverallAssessment'] == 'platinum').any():
-            ranking = 'Platinum'
+        ranking = "NA"
+        if (appFrame["OverallAssessment"] == "bronze").any():
+            ranking = "Bronze"
+        elif (appFrame["OverallAssessment"] == "silver").any():
+            ranking = "Silver"
+        elif (appFrame["OverallAssessment"] == "gold").any():
+            ranking = "Gold"
+        elif (appFrame["OverallAssessment"] == "platinum").any():
+            ranking = "Platinum"
         return ranking
 
     def appAgentStatus(self, application, taskList):
         # Sheet name may have changed to AppAgentsAPM
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='AppAgentsAPM', engine='openpyxl')
-        frame = frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="AppAgentsAPM", engine="openpyxl")
+        frame = frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Agent Metric Limit
-        if (appFrame['metricLimitNotHit'] == False).any():
+        if (appFrame["metricLimitNotHit"] == False).any():
             taskList[2].append("Application Agent metric limit has been reached")
 
         # Agent Versions
-        if (appFrame['percentAgentsLessThan2YearsOld'] < 50).any():
-            taskList[0].append(str(100 - int(appFrame['percentAgentsLessThan2YearsOld'].iloc[0])) + '% of Application Agents are 2+ years old')
-        elif (appFrame['percentAgentsLessThan1YearOld'] < 80).any():
-            taskList[0].append(str(100 - int(appFrame['percentAgentsLessThan1YearOld'].iloc[0])) + '% of Application Agents are at least 1 year old')
+        if (appFrame["percentAgentsLessThan2YearsOld"] < 50).any():
+            taskList[0].append(str(100 - int(appFrame["percentAgentsLessThan2YearsOld"].iloc[0])) + "% of Application Agents are 2+ years old")
+        elif (appFrame["percentAgentsLessThan1YearOld"] < 80).any():
+            taskList[0].append(str(100 - int(appFrame["percentAgentsLessThan1YearOld"].iloc[0])) + "% of Application Agents are at least 1 year old")
 
         # Agents reporting data
-        if (appFrame['percentAgentsReportingData'] < 100).any():
-            taskList[0].append(str(100 - int(appFrame['percentAgentsReportingData'].iloc[0])) + "% of Application Agents aren't reporting data")
+        if (appFrame["percentAgentsReportingData"] < 100).any():
+            taskList[0].append(str(100 - int(appFrame["percentAgentsReportingData"].iloc[0])) + "% of Application Agents aren't reporting data")
 
-        if (appFrame['percentAgentsRunningSameVersion'] < 100).any():
-            taskList[0].append('Multiple Application Agent Versions')
+        if (appFrame["percentAgentsRunningSameVersion"] < 100).any():
+            taskList[0].append("Multiple Application Agent Versions")
 
     def machineAgentStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='MachineAgentsAPM', engine='openpyxl')
-        frame = frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="MachineAgentsAPM", engine="openpyxl")
+        frame = frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
     def businessTranStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='BusinessTransactionsAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="BusinessTransactionsAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Number of Business Transcations
-        if (appFrame['numberOfBTs'] > 200).any():
-            taskList[1].append("Reduce amount of Business transactions from " + str(int(appFrame['numberOfBTs'].iloc[0])))
+        if (appFrame["numberOfBTs"] > 200).any():
+            taskList[1].append("Reduce amount of Business transactions from " + str(int(appFrame["numberOfBTs"].iloc[0])))
 
         # % of Business Transactions with load
-        if (appFrame['percentBTsWithLoad'] < 90).any():
-            taskList[1].append(str(100 - int(appFrame['percentBTsWithLoad'].iloc[0])) + '% of Business Transactions have no load over the last 24 hours')
+        if (appFrame["percentBTsWithLoad"] < 90).any():
+            taskList[1].append(
+                str(100 - int(appFrame["percentBTsWithLoad"].iloc[0])) + "% of Business Transactions have no load over the last 24 hours"
+            )
 
         # Business Transaction Lockdown
-        if (appFrame['btLockdownEnabled'] == False).any():
+        if (appFrame["btLockdownEnabled"] == False).any():
             taskList[1].append("Business Transaction Lockdown is disabled")
 
         # Number of Custom Match Rules
-        if (appFrame['numberCustomMatchRules'] < 3).any():
-            if (appFrame['numberCustomMatchRules'] == 0).any():
-                taskList[2].append('No Custom Match Rules')
+        if (appFrame["numberCustomMatchRules"] < 3).any():
+            if (appFrame["numberCustomMatchRules"] == 0).any():
+                taskList[2].append("No Custom Match Rules")
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberCustomMatchRules'].iloc[0])) + ' Custom Match Rules')
+                taskList[2].append("Only " + str(int(appFrame["numberCustomMatchRules"].iloc[0])) + " Custom Match Rules")
 
     def backendStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='BackendsAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="BackendsAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # % of Backends with load
-        if (appFrame['percentBackendsWithLoad'] < 75).any():
-            taskList[2].append(str(100 - int(appFrame['percentBackendsWithLoad'].iloc[0])) + '% of Backends have no load')
+        if (appFrame["percentBackendsWithLoad"] < 75).any():
+            taskList[2].append(str(100 - int(appFrame["percentBackendsWithLoad"].iloc[0])) + "% of Backends have no load")
 
         # Backend limit not hit
-        if (appFrame['backendLimitNotHit'] == False).any():
-            taskList[2].append('Backend limit has been reached')
+        if (appFrame["backendLimitNotHit"] == False).any():
+            taskList[2].append("Backend limit has been reached")
 
         # Number of Custom Backend Rules
-        if (appFrame['numberOfCustomBackendRules'] == 0).any():
-            taskList[2].append('No Custom Backend Rules')
+        if (appFrame["numberOfCustomBackendRules"] == 0).any():
+            taskList[2].append("No Custom Backend Rules")
 
     def overheadStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='OverheadAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="OverheadAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Developer Mode Not Enabled for any Business Transaction
-        if (appFrame['developerModeNotEnabledForAnyBT'] == False).any():
-            taskList[2].append('Development Level monitoring is enabled for a Business Transaction')
+        if (appFrame["developerModeNotEnabledForAnyBT"] == False).any():
+            taskList[2].append("Development Level monitoring is enabled for a Business Transaction")
 
         # find-entry-points not enabled
-        if (appFrame['findEntryPointsNotEnabled'] == False).any():
-            taskList[2].append('Find-entry-points node property is enabled')
+        if (appFrame["findEntryPointsNotEnabled"] == False).any():
+            taskList[2].append("Find-entry-points node property is enabled")
 
         # Aggressive Snapshotting not enabled
-        if (appFrame['aggressiveSnapshottingNotEnabled'] == False).any():
-            taskList[2].append('Aggressive snapshot collection is enabled')
+        if (appFrame["aggressiveSnapshottingNotEnabled"] == False).any():
+            taskList[2].append("Aggressive snapshot collection is enabled")
 
         # Developer Mode not enabled for an application
-        if (appFrame['developerModeNotEnabledForApplication'] == False).any():
-            taskList[2].append('Development Level monitoring is enabled for an Application')
+        if (appFrame["developerModeNotEnabledForApplication"] == False).any():
+            taskList[2].append("Development Level monitoring is enabled for an Application")
 
     def serviceEndpointStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='ServiceEndpointsAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="ServiceEndpointsAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Number of Custom Service Endpoint Rules
-        if (appFrame['numberOfCustomServiceEndpointRules'] == 0).any():
-            taskList[2].append('No Custom Service Endpoint rules')
+        if (appFrame["numberOfCustomServiceEndpointRules"] == 0).any():
+            taskList[2].append("No Custom Service Endpoint rules")
 
         # Service Endpoint Limit not hit
-        if (appFrame['serviceEndpointLimitNotHit'] == False).any():
-            taskList[2].append('Service Endpoint limit has been reached')
+        if (appFrame["serviceEndpointLimitNotHit"] == False).any():
+            taskList[2].append("Service Endpoint limit has been reached")
 
         # % of enabled Service Endpoints with load
-        if (appFrame['percentServiceEndpointsWithLoadOrDisabled'] < 75).any():
-            taskList[2].append(str(100 - int(appFrame['percentServiceEndpointsWithLoadOrDisabled'].iloc[0])) + '% of enabled Service Endpoints have no load')
+        if (appFrame["percentServiceEndpointsWithLoadOrDisabled"] < 75).any():
+            taskList[2].append(
+                str(100 - int(appFrame["percentServiceEndpointsWithLoadOrDisabled"].iloc[0])) + "% of enabled Service Endpoints have no load"
+            )
 
     def errorConfigurationStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='ErrorConfigurationAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="ErrorConfigurationAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Sucess Percentage of Worst Transaction
-        if (appFrame['successPercentageOfWorstTransaction'] < 80).any():
-            taskList[3].append('Some Business Transactions fail ' + str(100 - int(appFrame['successPercentageOfWorstTransaction'].iloc[0])) + '% of the time')
+        if (appFrame["successPercentageOfWorstTransaction"] < 80).any():
+            taskList[3].append(
+                "Some Business Transactions fail " + str(100 - int(appFrame["successPercentageOfWorstTransaction"].iloc[0])) + "% of the time"
+            )
 
         # Number of Custom rules
-        if (appFrame['numberOfCustomRules'] == 0).any():
-            taskList[2].append('No custom error configurations')
+        if (appFrame["numberOfCustomRules"] == 0).any():
+            taskList[2].append("No custom error configurations")
 
     def healthRulesAlertingStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='HealthRulesAndAlertingAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="HealthRulesAndAlertingAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Number of Health Rule Violations in last 24 hours
-        if (appFrame['numberOfHealthRuleViolations'] > 10).any():
-            taskList[3].append(str(int(appFrame['numberOfHealthRuleViolations'].iloc[0])) + ' Health Rule Violations in 24 hours')
+        if (appFrame["numberOfHealthRuleViolations"] > 10).any():
+            taskList[3].append(str(int(appFrame["numberOfHealthRuleViolations"].iloc[0])) + " Health Rule Violations in 24 hours")
 
         # Number of modifications to default Health Rules
-        if (appFrame['numberOfDefaultHealthRulesModified'] < 2).any():
-            if (appFrame['numberOfDefaultHealthRulesModified'] < 2).any():
-                taskList[3].append('No modifications to the default Health Rules')
+        if (appFrame["numberOfDefaultHealthRulesModified"] < 2).any():
+            if (appFrame["numberOfDefaultHealthRulesModified"] < 2).any():
+                taskList[3].append("No modifications to the default Health Rules")
             else:
-                taskList[3].append('Only ' + str(int(appFrame['numberOfDefaultHealthRulesModified'].iloc[0])) + ' modifications to the default Health Rules')
+                taskList[3].append(
+                    "Only " + str(int(appFrame["numberOfDefaultHealthRulesModified"].iloc[0])) + " modifications to the default Health Rules"
+                )
 
         # Number of actions bound to enabled policies
-        if (appFrame['numberOfActionsBoundToEnabledPolicies'] < 1).any():
-            taskList[3].append('No actions bound to enabled policies')
+        if (appFrame["numberOfActionsBoundToEnabledPolicies"] < 1).any():
+            taskList[3].append("No actions bound to enabled policies")
 
         # Number of Custom Health Rules
-        if (appFrame['numberOfCustomHealthRules'] < 5).any():
-            if (appFrame['numberOfCustomHealthRules'] == 0).any():
-                taskList[3].append('No Custom Health Rules')
+        if (appFrame["numberOfCustomHealthRules"] < 5).any():
+            if (appFrame["numberOfCustomHealthRules"] == 0).any():
+                taskList[3].append("No Custom Health Rules")
             else:
-                taskList[3].append('Only ' + str(int(appFrame['numberOfCustomHealthRules'].iloc[0])) + ' Custom Health Rules')
+                taskList[3].append("Only " + str(int(appFrame["numberOfCustomHealthRules"].iloc[0])) + " Custom Health Rules")
 
     def dataCollectorStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='DataCollectorsAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="DataCollectorsAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Number of data collector fields configured
-        if (appFrame['numberOfDataCollectorFieldsConfigured'] < 5).any():
-            if (appFrame['numberOfDataCollectorFieldsConfigured'] == 0).any():
-                taskList[2].append('No configured Data Collectors')
+        if (appFrame["numberOfDataCollectorFieldsConfigured"] < 5).any():
+            if (appFrame["numberOfDataCollectorFieldsConfigured"] == 0).any():
+                taskList[2].append("No configured Data Collectors")
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsConfigured'].iloc[0])) + ' configured Data Collectors')
+                taskList[2].append("Only " + str(int(appFrame["numberOfDataCollectorFieldsConfigured"].iloc[0])) + " configured Data Collectors")
 
         # Number of data collector fields colleced in snapshots in last 24 hours
-        if (appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'] < 5).any():
-            if (appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'] == 0).any():
-                taskList[2].append('No Data Collector fields collected in APM Snapshots in 24 hours')
+        if (appFrame["numberOfDataCollectorFieldsCollectedInSnapshots"] < 5).any():
+            if (appFrame["numberOfDataCollectorFieldsCollectedInSnapshots"] == 0).any():
+                taskList[2].append("No Data Collector fields collected in APM Snapshots in 24 hours")
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsCollectedInSnapshots'].iloc[0])) + ' Data Collector fields collected in APM Snapshots in 24 hours')
+                taskList[2].append(
+                    "Only "
+                    + str(int(appFrame["numberOfDataCollectorFieldsCollectedInSnapshots"].iloc[0]))
+                    + " Data Collector fields collected in APM Snapshots in 24 hours"
+                )
 
         # Number of data collector fields collect in analytics in last 24 hours
-        if (appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'] < 5).any():
-            if (appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'] == 0).any():
-                taskList[2].append('No Data Collector fields collected in Analytics in 24 hours')
+        if (appFrame["numberOfDataCollectorFieldsCollectedInAnalytics"] < 5).any():
+            if (appFrame["numberOfDataCollectorFieldsCollectedInAnalytics"] == 0).any():
+                taskList[2].append("No Data Collector fields collected in Analytics in 24 hours")
             else:
-                taskList[2].append('Only ' + str(int(appFrame['numberOfDataCollectorFieldsCollectedInAnalytics'].iloc[0])) + ' Data Collector fields collected in Analytics in 24 hours')
+                taskList[2].append(
+                    "Only "
+                    + str(int(appFrame["numberOfDataCollectorFieldsCollectedInAnalytics"].iloc[0]))
+                    + " Data Collector fields collected in Analytics in 24 hours"
+                )
 
         # BiQ enabled
-        if (appFrame['biqEnabled'] == False).any():
-            taskList[2].append('BiQ is disabled')
+        if (appFrame["biqEnabled"] == False).any():
+            taskList[2].append("BiQ is disabled")
 
     def apmDashBoardsStatus(self, application, taskList):
-        frame = pd.read_excel(self.analysis_sheet, sheet_name='DashboardsAPM', engine='openpyxl')
-        frame.drop('controller', axis=1)
-        appFrame = frame.loc[frame['application'] == application]
+        frame = pd.read_excel(self.analysis_sheet, sheet_name="DashboardsAPM", engine="openpyxl")
+        frame.drop("controller", axis=1)
+        appFrame = frame.loc[frame["application"] == application]
 
         # Number of custom dashboards
-        if (appFrame['numberOfDashboards'] < 5).any():
-            if (appFrame['numberOfDashboards'] == 1).any():
-                taskList[4].append('Only 1 Custom Dashboard')
-            elif (appFrame['numberOfDashboards'] == 0).any():
-                taskList[4].append('No Custom Dashboards')
+        if (appFrame["numberOfDashboards"] < 5).any():
+            if (appFrame["numberOfDashboards"] == 1).any():
+                taskList[4].append("Only 1 Custom Dashboard")
+            elif (appFrame["numberOfDashboards"] == 0).any():
+                taskList[4].append("No Custom Dashboards")
             else:
-                taskList[4].append('Only ' + str(int(appFrame['numberOfDashboards'].iloc[0])) + ' Custom Dashboards')
+                taskList[4].append("Only " + str(int(appFrame["numberOfDashboards"].iloc[0])) + " Custom Dashboards")
 
         # % of Custom Dashboards modified in last 6 months
-        if (appFrame['percentageOfDashboardsModifiedLast6Months'] < 100).any():
-            taskList[4].append(str(100 - int(appFrame['percentageOfDashboardsModifiedLast6Months'].iloc[0])) + '% of Custom Dashboards have not been updated in 6+ months')
+        if (appFrame["percentageOfDashboardsModifiedLast6Months"] < 100).any():
+            taskList[4].append(
+                str(100 - int(appFrame["percentageOfDashboardsModifiedLast6Months"].iloc[0]))
+                + "% of Custom Dashboards have not been updated in 6+ months"
+            )
 
         # Number of Custom Dashboards using BiQ
-        if (appFrame['numberOfDashboardsUsingBiQ'] == 0).any():
-            taskList[4].append('No Custom Dashboards using BiQ')
+        if (appFrame["numberOfDashboardsUsingBiQ"] == 0).any():
+            taskList[4].append("No Custom Dashboards using BiQ")
 
     def performAnalysis(self, application, taskList):
         overallRanking = self.overallAppStatus(application, taskList)
@@ -305,7 +324,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
         worksheet = None
 
         stepFormat = self.workbook.add_format()
-        stepFormat.set_align('center')
+        stepFormat.set_align("center")
         # row_num = 1
         row_counts = [1, 1, 1, 1]
 
@@ -314,19 +333,19 @@ class ConfigurationAnalysisReport(PostProcessReport):
             applicationRank = applicationData[application][1]
             currentApplication = applicationData[application][2]
 
-            if applicationRank == 'Bronze':
+            if applicationRank == "Bronze":
                 worksheet = worksheets[0]
                 self.generateApplicationHeader(applicationName, applicationRank, worksheet, row_counts[0])
                 row_counts[0] = row_counts[0] + 1
-            elif applicationRank == 'Silver':
+            elif applicationRank == "Silver":
                 worksheet = worksheets[1]
                 self.generateApplicationHeader(applicationName, applicationRank, worksheet, row_counts[1])
                 row_counts[1] = row_counts[1] + 1
-            elif applicationRank == 'Gold':
+            elif applicationRank == "Gold":
                 worksheet = worksheets[2]
                 self.generateApplicationHeader(applicationName, applicationRank, worksheet, row_counts[2])
                 row_counts[2] = row_counts[2] + 1
-            elif applicationRank == 'Platinum':
+            elif applicationRank == "Platinum":
                 worksheet = worksheets[3]
                 self.generateApplicationHeader(applicationName, applicationRank, worksheet, row_counts[3])
                 row_counts[3] = row_counts[3] + 1
@@ -336,7 +355,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
             for categoryIndex in range(0, len(currentApplication)):
                 for taskIndex in range(0, len(currentApplication[categoryIndex])):
 
-                    if applicationRank == 'Bronze':
+                    if applicationRank == "Bronze":
                         worksheet.write(row_counts[0], 0, applicationName)
                         worksheet.write(row_counts[0], 1, task_num, stepFormat)
                         worksheet.write(row_counts[0], 3, currentApplication[categoryIndex][taskIndex])
@@ -353,10 +372,10 @@ class ConfigurationAnalysisReport(PostProcessReport):
                             worksheet.write(row_counts[0], 2, "Health Rules & Alerts")
                         elif categoryIndex == 4:
                             worksheet.write(row_counts[0], 2, "Dashboard")
-                        worksheet.set_row(row_counts[0], None, None, {'level': 1})
+                        worksheet.set_row(row_counts[0], None, None, {"level": 1})
                         row_counts[0] += 1
                         task_num += 1
-                    elif applicationRank == 'Silver':
+                    elif applicationRank == "Silver":
                         worksheet.write(row_counts[1], 0, applicationName)
                         worksheet.write(row_counts[1], 1, task_num, stepFormat)
                         worksheet.write(row_counts[1], 3, currentApplication[categoryIndex][taskIndex])
@@ -373,10 +392,10 @@ class ConfigurationAnalysisReport(PostProcessReport):
                             worksheet.write(row_counts[1], 2, "Health Rules & Alerts")
                         elif categoryIndex == 4:
                             worksheet.write(row_counts[1], 2, "Dashboard")
-                        worksheet.set_row(row_counts[1], None, None, {'level': 1})
+                        worksheet.set_row(row_counts[1], None, None, {"level": 1})
                         row_counts[1] += 1
                         task_num += 1
-                    elif applicationRank == 'Gold':
+                    elif applicationRank == "Gold":
                         worksheet.write(row_counts[2], 0, applicationName)
                         worksheet.write(row_counts[2], 1, task_num, stepFormat)
                         worksheet.write(row_counts[2], 3, currentApplication[categoryIndex][taskIndex])
@@ -393,10 +412,10 @@ class ConfigurationAnalysisReport(PostProcessReport):
                             worksheet.write(row_counts[2], 2, "Health Rules & Alerts")
                         elif categoryIndex == 4:
                             worksheet.write(row_counts[2], 2, "Dashboard")
-                        worksheet.set_row(row_counts[2], None, None, {'level': 1})
+                        worksheet.set_row(row_counts[2], None, None, {"level": 1})
                         row_counts[2] += 1
                         task_num += 1
-                    elif applicationRank == 'Platinum':
+                    elif applicationRank == "Platinum":
                         worksheet.write(row_counts[3], 0, applicationName)
                         worksheet.write(row_counts[3], 1, task_num, stepFormat)
                         worksheet.write(row_counts[3], 3, currentApplication[categoryIndex][taskIndex])
@@ -413,12 +432,12 @@ class ConfigurationAnalysisReport(PostProcessReport):
                             worksheet.write(row_counts[3], 2, "Health Rules & Alerts")
                         elif categoryIndex == 4:
                             worksheet.write(row_counts[3], 2, "Dashboard")
-                        worksheet.set_row(row_counts[3], None, None, {'level': 1})
+                        worksheet.set_row(row_counts[3], None, None, {"level": 1})
                         row_counts[3] += 1
                         task_num += 1
 
         for i in range(len(worksheets)):
-            worksheets[i].autofilter('A1:D' + str(row_counts[i]))
+            worksheets[i].autofilter("A1:D" + str(row_counts[i]))
 
     def generateApplicationHeader(self, applicationName, applicationRank, worksheet, row_num):
         appHeaderFormat = self.workbook.add_format()
@@ -430,7 +449,7 @@ class ConfigurationAnalysisReport(PostProcessReport):
         stepsHeaderFormat.set_bold()
         stepsHeaderFormat.set_font_color(dark_font)
         stepsHeaderFormat.set_bg_color(medium_bg)
-        stepsHeaderFormat.set_align('center')
+        stepsHeaderFormat.set_align("center")
 
         worksheet.write(row_num, 0, applicationName, appHeaderFormat)
         worksheet.write(row_num, 1, " ", stepsHeaderFormat)
@@ -440,10 +459,10 @@ class ConfigurationAnalysisReport(PostProcessReport):
         worksheet.write(row_num, 4, " ", appHeaderFormat)
 
     def generateHeaders(self):
-        bronze_worksheet = self.workbook.add_worksheet('Bronze')
-        silver_worksheet = self.workbook.add_worksheet('Silver')
-        gold_worksheet = self.workbook.add_worksheet('Gold')
-        plat_worksheet = self.workbook.add_worksheet('Platinum')
+        bronze_worksheet = self.workbook.add_worksheet("Bronze")
+        silver_worksheet = self.workbook.add_worksheet("Silver")
+        gold_worksheet = self.workbook.add_worksheet("Gold")
+        plat_worksheet = self.workbook.add_worksheet("Platinum")
 
         worksheets = [bronze_worksheet, silver_worksheet, gold_worksheet, plat_worksheet]
 
@@ -456,21 +475,21 @@ class ConfigurationAnalysisReport(PostProcessReport):
         stepFormat.set_bold()
         stepFormat.set_font_color(light_font)
         stepFormat.set_bg_color(dark_bg)
-        stepFormat.set_align('center')
+        stepFormat.set_align("center")
 
         for sheet in range(len(worksheets)):
-            worksheets[sheet].write('A1', 'Application', headerFormat)
-            worksheets[sheet].write('B1', 'Steps', stepFormat)
-            worksheets[sheet].write('C1', 'Activity', headerFormat)
-            worksheets[sheet].write('D1', 'Task', headerFormat)
-            worksheets[sheet].write('E1', 'Target', headerFormat)
+            worksheets[sheet].write("A1", "Application", headerFormat)
+            worksheets[sheet].write("B1", "Steps", stepFormat)
+            worksheets[sheet].write("C1", "Activity", headerFormat)
+            worksheets[sheet].write("D1", "Task", headerFormat)
+            worksheets[sheet].write("E1", "Target", headerFormat)
 
             # worksheet.write('E1', 'Overall Ranking', headerFormat)
 
-            worksheets[sheet].set_column('A:A', 40)
-            worksheets[sheet].set_column('B:B', 7)
-            worksheets[sheet].set_column('C:C', 50)
-            worksheets[sheet].set_column('D:D', 65)
+            worksheets[sheet].set_column("A:A", 40)
+            worksheets[sheet].set_column("B:B", 7)
+            worksheets[sheet].set_column("C:C", 50)
+            worksheets[sheet].set_column("D:D", 65)
 
             # worksheet.set_column('E:E', 15)
 

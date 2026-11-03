@@ -8,8 +8,7 @@ from backend.extractionSteps.JobStepBase import JobStepBase
 from backend.util.asyncio_utils import AsyncioUtils
 from backend.util.stdlib_utils import substringBetween
 
-
-logger = logging.getLogger(__name__.split('.')[-1])
+logger = logging.getLogger(__name__.split(".")[-1])
 
 
 class AppAgentsAPM(JobStepBase):
@@ -185,10 +184,7 @@ class AppAgentsAPM(JobStepBase):
                 for node in application["nodes"]:
                     # Support both APIs: new (explicit flag) and old (implicit via non-empty version string)
                     app_agent_present_flag = node.get("appAgentPresent", None)
-                    app_agent_present = (
-                        app_agent_present_flag is True
-                        or (app_agent_present_flag is None and node.get("appAgentVersion", "") != "")
-                    )
+                    app_agent_present = app_agent_present_flag is True or (app_agent_present_flag is None and node.get("appAgentVersion", "") != "")
 
                     if app_agent_present:
                         version_str = node.get("appAgentVersion", "")

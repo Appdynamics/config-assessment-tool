@@ -40,9 +40,7 @@ class PPTBuilder:
             self.prs = Presentation(template_path)
         else:
             if template_path:
-                log.warning(
-                    "Template %s not found, using blank presentation", template_path
-                )
+                log.warning("Template %s not found, using blank presentation", template_path)
             self.prs = Presentation()
 
     # --- Basic slide helpers -------------------------------------------------

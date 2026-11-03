@@ -18,6 +18,7 @@ from utils.streamlit_utils import rerun
 
 # --- Helper Functions ---
 
+
 def run_backend_process(job_details):
     """Target function for the separate process to run the backend engine."""
 
@@ -25,8 +26,9 @@ def run_backend_process(job_details):
     # This mirrors the logic in bundle_main.py to ensure top-level imports like 'api' work.
     import sys
     import os
-    if getattr(sys, 'frozen', False):
-        backend_path = os.path.join(sys._MEIPASS, 'backend')
+
+    if getattr(sys, "frozen", False):
+        backend_path = os.path.join(sys._MEIPASS, "backend")
         if backend_path not in sys.path:
             sys.path.append(backend_path)
 
@@ -45,7 +47,7 @@ def run_backend_process(job_details):
             job_details["concurrent_connections"],
             job_details["username"],
             job_details["password"],
-            job_details["auth_method"]
+            job_details["auth_method"],
         )
         await engine.run()
 
@@ -60,14 +62,14 @@ def is_running_in_container():
     runtimes that use standard cgroup paths.
     """
     # Check for a common file created by Docker.
-    if os.path.exists('/.dockerenv'):
+    if os.path.exists("/.dockerenv"):
         return True
 
     # Check the cgroup of the init process for container-specific keywords.
     try:
-        with open('/proc/1/cgroup', 'rt') as f:
+        with open("/proc/1/cgroup", "rt") as f:
             cgroup_content = f.read()
-            if 'docker' in cgroup_content or 'kubepods' in cgroup_content:
+            if "docker" in cgroup_content or "kubepods" in cgroup_content:
                 return True
     except FileNotFoundError:
         # /proc/1/cgroup does not exist on non-Linux systems.
@@ -75,8 +77,10 @@ def is_running_in_container():
 
     return False
 
+
 def get_file_path(base, name):
     return f"input/{base}/{name}.json"
+
 
 def handle_open_jobfile(file_path, title):
     # This function now only displays the file content
@@ -87,6 +91,7 @@ def handle_open_jobfile(file_path, title):
     else:
         st.warning(f"File not found: {file_path}")
 
+
 def show_thresholds_file(thresholds):
     file_path = get_file_path("thresholds", thresholds)
     if os.path.exists(file_path):
@@ -95,6 +100,7 @@ def show_thresholds_file(thresholds):
                 st.json(json.load(f))
     else:
         st.warning(f"File not found: {file_path}")
+
 
 def open_output_folder(jobName):
     """Opens a folder."""
@@ -132,7 +138,7 @@ def open_output_folder(jobName):
                 subprocess.run(["open", abs_path], check=True)
             else:  # Linux
                 # Check for DISPLAY environment variable to see if UI is available
-                if not os.environ.get('DISPLAY'):
+                if not os.environ.get("DISPLAY"):
                     st.warning(f"Cannot open folder '{abs_path}' directly: Running in a headless environment (no display detected).")
                     logging.warning(f"Cannot open folder '{abs_path}' directly: Running in a headless environment.")
                     return
@@ -141,36 +147,25 @@ def open_output_folder(jobName):
             st.error(f"Failed to open folder directly: {e}")
             logging.error(f"Failed to open folder directly: {e}")
 
+
 def dynamic_credentials_section(job_executed, jobName):
     dynamicCredentials = st.expander("Pass credentials dynamically (optional)")
     dynamicCredentials.write("Credentials will be changed for all jobs in the job file.")
     usrNameCol, pwdCol, authTypeCol, dynChckCol = dynamicCredentials.columns(4)
-    authType = authTypeCol.selectbox(
-        label="Auth Type",
-        options=["basic", "secret", "token"],
-        key=f"JobFile:{jobName}-authType"
-    )
+    authType = authTypeCol.selectbox(label="Auth Type", options=["basic", "secret", "token"], key=f"JobFile:{jobName}-authType")
     labels = {
         "token": ("API Client Username", "API Client Token"),
         "secret": ("Client ID", "Client Secret"),
-        "basic": ("New Username", "New Password")
+        "basic": ("New Username", "New Password"),
     }
     username_label, password_label = labels.get(authType, labels["basic"])
-    newUsrName = usrNameCol.text_input(
-        label=username_label,
-        value="AzureDiamond",
-        key=f"JobFile:{jobName}-usrCol"
-    )
-    newPwd = pwdCol.text_input(
-        label=password_label,
-        value="hunter2",
-        type="password",
-        key=f"JobFile:{jobName}-pwdCol"
-    )
+    newUsrName = usrNameCol.text_input(label=username_label, value="AzureDiamond", key=f"JobFile:{jobName}-usrCol")
+    newPwd = pwdCol.text_input(label=password_label, value="hunter2", type="password", key=f"JobFile:{jobName}-pwdCol")
     dynChckCol.text("")
     dynChckCol.text("")
     dynamicCheck = dynChckCol.checkbox("Dynamic Credentials", key=f"JobFile:{jobName}-chckCol")
     return newUsrName, newPwd, authType, dynamicCheck
+
 
 def handle_run(runColumn, jobName, thresholds, debug, concurrentConnections, newUsrName, newPwd, authType, dynamicCheck, log_modal):
     runColumn.text("")
@@ -182,10 +177,11 @@ def handle_run(runColumn, jobName, thresholds, debug, concurrentConnections, new
             "username": newUsrName if dynamicCheck else None,
             "password": newPwd if dynamicCheck else None,
             "auth_method": authType if dynamicCheck else None,
-            "debug": debug
+            "debug": debug,
         }
         log_modal.open()
         rerun()
+
 
 def tail_file(filepath, n_lines=50):
     """Reads the last N lines from a file."""
@@ -198,7 +194,9 @@ def tail_file(filepath, n_lines=50):
     except Exception as e:
         return f"Error reading log file: {e}"
 
+
 # --- Main Component ---
+
 
 def jobHandler(jobName: str, debug: bool, concurrentConnections: int):
     st.header(f"{jobName}")
@@ -231,7 +229,7 @@ def jobHandler(jobName: str, debug: bool, concurrentConnections: int):
     thresholds_dir = "input/thresholds"
     thresholdsFiles = []
     if os.path.exists(thresholds_dir) and os.path.isdir(thresholds_dir):
-        thresholdsFiles = [f[:-5] for f in os.listdir(thresholds_dir) if f.endswith('.json')]
+        thresholdsFiles = [f[:-5] for f in os.listdir(thresholds_dir) if f.endswith(".json")]
 
     if jobName in thresholdsFiles:
         thresholdsFiles.remove(jobName)
@@ -249,7 +247,7 @@ def jobHandler(jobName: str, debug: bool, concurrentConnections: int):
                 info = json.load(f)
             last_run_str = datetime.fromtimestamp(info["lastRun"], get_localzone()).strftime("%m-%d-%Y at %H:%M:%S")
             infoColumn.text("")
-            infoColumn.info(f'Last Run: {last_run_str}')
+            infoColumn.info(f"Last Run: {last_run_str}")
         except (IOError, json.JSONDecodeError, KeyError):
             infoColumn.text("")
             infoColumn.warning("Job has not yet been run or info file is invalid.")
@@ -279,14 +277,17 @@ def jobHandler(jobName: str, debug: bool, concurrentConnections: int):
     log_modal = Modal(modal_title, key=f"logs-modal-{jobName}", max_width=5000)
 
     # CSS to force the modal to 90% of screen width
-    st.markdown("""
+    st.markdown(
+        """
         <style>
         div[data-modal-container='true'] > div:first-child {
             width: 90vw !important;
             max-width: 90vw !important;
         }
         </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     if st.button("Show Logs", key=f"show-logs-{jobName}"):
         log_modal.open()
@@ -358,7 +359,7 @@ def jobHandler(jobName: str, debug: bool, concurrentConnections: int):
             # Live-tail the logs while the process is running
             if is_running:
                 display_logs(500, auto_scroll=True)
-                time.sleep(1) # Rerun every second to update logs
+                time.sleep(1)  # Rerun every second to update logs
                 st.rerun()
             else:
                 # Display final log state after the job is finished or when just viewing logs
@@ -371,6 +372,5 @@ def jobHandler(jobName: str, debug: bool, concurrentConnections: int):
                             <p style='font-size: 1.2em; color: #555;'>You may close this window.</p>
                         </div>
                         """,
-                        unsafe_allow_html=True
+                        unsafe_allow_html=True,
                     )
-
