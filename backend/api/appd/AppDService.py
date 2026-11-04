@@ -1,10 +1,10 @@
+import asyncio
 import json
 import logging
 import re
 import time
 from datetime import date, datetime, timedelta
 from json import JSONDecodeError
-from math import ceil
 from typing import List
 
 from backend.api.Result import Result
@@ -285,36 +285,54 @@ class AppDService:
         response = await self.controller.getApplicationComponents(applicationID)
         response = await self.getResultFromResponse(response, debugString)
 
-        customMatchRulesFutures = []
-        defaultMatchRulesFutures = []
+        customMatchRulesRequests = []
+        defaultMatchRulesRequests = []
         body = '{"agentType":"APP_AGENT","attachedEntity":{"entityId":{entityId},"entityType":"APPLICATION"}}'.replace(
             "{entityId}", f"{applicationID}"
         )
-        defaultMatchRulesFutures.append(
-            self.controller.getServiceEndpointDefaultMatchRules(body))
+        defaultMatchRulesRequests.append(
+            ("application default match rules", body, self.controller.getServiceEndpointDefaultMatchRules))
         for entity in response.data:
             body = '{"attachedEntity":{"entityType":"APPLICATION_COMPONENT","entityId":{entityId}},"agentType":"{agentType}"}'.replace(
                 "{entityId}", str(entity["id"])
             ).replace("{agentType}", str(entity["componentType"]["agentType"]))
-            customMatchRulesFutures.append(
-                self.controller.getServiceEndpointCustomMatchRules(body))
+            customMatchRulesRequests.append(
+                (f"component {entity['id']} custom match rules", body, self.controller.getServiceEndpointCustomMatchRules))
 
             body = '{"agentType":"APP_AGENT","attachedEntity":{"entityId":{entityId},"entityType":"APPLICATION_COMPONENT"}}'.replace(
                 "{entityId}", str(entity["id"])
             )
-            defaultMatchRulesFutures.append(
-                self.controller.getServiceEndpointDefaultMatchRules(body))
+            defaultMatchRulesRequests.append(
+                (f"component {entity['id']} default match rules", body, self.controller.getServiceEndpointDefaultMatchRules))
 
-        response = await AsyncioUtils.gatherWithConcurrency(
-            *customMatchRulesFutures)
-        customMatchRules = [
-            await self.getResultFromResponse(response, debugString) for response
-            in response]
-        response = await AsyncioUtils.gatherWithConcurrency(
-            *defaultMatchRulesFutures)
-        defaultMatchRules = [
-            await self.getResultFromResponse(response, debugString) for response
-            in response]
+        async def fetch_match_rules(description, request_body, request):
+            max_retries = 5
+            last_error = None
+            for attempt in range(1, max_retries + 2):
+                try:
+                    raw_response = await request(request_body)
+                    result = await self.getResultFromResponse(raw_response, debugString)
+                    if result.error is None:
+                        return result
+                    last_error = result.error.msg
+                except Exception as error:
+                    last_error = str(error)
+                if attempt <= max_retries:
+                    delay = min(0.5 * (2 ** (attempt - 1)), 8)
+                    logging.warning(
+                        f"{self.host} - {debugString}: {description} failed "
+                        f"on attempt {attempt}/{max_retries + 1}: {last_error}; "
+                        f"retrying in {delay:.1f}s")
+                    await asyncio.sleep(delay)
+            logging.error(
+                f"{self.host} - {debugString}: {description} unavailable after "
+                f"{max_retries} retries: {last_error}")
+            return Result([], Result.Error(str(last_error)))
+
+        customMatchRules = await AsyncioUtils.gatherWithConcurrency(
+            *(fetch_match_rules(*request) for request in customMatchRulesRequests))
+        defaultMatchRules = await AsyncioUtils.gatherWithConcurrency(
+            *(fetch_match_rules(*request) for request in defaultMatchRulesRequests))
 
         return Result((customMatchRules, defaultMatchRules), None)
 
@@ -563,56 +581,129 @@ class AppDService:
         return await self.getResultFromResponse(response, debugString)
 
     async def getDashboards(self) -> Result:
-
         debugString = f"Gathering Dashboards"
         logging.debug(f"{self.host} - {debugString}")
-        response = await self.controller.getAllDashboardsMetadata()
-        allDashboardsMetadata = await self.getResultFromResponse(response,
-                                                                 debugString)
+        max_retries = 5
 
-        dashboards = []
-        batch_size = AsyncioUtils.concurrentConnections
-        for i in range(0, len(allDashboardsMetadata.data), batch_size):
-            dashboardsFutures = []
+        async def retry_delay(retry_number):
+            # retry_number starts at 1; delays grow exponentially and cap at 8s.
+            await asyncio.sleep(0.5 * (2 ** (retry_number - 1)))
 
-            logging.debug(
-                f"Batch iteration {int(i / batch_size)} of {ceil(len(allDashboardsMetadata.data) / batch_size)}")
-            chunk = allDashboardsMetadata.data[i: i + batch_size]
+        allDashboardsMetadata = None
+        last_list_error = None
+        for attempt in range(1, max_retries + 2):
+            try:
+                response = await self.controller.getAllDashboardsMetadata()
+                result = await self.getResultFromResponse(response, debugString)
+                if result.error is not None:
+                    last_list_error = result.error.msg
+                elif not isinstance(result.data, list):
+                    last_list_error = (
+                        "dashboard metadata response had unexpected type "
+                        f"{type(result.data).__name__}")
+                elif any(not isinstance(item, dict) or item.get("id") is None
+                         for item in result.data):
+                    last_list_error = "dashboard metadata contains an entry without an id"
+                else:
+                    allDashboardsMetadata = result.data
+                    break
+            except Exception as error:
+                last_list_error = str(error)
 
-            for dashboard in chunk:
-                dashboardsFutures.append(
-                    self.controller.getDashboard(dashboard["id"]))
+            if attempt <= max_retries:
+                delay = 0.5 * (2 ** (attempt - 1))
+                logging.warning(
+                    f"{self.host} - Dashboard metadata request failed on "
+                    f"attempt {attempt}/{max_retries + 1}: {last_list_error}; "
+                    f"retrying in {delay:.1f}s")
+                await retry_delay(attempt)
 
-            response = await AsyncioUtils.gatherWithConcurrency(
-                *dashboardsFutures)
-            for dashboard in [
-                await self.getResultFromResponse(response, debugString) for
-                response in response]:
-                dashboards.append(dashboard.data)
-                # logging.info(f'{self.host} - DASHBOARD: '
-                #              f'{dashboard.data["name"]}'
-                #              f' {dashboard.data["name"]}')
+        if allDashboardsMetadata is None:
+            logging.warning(
+                f"{self.host} - Unable to retrieve dashboard metadata after "
+                f"{max_retries} retries: {last_list_error}. Dashboard export "
+                "will be omitted; continuing the CAT run.")
+            return Result([], None)
 
-        # The above implementation shouldn't be necessary since gatherWithConcurrency uses a semaphore to limit number of concurrent calls.
-        # But on controllers with a large number of dashboards the coroutines will get stuck unless explicitly batched.
-        # The below implementation should work, but doesn't and I'm tired of looking at it. Maybe someone smarter than me can fix it.
-        # Tens of hours wasted here, beware ye who enter.
-        # dashboardFutures = []
-        # for dashboard in allDashboardsMetadata.data:
-        #     dashboardFutures.append(self.controller.getDashboard(dashboard["id"]))
-        # response = await gatherWithConcurrency(*dashboardFutures)
-        # dashboards = [await self.getResultFromResponse(response, debugString) for response in response]
-        # dashboards = [dashboard.data for dashboard in dashboards if dashboard.error is None]
+        # Dashboard exports are larger and more expensive than the metadata calls.
+        # Keep their concurrency low even when the job uses a higher global limit.
+        max_concurrency = max(1, min(AsyncioUtils.concurrentConnections, 3))
+        semaphore = asyncio.Semaphore(max_concurrency)
+
+        async def fetch_dashboard(overview):
+            dashboard_id = overview["id"]
+            dashboard_debug = f"{debugString} (dashboardId={dashboard_id})"
+            async with semaphore:
+                last_error = None
+                for attempt in range(1, max_retries + 2):
+                    try:
+                        response = await self.controller.getDashboard(dashboard_id)
+                        result = await self.getResultFromResponse(
+                            response, dashboard_debug)
+                        if result.error is not None:
+                            last_error = result.error.msg
+                        elif (not isinstance(result.data, dict) or
+                              "schemaVersion" not in result.data):
+                            last_error = "response did not contain a dashboard schema"
+                        else:
+                            logging.info(
+                                f"{self.host} - Dashboard export succeeded: "
+                                f"id={dashboard_id}, "
+                                f"name={overview.get('name', '<unknown>')!r}")
+                            return dashboard_id, result.data, None
+                    except Exception as error:
+                        # Includes incomplete HTTP payloads and connection resets.
+                        last_error = str(error)
+
+                    if attempt <= max_retries:
+                        delay = 0.5 * (2 ** (attempt - 1))
+                        logging.warning(
+                            f"{self.host} - {dashboard_debug} failed on "
+                            f"attempt {attempt}/{max_retries + 1}: {last_error}; "
+                            f"retrying in {delay:.1f}s")
+                        await retry_delay(attempt)
+                return dashboard_id, None, last_error
+
+        results = await asyncio.gather(
+            *(fetch_dashboard(overview) for overview in allDashboardsMetadata))
 
         returnedDashboards = []
-        for dashboardSchema, dashboardOverview in zip(dashboards,
-                                                      allDashboardsMetadata.data):
-            if "schemaVersion" in dashboardSchema:
-                dashboardSchema["createdBy"] = dashboardOverview["createdBy"]
-                dashboardSchema["createdOn"] = dashboardOverview["createdOn"]
-                dashboardSchema["modifiedOn"] = dashboardOverview["modifiedOn"]
-                returnedDashboards.append(dashboardSchema)
+        failed_dashboards = []
+        metadata_by_id = {
+            str(overview["id"]): overview
+            for overview in allDashboardsMetadata
+        }
+        for dashboard_id, dashboard_schema, error in results:
+            if error is not None:
+                overview = metadata_by_id.get(str(dashboard_id), {})
+                failed_dashboards.append({
+                    "id": dashboard_id,
+                    "name": overview.get("name", "<unknown>"),
+                    "error": error,
+                })
+                continue
 
+            dashboard_overview = metadata_by_id.get(str(dashboard_id), {})
+            for field in ("createdBy", "createdOn", "modifiedOn"):
+                if field in dashboard_overview:
+                    dashboard_schema[field] = dashboard_overview[field]
+            returnedDashboards.append(dashboard_schema)
+
+        if failed_dashboards:
+            failure_summary = "; ".join(
+                f"id={dashboard['id']}, name={dashboard['name']!r}, "
+                f"error={dashboard['error']}"
+                for dashboard in failed_dashboards)
+            logging.warning(
+                f"{self.host} - {len(failed_dashboards)} dashboard(s) could "
+                f"not be exported after {max_retries} retries and will be "
+                f"omitted. Successfully exported dashboards will be kept. "
+                f"Failures: {failure_summary}")
+
+        logging.info(
+            f"{self.host} - Dashboard extraction finished: "
+            f"{len(returnedDashboards)} of {len(allDashboardsMetadata)} "
+            f"dashboards exported; {len(failed_dashboards)} omitted")
         return Result(returnedDashboards, None)
 
     async def getUserPermissions(self, username: str) -> Result:

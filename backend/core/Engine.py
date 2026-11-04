@@ -248,6 +248,9 @@ class Engine:
             await self.postProcess()
             await self.runPlugins()
             self.finalize(startTime)
+            logger.info(
+                "JOB COMPLETED SUCCESSFULLY. All extraction, report exports, "
+                "post-processing, and plugins have finished.")
         except Exception as e:
             # catch exceptions here, so we can terminate coroutines before program exit
             logger.error("".join(traceback.TracebackException.from_exception(e).format()))

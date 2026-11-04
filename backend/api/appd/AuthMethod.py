@@ -6,7 +6,7 @@ import re
 
 import aiohttp
 from uplink import AiohttpClient
-from uplink.auth import BasicAuth, BearerToken
+from uplink.auth import BasicAuth
 
 from backend.api.Result import Result
 from backend.api.appd.AppDController import AppdController
@@ -171,12 +171,25 @@ class AuthMethod():
         expires_in = token_data.get("expires_in", 300)
         self.controller.session.headers["Authorization"] = (f"Bearer"
                                                             f" {token}")
-        self.controller.session.auth = BearerToken(token)
+        self.controller.session.auth = None
 
         return await self._validateAPIClientPermissions(self.username)
 
     async def loginTokenOauthAuthentication(self):
-        self.controller.session.auth = BearerToken(self.password)
+        token = (self.password or "").strip()
+        if token.lower().startswith("bearer "):
+            token = token[7:].strip()
+        if not token:
+            return Result(
+                None,
+                Result.Error(
+                    f"{self.host} - Temporary access token is required for token authentication."),
+            )
+
+        # BearerToken is an Uplink request-builder auth scheme; assigning it to
+        # aiohttp.ClientSession.auth does not add an Authorization header.
+        self.controller.session.auth = None
+        self.controller.session.headers["Authorization"] = f"Bearer {token}"
         return await self._validateAPIClientPermissions(self.username)
 
     async def authenticate(self):
