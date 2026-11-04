@@ -285,36 +285,54 @@ class AppDService:
         response = await self.controller.getApplicationComponents(applicationID)
         response = await self.getResultFromResponse(response, debugString)
 
-        customMatchRulesFutures = []
-        defaultMatchRulesFutures = []
+        customMatchRulesRequests = []
+        defaultMatchRulesRequests = []
         body = '{"agentType":"APP_AGENT","attachedEntity":{"entityId":{entityId},"entityType":"APPLICATION"}}'.replace(
             "{entityId}", f"{applicationID}"
         )
-        defaultMatchRulesFutures.append(
-            self.controller.getServiceEndpointDefaultMatchRules(body))
+        defaultMatchRulesRequests.append(
+            ("application default match rules", body, self.controller.getServiceEndpointDefaultMatchRules))
         for entity in response.data:
             body = '{"attachedEntity":{"entityType":"APPLICATION_COMPONENT","entityId":{entityId}},"agentType":"{agentType}"}'.replace(
                 "{entityId}", str(entity["id"])
             ).replace("{agentType}", str(entity["componentType"]["agentType"]))
-            customMatchRulesFutures.append(
-                self.controller.getServiceEndpointCustomMatchRules(body))
+            customMatchRulesRequests.append(
+                (f"component {entity['id']} custom match rules", body, self.controller.getServiceEndpointCustomMatchRules))
 
             body = '{"agentType":"APP_AGENT","attachedEntity":{"entityId":{entityId},"entityType":"APPLICATION_COMPONENT"}}'.replace(
                 "{entityId}", str(entity["id"])
             )
-            defaultMatchRulesFutures.append(
-                self.controller.getServiceEndpointDefaultMatchRules(body))
+            defaultMatchRulesRequests.append(
+                (f"component {entity['id']} default match rules", body, self.controller.getServiceEndpointDefaultMatchRules))
 
-        response = await AsyncioUtils.gatherWithConcurrency(
-            *customMatchRulesFutures)
-        customMatchRules = [
-            await self.getResultFromResponse(response, debugString) for response
-            in response]
-        response = await AsyncioUtils.gatherWithConcurrency(
-            *defaultMatchRulesFutures)
-        defaultMatchRules = [
-            await self.getResultFromResponse(response, debugString) for response
-            in response]
+        async def fetch_match_rules(description, request_body, request):
+            max_retries = 5
+            last_error = None
+            for attempt in range(1, max_retries + 2):
+                try:
+                    raw_response = await request(request_body)
+                    result = await self.getResultFromResponse(raw_response, debugString)
+                    if result.error is None:
+                        return result
+                    last_error = result.error.msg
+                except Exception as error:
+                    last_error = str(error)
+                if attempt <= max_retries:
+                    delay = min(0.5 * (2 ** (attempt - 1)), 8)
+                    logging.warning(
+                        f"{self.host} - {debugString}: {description} failed "
+                        f"on attempt {attempt}/{max_retries + 1}: {last_error}; "
+                        f"retrying in {delay:.1f}s")
+                    await asyncio.sleep(delay)
+            logging.error(
+                f"{self.host} - {debugString}: {description} unavailable after "
+                f"{max_retries} retries: {last_error}")
+            return Result([], Result.Error(str(last_error)))
+
+        customMatchRules = await AsyncioUtils.gatherWithConcurrency(
+            *(fetch_match_rules(*request) for request in customMatchRulesRequests))
+        defaultMatchRules = await AsyncioUtils.gatherWithConcurrency(
+            *(fetch_match_rules(*request) for request in defaultMatchRulesRequests))
 
         return Result((customMatchRules, defaultMatchRules), None)
 
